@@ -1,0 +1,22 @@
+Markdown:
+    - Improve Mentions and Relative Timestamp (Style)
+    - Change placeholder system (maybe)
+
+Optimizations: 
+    - Compact JsonMessage (only what is needed)
+
+Next Features:
+    - Embeds,
+    - Buttons,
+    - Components,
+    - Components V2.
+    - Poll
+
+To do: 
+    - Markdown:
+        - Improve Mentions and Relative Timestamp (Style)
+        - Change placeholder system (maybe)
+    - Background and border of codeblock
+
+Issues: 
+    - No one (At least that I know)
