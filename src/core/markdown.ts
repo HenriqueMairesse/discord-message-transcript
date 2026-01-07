@@ -7,8 +7,11 @@ export function markdownToHTML(text: string, mentions: MessageMentions, dateForm
     const codeLine: string[] = [];
     
     // Code Block (```)
-    text = text.replace(/```([\s\S]*?)```/g, (_m, code) =>  {
-        codeBlock.push(`<pre><code>${code.trim()}</code></pre>`);
+    text = text.replace(/```(?:(\S+)\n)?([\s\S]+?)```/g, (_m, lang, code) => {
+        const rawLang = lang?.toLowerCase();
+        const normalizedLang = rawLang ? (LANGUAGE_ALIAS[rawLang as keyof typeof LANGUAGE_ALIAS] ?? rawLang) : null;
+        const language = normalizedLang && SUPPORTED_LANGUAGES.has(rawLang) ? normalizedLang : 'plaintext';
+        codeBlock.push(`<pre><code class="language-${language}">${code.trimEnd()}</code></pre>`);
         return `%$%CODE!BLOCK!${codeBlock.length - 1}%$%`;
     });
 
@@ -43,7 +46,7 @@ export function markdownToHTML(text: string, mentions: MessageMentions, dateForm
     });
 
     // Spoiler (||)
-    text = text.replace(/\|\|(.*?)\|\|/gs, `<span class="spoiler">$1</span>`);
+    text = text.replace(/\|\|(.*?)\|\|/gs, `<span class="spoilerMsg">$1</span>`);
 
     // Bold & Italic (***)
     text = text.replace(/\*\*\*(.*?)\*\*\*/gs, `<strong><em>$1</em></strong>`);
@@ -152,3 +155,37 @@ const styleOptions: Record<StyleTimeStampKey, Intl.DateTimeFormatOptions> = {
 function isStyleKey(key: string): key is StyleTimeStampKey {
     return key in styleOptions;
 }
+
+// At least I hope
+const SUPPORTED_LANGUAGES = new Set([
+  'bash', 'sh', 'shell',
+  'c',
+  'cpp',
+  'css',
+  'javascript', 'js',
+  'typescript', 'ts',
+  'json',
+  'xml',
+  'yaml', 'yml',
+  'java',
+  'kotlin',
+  'php',
+  'python', 'py',
+  'ruby', 'rb',
+  'sql',
+  'lua',
+  'markdown', 'md',
+  'plaintext', 'txt'
+]);
+
+const LANGUAGE_ALIAS = {
+  sh: 'bash',
+  shell: 'bash',
+  js: 'javascript',
+  ts: 'typescript',
+  py: 'python',
+  rb: 'ruby',
+  md: 'markdown',
+  yml: 'yaml',
+  txt: 'plaintext'
+};

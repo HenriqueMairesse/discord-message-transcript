@@ -8,7 +8,7 @@ catch (error) {
 }
 export async function createTranscript(channel, options = {}) {
     try {
-        const { fileName = null, returnFormat = "HTML", returnType = "attachment", quantity = 0, includeEmbeds = true, includeAttachments = false, includeComponents = true, includeV2Components = true, includeButtons = true, includeEmpty = false, timeZone = 'UTC', localDate = 'en-GB' } = options;
+        const { fileName = null, returnFormat = "HTML", returnType = "attachment", quantity = 0, includeEmbeds = true, includeAttachments = true, includeComponents = true, includeV2Components = true, includeButtons = true, includeEmpty = false, timeZone = 'UTC', localDate = 'en-GB' } = options;
         const checkedFileName = (fileName ?? `Transcript-${channel.isDMBased() ? "DirectMessage" : channel.name}-${channel.id}`) + (returnFormat == "JSON" ? ".json" : ".html");
         const internalOptions = {
             fileName: checkedFileName,

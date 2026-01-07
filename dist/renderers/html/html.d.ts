@@ -9,4 +9,6 @@ export declare class Html {
     private headerBuilder;
     private messagesBuilder;
     toHTML(): string;
+    private embedBuilder;
+    private attachmentBuilder;
 }

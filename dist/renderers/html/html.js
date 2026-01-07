@@ -1,5 +1,7 @@
 import { CustomError } from "../../core/error";
 import { markdownToHTML } from "../../core/markdown";
+import { ATTACHMENT_CSS, DEFAULT_CSS, EMBED_CSS, MESSAGE_CSS } from "./css";
+const COUNT_UNIT = ["KB", "MB", "GB", "TB"];
 export class Html {
     guild;
     channel;
@@ -33,7 +35,7 @@ export class Html {
             <div style="display: flex; flex-direction: column; justify-content: center; gap: 1.25rem;">
                 ${this.guild ? `<div id="guild" class="line">
                     <h4>Guild: </h4>
-                    <h4 style="font-weight: normal;">MI_Test</h4>
+                    <h4 style="font-weight: normal;">${this.guild.name}</h4>
                 </div>` : ""}
                 ${this.channel.parent ? `<div id="category" class="line">
                     <h4>Category: </h4>
@@ -55,6 +57,7 @@ export class Html {
         return this.messages.map(message => {
             const date = new Date(message.createdTimesptamp);
             message.content = markdownToHTML(message.content, message.mentions, this.dateFormat);
+            message.attachments;
             return `
 <div class="messageDiv">
     <img src="${message.author.avatarURL}" class="messageImg">
@@ -67,9 +70,11 @@ export class Html {
             <p class="messageTimeStamp">${this.dateFormat.format(date)}</p>
         </div>
         <div class="messageContent">${message.content}</div>
+        ${message.embeds.length > 0 ? this.embedBuilder(message, message.embeds) : ""}
+        ${message.attachments.length > 0 ? this.attachmentBuilder(message.attachments) : ""}
     </div>
 </div>
-            `;
+        `;
         }).join("");
     }
     toHTML() {
@@ -80,120 +85,13 @@ export class Html {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${this.options.fileName}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/atom-one-dark.min.css">
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
     <style>
-        body {
-            background-color: #313338;
-            color: #dbdee1;
-            font-family: "Whitney", "Helvetica Neue", Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            width: 100%;
-        }
-        header {
-            height: fit-content;
-            border-bottom: 2px solid black;
-            margin-top: 2rem;
-            padding-left: 2rem;
-            padding-bottom: 1rem;
-            display: flex;
-            flex-direction: column;
-            display: flex;
-            flex-direction: row;
-        }
-        p {
-            margin: 0;
-        }
-        h4 {
-            margin: 0;
-        }
-        blockquote {
-            margin: 0.5rem 0;
-            border-left: 0.25rem solid #4f545c;
-            padding: 0.4rem 0.6rem;
-            border-radius: 0.2rem;
-            color: #9f9fa6;
-        }
-        .line {
-            display: flex;
-            align-items: baseline;
-            gap: 0.5rem
-        }
-        .badge {
-            background-color: #5865f2;
-            color: white;
-            font-weight: 600;
-            font-size: 80%;
-            padding: 0.1rem 0.35rem;
-            border-radius: 0.25rem;
-            letter-spacing: 0.03rem;
-            height: fit-content;
-            width: fit-content;
-            align-self: flex-start;
-        }
-        .badgeTag {
-            background-color: #747F8D50;
-            color: white;
-            font-weight: 600;
-            font-size: 70%;
-            padding: 0.1rem 0.35rem;
-            border-radius: 0.25rem;
-            letter-spacing: 0.03rem;
-            height: fit-content;
-            width: fit-content;
-            align-self: center;
-        }
-        .messageDiv {
-            display: flex;
-            flex-direction: row;
-            gap: 1rem;
-        }
-        .messageImg {
-            width: 3.5rem; 
-            height: 3.5rem; 
-            border-radius: 50%;
-        }
-        .messageDivRight {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem
-        }
-        .messageUser {
-            display: flex;
-            flex-direction: row;
-            gap: 0.75rem;
-        }
-        .messageUsername {
-            margin: 0;
-        }
-        .messageTimeStamp {
-            color: #999999;
-            font-size: 77.5%;
-            align-self: center;
-        }
-        .messageContent {
-            line-height: 1.5;
-        }
-        .pList {
-            white-space: pre-wrap;
-        }
-        .subtext {
-            font-size: 85%;
-            color: #808080;
-        }
-        .spoiler {
-            display: inline-block;
-            background-color: #202225;
-            color: #202225;
-            padding: 0 0.2rem;
-            border-radius: 0.2rem;
-            cursor: pointer;
-            transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
-            
-        }
-        .spoiler.revealed {
-            background-color: transparent;
-            color: inherit;
-        }
+    ${DEFAULT_CSS}
+    ${MESSAGE_CSS}
+    ${EMBED_CSS}
+    ${ATTACHMENT_CSS}
     </style>
 </head>
 <body>
@@ -204,17 +102,101 @@ export class Html {
        ${this.messagesBuilder()}
     </main>
     <footer>
-        <br >
+        <br>
         <h2>Transcript generated by <a href="https://github.com/HenriqueMairesse/discord-channel-transcript">discord-channel-transcript</a></h2>
     </foorter>
-    <script> 
+    <script>
         document.addEventListener('click', function (event) {
-            const spoiler = event.target.closest('.spoiler');
-            if (spoiler) spoiler.classList.add('revealed');
-        })
+            const spoiler = event.target.closest('.spoilerMsg, .spoilerAttachment');
+            if (!spoiler) return;
+            if (!spoiler.classList.contains('revealed')) {
+                event.preventDefault();
+                event.stopPropagation();
+                spoiler.classList.add('revealed');
+            }
+        });
+        document.addEventListener('DOMContentLoaded', function (event) {
+            hljs.highlightAll();
+        });
     </script>
 </body>
 </html>     
 `;
+    }
+    embedBuilder(message, embeds) {
+        return embeds.map(embed => {
+            const embedAuthor = embed.author ? (embed.author.url ? `<a class="embedHeaderRightAuthorName" href="${embed.author.url}" target="_blank">${embed.author.name}</a>` : `<p class="embedHeaderRightAuthorName">${embed.author.name}</p>`) : "";
+            const embedTitle = embed.title ? (embed.url ? `<a class="embedHeaderRightTitle" href="${embed.url}" target="_blank">${embed.title}</a>` : `<p class="embedHeaderRightTitle">${embed.title}</p>`) : "";
+            return `
+                <div class="embed" style="${embed.hexColor ? `border-left-color: ${embed.hexColor}` : ''}">
+                    ${embed.author || embed.title || embed.thumbnail ? `
+                    <div class="embedHeader">
+                        <div class="embedHeaderRight">
+                            ${embed.author ? `
+                            <div class="embedHeaderRightAuthor">
+                                ${embed.author.iconURL ? `<img class="embedHeaderRightAuthorImg" src="${embed.author.iconURL}">` : ""}
+                                ${embedAuthor}
+                            </div>` : ""}
+                            ${embedTitle}
+                        </div>
+                        ${embed.thumbnail ? `<img class="embedHeaderThumbnail" src="${embed.thumbnail.url}">` : ""}
+                    </div>` : ""}
+                    ${embed.description ? `<div class="embedDescription">${markdownToHTML(embed.description, message.mentions, this.dateFormat)}</div>` : ""}
+                    ${embed.fields && embed.fields.length > 0 ? `
+                    <div class="embedFields">
+                        ${embed.fields.map(field => `
+                        <div class="embedFieldsField" style="${field.inline ? 'display: inline-block;' : ''}">
+                            <p class="embedFieldsFieldTitle">${field.name}</p>
+                            <p class="embedFieldsFieldValue">${markdownToHTML(field.value, message.mentions, this.dateFormat)}</p>
+                        </div>`).join("")}
+                    </div>` : ""}
+                    ${embed.image ? `
+                    <div class="embedImage">
+                        <img src="${embed.image.url}">
+                    </div>` : ""}
+                    ${embed.footer || embed.timestamp ? `
+                    <div class="embedFooter">
+                        ${embed.footer?.iconURL ? `<img class="embedFooterImg" src="${embed.footer.iconURL}">` : ""}
+                        ${embed.footer?.text || embed.timestamp ? `<p class="embedFooterText">${embed.footer?.text ?? ''}${embed.footer?.text && embed.timestamp ? ' | ' : ''}${embed.timestamp ? this.dateFormat.format(new Date(embed.timestamp)) : ''}</p>` : ""}
+                    </div>` : ""}
+                </div>
+            `;
+        }).join("");
+    }
+    attachmentBuilder(attachments) {
+        return attachments.map(attachment => {
+            let attachmentHtml = "";
+            if (attachment.contentType?.startsWith('image/')) {
+                attachmentHtml = `<img class="attachmentImage" src="${attachment.url}">`;
+            }
+            else if (attachment.contentType?.startsWith('video/')) {
+                attachmentHtml = `<video class="attachmentVideo" controls src="${attachment.url}"></video>`;
+            }
+            else if (attachment.contentType?.startsWith('audio/')) {
+                attachmentHtml = `<audio class="attachmentAudio" controls src="${attachment.url}"></audio>`;
+            }
+            else {
+                let fileSize = attachment.size / 1024;
+                let count = 0;
+                while (fileSize > 512 && count < COUNT_UNIT.length - 1) {
+                    fileSize = fileSize / 1024;
+                    count++;
+                }
+                attachmentHtml = `
+                    <div class="attachmentFile">
+                        <div class="attachmentFileInfo">
+                            <p class="attachmentFileName" href="${attachment.url}" target="_blank">${attachment.name ?? 'attachment'}</p>
+                            <div class="attachmentFileSize">${fileSize.toFixed(2)} ${COUNT_UNIT[count]}</div>
+                        </div>
+                        <a class="attachmentDownload" href="${attachment.url}" target="_blank">
+                            <svg class="attachmentDownloadIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m720-120 160-160-56-56-64 64v-167h-80v167l-64-64-56 56 160 160ZM560 0v-80h320V0H560ZM240-160q-33 0-56.5-23.5T160-240v-560q0-33 23.5-56.5T240-880h280l240 240v121h-80v-81H480v-200H240v560h240v80H240Zm0-80v-560 560Z"/></svg>
+                        </a>
+                    </div>
+                `;
+            }
+            if (attachment.spoiler)
+                return `<div class="spoilerAttachment"><div class="spoilerAttachmentOverlay">SPOILER</div><div class="spoilerAttachmentContent">${attachmentHtml}</div></div>`;
+            return attachmentHtml;
+        }).join("");
     }
 }

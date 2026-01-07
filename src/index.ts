@@ -35,7 +35,7 @@ export async function createTranscript(
             returnType = "attachment",
             quantity = 0,
             includeEmbeds = true, 
-            includeAttachments = false, 
+            includeAttachments = true, 
             includeComponents = true, 
             includeV2Components = true, 
             includeButtons = true,
