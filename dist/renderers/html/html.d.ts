@@ -11,4 +11,7 @@ export declare class Html {
     toHTML(): string;
     private embedBuilder;
     private attachmentBuilder;
+    private componentBuilder;
+    private buttonBuilder;
+    private spoilerAttachmentBuilder;
 }

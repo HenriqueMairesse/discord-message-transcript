@@ -1,4 +1,4 @@
-import { Attachment, Embed, EmbedType } from "discord.js";
+import { Attachment, ButtonComponent, ComponentType, Embed, EmbedType, TopLevelComponent } from "discord.js";
 import { CustomError } from "../../core/error";
 import { markdownToHTML } from "../../core/markdown";
 import { JsonData, JsonDataChannel, JsonDataGuild, JsonMessage, TranscriptOptions } from "../../types/types";
@@ -177,14 +177,14 @@ export class Html {
 
     private attachmentBuilder(attachments: Attachment[]): string {
         return attachments.map(attachment => {
-            let attachmentHtml = "";
+            let html = "";
 
             if (attachment.contentType?.startsWith('image/')) {
-                attachmentHtml = `<img class="attachmentImage" src="${attachment.url}">`;
+                html = `<img class="attachmentImage" src="${attachment.url}">`;
             } else if (attachment.contentType?.startsWith('video/')) {
-                attachmentHtml = `<video class="attachmentVideo" controls src="${attachment.url}"></video>`;
+                html = `<video class="attachmentVideo" controls src="${attachment.url}"></video>`;
             } else if (attachment.contentType?.startsWith('audio/')) {
-                attachmentHtml = `<audio class="attachmentAudio" controls src="${attachment.url}"></audio>`;
+                html = `<audio class="attachmentAudio" controls src="${attachment.url}"></audio>`;
             } else {
                 let fileSize = attachment.size / 1024;
                 let count = 0;
@@ -193,7 +193,7 @@ export class Html {
                     count++;
                 }
 
-                attachmentHtml = `
+                html = `
                     <div class="attachmentFile">
                         <div class="attachmentFileInfo">
                             <p class="attachmentFileName" href="${attachment.url}" target="_blank">${attachment.name ?? 'attachment'}</p>
@@ -206,9 +206,103 @@ export class Html {
                 `;
             }
 
-            if (attachment.spoiler) return `<div class="spoilerAttachment"><div class="spoilerAttachmentOverlay">SPOILER</div><div class="spoilerAttachmentContent">${attachmentHtml}</div></div>`;
-            return attachmentHtml;
+            return this.spoilerAttachmentBuilder(attachment.spoiler, html);
         }).join("");
+    }
+
+    private componentBuilder(message: JsonMessage, components: TopLevelComponent[]): string {
+        return components.map(component => {
+            switch (component.type) {
+                case ComponentType.ActionRow: {
+                    
+                    break;
+                }
+
+                case ComponentType.Container: {
+
+                    const html = `
+                    <div class="container" style="${component.hexAccentColor ? `border-left-color: ${component.hexAccentColor}` : ''}">
+                        ${this.componentBuilder(message, component.components)}
+                    </div>
+                    `;
+                    return this.spoilerAttachmentBuilder(component.spoiler, html);
+                }
+
+                case ComponentType.File: {
+                    
+                    let fileSize = (component.data.size ?? 0) / 1024;
+                    let count = 0;
+                    while (fileSize > 512 && count < COUNT_UNIT.length - 1) {
+                        fileSize = fileSize / 1024;
+                        count++;
+                    }
+
+                    const html = `
+                        <div class="attachmentFile">
+                            <div class="attachmentFileInfo">
+                                <p class="attachmentFileName">${component.data.name ?? 'file'}</p>
+                                <div class="attachmentFileSize">${fileSize.toFixed(2)} ${COUNT_UNIT[count]}</div>
+                            </div>
+                            <a class="attachmentDownload" href="${component.file.url ?? ''}" target="_blank">
+                                <svg class="attachmentDownloadIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m720-120 160-160-56-56-64 64v-167h-80v167l-64-64-56 56 160 160ZM560 0v-80h320V0H560ZM240-160q-33 0-56.5-23.5T160-240v-560q0-33 23.5-56.5T240-880h280l240 240v121h-80v-81H480v-200H240v560h240v80H240Zm0-80v-560 560Z"/></svg>
+                            </a>
+                        </div>
+                    `;
+
+                    return this.spoilerAttachmentBuilder(component.spoiler, html);
+                }
+
+                case ComponentType.MediaGallery: {
+                    return `
+                    <div class="mediaGallery"> 
+                        ${component.items.map(image => {
+                            return `
+                            <div class="mediaGalleryItem"> 
+                                ${this.spoilerAttachmentBuilder(image.spoiler, `<img class="mediaGalleryImg" src="${image.data.media.url}">`)}
+                            </div>
+                            `    
+                        }).join("")}
+                    </div>
+                    `
+                }
+
+                case ComponentType.Section: {
+                    return `
+                    <div class="section">
+                        <div class="sectionLeft">
+                            ${this.componentBuilder(message, component.components)}
+                        </div>
+                        <div class="sectionRight">
+                            ${component.accessory.type == ComponentType.Button ? this.buttonBuilder(component.accessory)
+                            : component.accessory.type == ComponentType.Thumbnail ? this.spoilerAttachmentBuilder(component.accessory.spoiler, `
+                            <img class="sectionThumbnail" src="${component.accessory.media.url}">
+                            `) : ""
+                            }
+                        </div>
+                    </div> 
+                    `
+                }
+
+                case ComponentType.Separator: {
+                    return `<hr>`
+                }
+
+                case ComponentType.TextDisplay: {
+                    return markdownToHTML(component.content, message.mentions, this.dateFormat);
+                }
+            
+                default:
+                    return ``;
+            }
+        }).join("");
+    }
+
+    private buttonBuilder(button: ButtonComponent): string {
+
+    }
+
+    private spoilerAttachmentBuilder(spoiler: boolean, html: string): string {
+        return spoiler ? `<div class="spoilerAttachment"><div class="spoilerAttachmentOverlay">SPOILER</div><div class="spoilerAttachmentContent">${html}</div></div>` : html;
     }
 
 }

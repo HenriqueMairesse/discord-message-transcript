@@ -328,3 +328,28 @@ export const ATTACHMENT_CSS = `
     display: none;
 }
 `;
+
+export const MEDIAGALLETY_CSS = `
+.mediaGallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    width: 20rem;
+    height: 20rem;
+    border: 1px solid #202225
+    padding: 0.35rem;
+    overflow: hidden;
+}
+.mediaGalleryItem {
+    flex-grow: 1;
+    flex-basis: 6rem;
+    min-width: 0;
+    display: flex;
+}
+.mediaGalleryImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+`

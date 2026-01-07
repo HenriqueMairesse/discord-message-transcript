@@ -1,8 +1,14 @@
 Next Features:
     - Buttons,
     - Components,
-    - Components V2.
     - Poll
+
+Test Needed:
+    - Media Gallery
+    - Separator
+    - Text Display
+    - Section // Do CSS
+    - Container // DO CSS
 
 To do: 
     - Markdown:
