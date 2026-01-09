@@ -1,7 +1,6 @@
 Next Features:
-    - Buttons,
-    - Components,
     - Poll
+    - Reply
 
 Test Needed:
     - Media Gallery
@@ -9,6 +8,8 @@ Test Needed:
     - Text Display
     - Section // Do CSS
     - Container // DO CSS
+    - Select
+    - Buttons
 
 To do: 
     - Markdown:
