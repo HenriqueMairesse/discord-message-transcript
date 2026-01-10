@@ -81,8 +81,21 @@ blockquote {
 export const MESSAGE_CSS = `
 .messageDiv {
     display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.5rem;
+    border-radius: 1rem;
+}
+.messageDiv.highlight, .messageDiv:hover {
+    background-color: #40434b;
+    transition: background-color 0.3s ease-in-out;
+}
+.messageBotton {
+    display: flex;
     flex-direction: row;
     gap: 1rem;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
 }
 .messageImg {
     width: 3.5rem; 
@@ -129,6 +142,52 @@ export const MESSAGE_CSS = `
 .spoilerMsg.revealed {
     background-color: transparent;
     color: inherit;
+}
+.messageReply {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: #b5bac1;
+    cursor: pointer;
+    margin-left: 2rem;
+}
+.messageReplySvg {
+    flex-shrink: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    color: #b5bac1;
+}
+.messageReplyImg {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.messageReplyAuthor {
+    font-weight: 600;
+    color: #dbdee1;
+    margin-right: 0.3rem;
+}
+.badgeReply {
+    background-color: #5865f2;
+    color: white;
+    font-weight: 600;
+    font-size: 70%;
+    padding: 0.1rem 0.3rem;
+    border-radius: 0.25rem;
+    letter-spacing: 0.03rem;
+    height: fit-content;
+    align-self: center;
+    flex-shrink: 0;
+}
+.messageReplyText {
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #b5bac1;
+    font-size: 0.75rem;
 }
 `;
 export const EMBED_CSS = `

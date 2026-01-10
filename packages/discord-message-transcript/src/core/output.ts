@@ -31,7 +31,7 @@ export async function output(json: JsonData, options: TranscriptOptions): Promis
     } 
 
     if (options.returnFormat == "HTML") {
-        const objectHTML = new Html(json, options);
+        const objectHTML = new Html(json);
         const stringHTML = objectHTML.toHTML();
         if (options.returnType == "string") {
             return stringHTML;

@@ -1,6 +1,7 @@
 Next Features:
     - Poll
     - Reply
+    - Reactions?
 
 Test Needed:
     - Media Gallery

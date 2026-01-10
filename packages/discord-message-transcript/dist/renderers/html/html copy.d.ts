@@ -1,8 +1,11 @@
-import { JsonData } from "../../types/types";
+import { JsonData, JsonDataChannel, JsonDataGuild, JsonMessage, TranscriptOptions } from "../../types/types";
 export declare class Html {
-    data: JsonData;
+    guild: JsonDataGuild | null;
+    channel: JsonDataChannel;
+    messages: JsonMessage[];
+    options: TranscriptOptions;
     dateFormat: Intl.DateTimeFormat;
-    constructor(data: JsonData);
+    constructor(data: JsonData, options: TranscriptOptions);
     private headerBuilder;
     private messagesBuilder;
     toHTML(): string;

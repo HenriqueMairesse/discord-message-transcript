@@ -2,17 +2,22 @@ import { CustomError } from "../../core/error";
 import { markdownToHTML } from "../../core/markdown";
 import { JsonButtonStyle, JsonComponentType } from "../../types/types";
 import { ACTIONROW_CSS, ATTACHMENT_CSS, BUTTON_CSS, COMPONENTS_CSS, COMPONENTSV2_CSS, DEFAULT_CSS, EMBED_CSS, MESSAGE_CSS } from "./css";
-import { script } from "./js";
 const COUNT_UNIT = ["KB", "MB", "GB", "TB"];
 const BUTTON_COLOR = ["black", "#5865f2", "gray", "lime", "red", "black", "#5865f2"];
 export class Html {
-    data;
+    guild;
+    channel;
+    messages;
+    options;
     dateFormat;
-    constructor(data) {
-        this.data = data;
+    constructor(data, options) {
+        this.guild = data.guild;
+        this.channel = data.channel;
+        this.messages = data.messages;
+        this.options = options;
         try {
-            this.dateFormat = new Intl.DateTimeFormat(data.options.localDate, {
-                timeZone: data.options.timeZone,
+            this.dateFormat = new Intl.DateTimeFormat(options.localDate, {
+                timeZone: options.timeZone,
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric',
@@ -26,52 +31,55 @@ export class Html {
         }
     }
     headerBuilder() {
-        const { channel, guild } = this.data;
         return `
         <div style="display: flex;  gap: 1.5rem; align-items: center;">
-            ${channel.img ? `<img src="${channel.img}" style="width: 7rem; height: 7rem; border-radius: 50%;">` : ""}
+            ${this.channel.img ? `<img src="${this.channel.img}" style="width: 7rem; height: 7rem; border-radius: 50%;">` : ""}
             <div style="display: flex; flex-direction: column; justify-content: center; gap: 1.25rem;">
-                ${guild ? `<div id="guild" class="line">
+                ${this.guild ? `<div id="guild" class="line">
                     <h4>Guild: </h4>
-                    <h4 style="font-weight: normal;">${guild.name}</h4>
+                    <h4 style="font-weight: normal;">${this.guild.name}</h4>
                 </div>` : ""}
-                ${channel.parent ? `<div id="category" class="line">
+                ${this.channel.parent ? `<div id="category" class="line">
                     <h4>Category: </h4>
-                    <h4 style="font-weight: normal;">${channel.parent.name}</h4>
+                    <h4 style="font-weight: normal;">${this.channel.parent.name}</h4>
                 </div>` : ""}
                 <div id="channel" class="line">
                     <h4>Channel: </h4>
-                    <h4 style="font-weight: normal;">${channel.name}</h4>
+                    <h4 style="font-weight: normal;">${this.channel.name}</h4>
                 </div>
-                ${channel.topic ? `<div id="topic" class="line">
+                ${this.channel.topic ? `<div id="topic" class="line">
                     <h4>Topic: </h4>
-                    <h4 style="font-weight: normal;">${channel.topic}</h4>
+                    <h4 style="font-weight: normal;">${this.channel.topic}</h4>
                 </div>` : ""}
             </div>
         </div>
         `;
     }
     messagesBuilder() {
-        return this.data.messages.map(message => {
+        return this.messages.map(message => {
             const date = new Date(message.createdTimestamp);
+            message.content = markdownToHTML(message.content, message.mentions, this.dateFormat);
+            message.attachments;
             return `
-<div class="messageDiv" id="${message.id}" data-author-id="${message.authorId}">
+<div class="messageDiv" id="${message.id}>
     ${message.references && message.references.messageId ?
                 `<div class="messageReply" data-id="${message.references.messageId}">
         <svg class="messageReplySvg"><use href="#reply-icon"></use></svg>
-        <img class="messageReplyImg" src="">
-        <div class="replyBadges"></div>
+        <img class="messageReplyImg">
+        ${message.author.bot ? `<p class="badgeReply">APP</p>` : ""}
         <div class="messageReplyText"></div>
     </div>` : ""}
     <div class="messageBotton">
-        <img src="" class="messageImg">
+        <img src="${message.author.avatarURL}" class="messageImg">
         <div class="messageDivRight">
             <div class="messageUser">
-                <h3 class="messageUsername"></h3>
-                <div class="badges"></div>
+                <h3 class="messageUsername" style="color: ${message.member?.displayHexColor ?? "#dbdee1"}">${message.member?.displayName ?? message.author.displayName}</h3>
+                ${message.author.bot ? `<p class="badge">APP</p>` : ""}
+                ${message.author.system ? `<p class="badge">SYSTEM</p>` : ""}
+                ${message.author.guildTag ? `<p class="badgeTag">${message.author.guildTag}</p>` : ""}
                 <p class="messageTimeStamp">${this.dateFormat.format(date)}</p>
             </div>
-            <div class="messageContent">${markdownToHTML(message.content, message.mentions, this.dateFormat)}</div>
+            <div class="messageContent"">${message.content}</div>
             ${message.embeds.length > 0 ? this.embedBuilder(message, message.embeds) : ""}
             ${message.attachments.length > 0 ? this.attachmentBuilder(message.attachments) : ""}
             ${message.components.length > 0 ? this.componentBuilder(message, message.components) : ""}
@@ -82,25 +90,24 @@ export class Html {
         }).join("");
     }
     toHTML() {
-        const { options } = this.data;
         return `
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR"></html>
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${options.fileName}</title>
+    <title>${this.options.fileName}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/atom-one-dark.min.css">
     <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
     <style>
     ${DEFAULT_CSS}
     ${MESSAGE_CSS}
-    ${options.includeEmbeds ? EMBED_CSS : ""}
-    ${options.includeButtons || options.includeComponents ? ACTIONROW_CSS : ""}
-    ${options.includeAttachments || options.includeV2Components ? ATTACHMENT_CSS : ""}
-    ${options.includeButtons || options.includeV2Components ? BUTTON_CSS : ""}
-    ${options.includeComponents ? COMPONENTS_CSS : ""}
-    ${options.includeV2Components ? COMPONENTSV2_CSS : ""}
+    ${this.options.includeEmbeds ? EMBED_CSS : ""}
+    ${this.options.includeButtons || this.options.includeComponents ? ACTIONROW_CSS : ""}
+    ${this.options.includeAttachments || this.options.includeV2Components ? ATTACHMENT_CSS : ""}
+    ${this.options.includeButtons || this.options.includeV2Components ? BUTTON_CSS : ""}
+    ${this.options.includeComponents ? COMPONENTS_CSS : ""}
+    ${this.options.includeV2Components ? COMPONENTSV2_CSS : ""}
     </style>
 </head>
 <body>
@@ -108,22 +115,44 @@ export class Html {
     <header>
         ${this.headerBuilder()}
     </header>
-    <main style="display: flex; flex-direction: column; padding: 2.25%;">
+    <main style="display: flex; flex-direction: column; gap: 1.75rem; padding: 2.25rem;">
        ${this.messagesBuilder()}
     </main>
     <footer>
         <br>
         <h2>Transcript generated by <a href="https://github.com/HenriqueMairesse/discord-channel-transcript">discord-channel-transcript</a></h2>
     </footer>
-    <script id="authorData" type="application/json">
-        ${JSON.stringify({ authors: this.data.authors })}
-    </script>
     <script>
-        ${script}
+        document.addEventListener('click', function (event) {
+            const spoiler = event.target.closest('.spoilerMsg, .spoilerAttachment');
+            if (spoiler && !spoiler.classList.contains('revealed')) {
+                event.preventDefault();
+                event.stopPropagation();
+                spoiler.classList.add('revealed');
+            }
+
+            const selectorInput = event.target.closest('.selectorInput');
+            document.querySelectorAll('.selector').forEach(selector => {
+                if (!selector.contains(event.target)) {
+                    selector.classList.remove('active');
+                }
+            });
+
+            if (selectorInput) {
+                const selector = selectorInput.closest('.selector');
+                if (selector) {
+                    selector.classList.toggle('active');
+                }
+            }
+        });
+        document.addEventListener('DOMContentLoaded', function (event) {
+            hljs.highlightAll();
+            
+        });
     </script>
 </body>
 </html>     
-        `;
+`;
     }
     embedBuilder(message, embeds) {
         return embeds.map(embed => {
@@ -321,7 +350,6 @@ export class Html {
         return spoiler ? `<div class="spoilerAttachment"><div class="spoilerAttachmentOverlay">SPOILER</div><div class="spoilerAttachmentContent">${html}</div></div>` : html;
     }
     svgBuilder() {
-        const { options } = this.data;
         return `
     <svg style="display: none;">
         <defs>
@@ -330,10 +358,10 @@ export class Html {
                     <path d="M6 2V9C6 11.5 8.5 14 11 14H14" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
                 </g>
             </symbol>
-            ${options.includeAttachments ? `<symbol id="download-icon" viewBox="0 -960 960 960">
+            ${this.options.includeAttachments ? `<symbol id="download-icon" viewBox="0 -960 960 960">
                 <path d="m720-120 160-160-56-56-64 64v-167h-80v167l-64-64-56 56 160 160ZM560 0v-80h320V0H560ZM240-160q-33 0-56.5-23.5T160-240v-560q0-33 23.5-56.5T240-880h280l240 240v121h-80v-81H480v-200H240v560h240v80H240Zm0-80v-560 560Z"/>
             </symbol> ` : ""}
-            ${options.includeButtons ? `<symbol id="link-icon" viewBox="0 -960 960 960" fill="#e3e3e3">
+            ${this.options.includeButtons ? `<symbol id="link-icon" viewBox="0 -960 960 960" fill="#e3e3e3">
                 <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z"/>
             </symbol>` : ""}
         </defs>

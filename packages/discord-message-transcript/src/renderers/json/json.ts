@@ -1,9 +1,10 @@
 import { BaseGuildTextChannel, DMChannel, Guild, TextBasedChannel } from "discord.js";
-import { JsonData, JsonMessage, TranscriptOptions } from "../../types/types";
+import { JsonAuthor, JsonData, JsonMessage, TranscriptOptions } from "../../types/types";
 
 export class Json {
     guild: Guild | null;
     channel: TextBasedChannel;
+    authors: JsonAuthor[];
     messages: JsonMessage[];
     options: TranscriptOptions;
 
@@ -12,6 +13,7 @@ export class Json {
         this.channel = channel;
         this.messages = [];
         this.options = options;
+        this.authors = [];
     }
 
     addMessages(messages: JsonMessage[]): void {
@@ -23,6 +25,10 @@ export class Json {
             return;
         }
         this.messages = this.messages.slice(0, size - 1);
+    }
+
+    setAuthors(authors: JsonAuthor[]) {
+        this.authors = authors;
     }
 
     async toJson(): Promise<JsonData> {
@@ -46,6 +52,7 @@ export class Json {
                 id: channel.id,
                 img: channel instanceof DMChannel ? channel.recipient?.displayAvatarURL() ?? "cdn.discordapp.com/embed/avatars/4.png" : channel.isDMBased() ? channel.iconURL() ?? (await channel.fetchOwner()).displayAvatarURL() : null,
             },
+            authors: this.authors,
             messages: this.messages.reverse()
         };
     }

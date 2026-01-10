@@ -2,6 +2,7 @@ import { BaseGuildTextChannel, DMChannel } from "discord.js";
 export class Json {
     guild;
     channel;
+    authors;
     messages;
     options;
     constructor(guild, channel, options) {
@@ -9,6 +10,7 @@ export class Json {
         this.channel = channel;
         this.messages = [];
         this.options = options;
+        this.authors = [];
     }
     addMessages(messages) {
         this.messages.push(...messages);
@@ -18,6 +20,9 @@ export class Json {
             return;
         }
         this.messages = this.messages.slice(0, size - 1);
+    }
+    setAuthors(authors) {
+        this.authors = authors;
     }
     async toJson() {
         const channel = await this.channel.fetch();
@@ -37,6 +42,7 @@ export class Json {
                 id: channel.id,
                 img: channel instanceof DMChannel ? channel.recipient?.displayAvatarURL() ?? "cdn.discordapp.com/embed/avatars/4.png" : channel.isDMBased() ? channel.iconURL() ?? (await channel.fetchOwner()).displayAvatarURL() : null,
             },
+            authors: this.authors,
             messages: this.messages.reverse()
         };
     }

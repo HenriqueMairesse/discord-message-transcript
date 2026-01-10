@@ -1,7 +1,7 @@
 import { AttachmentBuilder, TextBasedChannel } from "discord.js";
 import { Json } from "./renderers/json/json";
 import { fetchMessages } from "./core/fetchMessages";
-import { CreateTranscriptOptions, JsonData, TranscriptOptions, Uploadable, ReturnType } from "./types/types";
+import { CreateTranscriptOptions, JsonData, TranscriptOptions, Uploadable, ReturnType, JsonAuthor } from "./types/types";
 import { output } from "./core/output";
 import Stream from "stream";
 import { CustomError } from "./core/error";
@@ -31,7 +31,8 @@ export async function createTranscript(
             includeButtons = true,
             includeEmpty = false,
             timeZone = 'UTC',
-            localDate = 'en-GB'
+            localDate = 'en-GB',
+            saveImages = false
         } = options;
         const checkedFileName = (fileName ?? `Transcript-${channel.isDMBased() ? "DirectMessage" : channel.name}-${channel.id}`);
         const internalOptions: TranscriptOptions = {
@@ -46,14 +47,16 @@ export async function createTranscript(
             includeButtons,
             includeEmpty,
             timeZone,
-            localDate
+            localDate,
+            saveImages
         }
 
         const jsonTranscript = channel.isDMBased() ? new Json(null, channel, internalOptions) : new Json(channel.guild, channel, internalOptions); 
         let lastMessageID: string | undefined;
+        const authors = new Map<string, JsonAuthor>();
 
         while (true) {
-            const { messages, end } = await fetchMessages(channel, internalOptions, lastMessageID);
+            const { messages, end } = await fetchMessages(channel, internalOptions, authors, lastMessageID);
             jsonTranscript.addMessages(messages);
             lastMessageID = messages[messages.length - 1]?.id;
             if (end || (jsonTranscript.messages.length >= quantity && quantity != 0)) {
@@ -61,6 +64,7 @@ export async function createTranscript(
             }
         }
         jsonTranscript.sliceMessages(quantity);
+        jsonTranscript.setAuthors(Array.from(authors.values()));
         return await output(await jsonTranscript.toJson(), internalOptions);
         
     } catch (error) {

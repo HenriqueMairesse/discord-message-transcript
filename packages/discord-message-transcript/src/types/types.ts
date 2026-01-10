@@ -1,8 +1,8 @@
-import { Attachment, Embed, MessageMentions, MessageReference, Poll, TopLevelComponent } from "discord.js";
+import { Poll } from "discord.js"
 
 export type ReturnFormat = "HTML" | "JSON";
-export type ReturnType = "string" | "attachment" | 'uploadable' | 'stream' | 'buffer';
-export type StyleTimeStampKey = 't' | 'T' | 'd' | 'D' | 'f' | 'F';
+export type ReturnType = "string" | "attachment" | "uploadable" | "stream" | "buffer";
+export type StyleTimeStampKey = "t" | "T" | "d" | "D" | "f" | "F";
 
 export interface CreateTranscriptOptions {
     fileName?: string,
@@ -17,6 +17,7 @@ export interface CreateTranscriptOptions {
     includeEmpty?: boolean,
     timeZone?: TimeZone,
     localDate?: Locale,
+    saveImages?: boolean,
 }
 
 export interface TranscriptOptions {
@@ -31,7 +32,8 @@ export interface TranscriptOptions {
     includeButtons: boolean,
     includeEmpty: boolean,
     timeZone?: TimeZone,
-    localDate: Locale
+    localDate: Locale,
+    saveImages: boolean,
 }
 
 export interface Uploadable {
@@ -41,35 +43,63 @@ export interface Uploadable {
 }
 
 export interface JsonMessage {
-    attachments: Attachment[],
-    author: {
-        avatarURL: string,
-        bot: boolean,
-        id: string,
-        displayName: string,
-        system: boolean,
-        guildTag: string | null
-    },
-    components: TopLevelComponent[],
+    attachments: JsonAttachment[],
+    authorId: string,
+    components: JsonTopLevelComponent[],
     content: string,
-    createdTimesptamp: number,
-    embeds: Embed[],
+    createdTimestamp: number,
+    embeds: JsonEmbed[],
     id: string,
-    member: {
-        displayHexColor: string,
-        displayName: string,
-    } | null,
     mentions: JsonMessageMentions,
     poll: Poll | null,
     system: boolean,
-    references: MessageReference | null
+    references: {
+        messageId: string | null
+    } | null,
+}
+
+export interface JsonAttachment {
+    contentType: string | null,
+    name: string,
+    size: number,
+    spoiler: boolean,
+    url: string,
+}
+
+export interface JsonEmbed {
+    author: {
+        name: string,
+        url: string | null,
+        iconURL: string | null,
+    } | null,
+    title: string | null,
+    thumbnail: {
+        url: string,
+    } | null,
+    hexColor: string | null,
+    description: string | null,
+    fields: {
+        inline: boolean | null,
+        name: string,
+        value: string,
+    }[],
+    image: {
+        url: string,
+    } | null,
+    footer: {
+        iconURL: string | null,
+        text: string,
+    } | null,
+    timestamp: string | null,
+    type: string,
+    url: string | null,
 }
 
 export interface JsonMessageMentions {
     users: {
         id: string,
         name: string,
-        color: string | null
+        color: string | null,
     }[],
     channels: {
         id: string,
@@ -80,20 +110,140 @@ export interface JsonMessageMentions {
         name: string,
         color: string,
     }[],
-    everyone: boolean
+    everyone: boolean,
+}
+
+export type JsonTopLevelComponent = JsonActionRow | JsonButtonComponent | JsonSelectMenu | JsonV2Component;
+
+export interface JsonActionRow {
+    type: JsonComponentType.ActionRow,
+    components: (JsonButtonComponent | JsonSelectMenu)[],
+}
+
+export enum JsonButtonStyle {
+    Primary = 1,
+    Secondary = 2,
+    Success = 3,
+    Danger = 4,
+    Link = 5,
+    Premium = 6,
+}
+
+export interface JsonButtonComponent {
+    type: JsonComponentType.Button,
+    style: JsonButtonStyle,
+    label: string | null,
+    emoji: {
+        id: string | null,
+        name: string | null,
+        animated: boolean,
+    } | null,
+    url: string | null,
+    disabled: boolean,
+}
+
+export type JsonSelectMenu = JsonSelectMenuOthers | JsonSelectMenuString
+
+interface JsonSelectMenuOthers {
+    type: JsonComponentType.UserSelect | JsonComponentType.RoleSelect | JsonComponentType.MentionableSelect | JsonComponentType.ChannelSelect,
+    placeholder: string | null,
+    disabled: boolean,
+}
+
+interface JsonSelectMenuString {
+    type: JsonComponentType.StringSelect,
+    placeholder: string | null,
+    disabled: boolean,
+    options: JsonSelectOption[],
+}
+
+export interface JsonSelectOption {
+    label: string,
+    description: string | null,
+    emoji: {
+        id: string | null,
+        name: string | null,
+        animated: boolean,
+    } | null,
+}
+
+export type JsonV2Component = JsonContainerComponent | JsonFileComponent | JsonMediaGalleryComponent | JsonSectionComponent | JsonSeparatorComponent | JsonTextDisplayComponent | JsonThumbnailComponent;
+
+export type JsonComponentInContainer = JsonActionRow | JsonFileComponent | JsonMediaGalleryComponent | JsonSectionComponent | JsonSeparatorComponent | JsonTextDisplayComponent;
+
+export interface JsonContainerComponent {
+    type: JsonComponentType.Container,
+    components: JsonComponentInContainer[],
+    hexAccentColor: string | null,
+    spoiler: boolean,
+}
+
+export interface JsonFileComponent {
+    type: JsonComponentType.File,
+    fileName: string | null,
+    size: number,
+    url: string,
+    spoiler: boolean,
+}
+
+export interface JsonMediaGalleryComponent {
+    type: JsonComponentType.MediaGallery,
+    items: {
+        media: { url: string },
+        spoiler: boolean,
+    }[],
+}
+
+export interface JsonSectionComponent {
+    type: JsonComponentType.Section,
+    accessory: JsonButtonComponent | JsonThumbnailComponent,
+    components: JsonTextDisplayComponent[],
+}
+
+export interface JsonSeparatorComponent {
+    type: JsonComponentType.Separator,
+    spacing: JsonSeparatorSpacingSize | null,
+    divider: boolean,
+}
+
+export interface JsonTextDisplayComponent {
+    type: JsonComponentType.TextDisplay,
+    content: string,
+}
+
+export interface JsonThumbnailComponent {
+    type: JsonComponentType.Thumbnail,
+    media: {
+        url: string,
+    },
+    spoiler: boolean,
 }
 
 export interface JsonData {
     guild: JsonDataGuild | null,
     channel: JsonDataChannel,
+    authors: JsonAuthor[],
     messages: JsonMessage[],
     options: TranscriptOptions,
 }
 
+export interface JsonAuthor {
+    avatarURL: string,
+    bot: boolean,
+    id: string,
+    displayName: string,
+    system: boolean,
+    guildTag: string | null,
+    member: {
+        displayHexColor: string,
+        displayName: string,
+    } | null,
+}
+
 export interface JsonDataGuild {
-    name: string;
-    id: string;
-    icon: string | null;
+    name: string,
+    id: string,
+    icon: string | null,
 }
 
 export interface JsonDataChannel {
@@ -190,7 +340,6 @@ type CommonTimeZones =
     'Europe/Athens' |
     'Europe/Prague' |
     'Europe/Budapest' |
-    'Europe/Bucharest' |
     'Europe/Kyiv' |
     'Asia/Tokyo' |
     'Asia/Shanghai' |
@@ -216,3 +365,29 @@ type CommonTimeZones =
     'Australia/Melbourne' |
     'Australia/Perth' |
     'Pacific/Auckland';
+
+export enum JsonComponentType {
+    ActionRow = 1,
+    Button = 2,
+    StringSelect = 3,
+    TextInput = 4,
+    UserSelect = 5,
+    RoleSelect = 6,
+    MentionableSelect = 7,
+    ChannelSelect = 8,
+    Section = 9,
+    TextDisplay = 10,
+    Thumbnail = 11,
+    MediaGallery = 12,
+    File = 13,
+    Separator = 14,
+    ContentInventoryEntry = 16,
+    Container = 17,
+    Label = 18,
+    FileUpload = 19,
+}
+
+export enum JsonSeparatorSpacingSize {
+    Small = 1,
+    Large = 2,
+}
