@@ -18,7 +18,7 @@ A modular and privacy-focused library for exporting Discord messages into **JSON
   - [✨ Features](#-features)
   - [🧩 Supported Content](#-supported-content)
   - [🔦 Syntax Highlighting](#-syntax-highlighting)
-  - [🖼️ Images \& Attachments](#️-images--attachments)
+  - [🖼️ Images](#️-images)
   - [🔢 Message Control \& Cleanup](#-message-control--cleanup)
   - [🧪 Usage \& API](#-usage--api)
   - [🔐 Permissions \& Access](#-permissions--access)
@@ -70,7 +70,7 @@ This separation keeps Discord data collection and rendering fully decoupled.
 
 ## ✨ Features
 
-- Fidelity Discord-like rendering
+- Discord-like rendering
 - Single-file HTML output (HTML + CSS + JS)
 - Lightweight intermediate JSON format
 - Fully customizable export options
@@ -87,7 +87,7 @@ Transcripts can include:
 
 - Discord Markdown (bold, italic, underline, headings, block quotes, code blocks, etc.)
 - Embeds
-- Message components (v1)
+- Components v1
 - Components v2
 - Polls
 - Attachments
@@ -97,25 +97,31 @@ Transcripts can include:
 
 ## 🔦 Syntax Highlighting
 
-The generated HTML uses **highlight.js** to provide syntax highlighting for code blocks.
+The generated HTML uses **[highlight.js](https://highlightjs.org/)** to provide syntax highlighting for code blocks.
 
 - This is the **only external resource** used
 - Included via a CDN link in the generated HTML
 - Loaded **only at render time**
 - Not required for JSON generation
+- Syntax highlighting is performed **entirely client-side**
 
 ---
 
-## 🖼️ Images & Attachments
+## 🖼️ Images
 
-By default, transcripts reference Discord CDN URLs.
+By default, transcripts reference Discord CDN URLs for images.
 
 When image embedding is enabled:
-- Images and media are embedded as Base64
+- Images are embedded as Base64
 - Output file size increases
-- Transcripts remain valid even if Discord CDN links expire
+- Images in the transcript remain available even if Discord CDN links expire
 
-This is useful for long-term archiving and audit purposes.
+When image embedding is **not** enabled:
+- The transcript will still function normally
+- Images are loaded via their original Discord CDN URLs
+- Image-related features may stop working if those URLs expire
+
+This option is useful for long-term archiving and audit purposes.
 
 ---
 
@@ -145,7 +151,13 @@ This section will contain:
 ## 🔐 Permissions & Access
 
 - The bot must be logged in
-- No privileged intents are required
+- No privileged intents are required.
+- Required intents by context:
+  - **Direct Messages (DMs / Group DMs):**
+    - `DirectMessages`
+  - **Guild channels:**
+    - `Guilds`
+    - `GuildMessages`
 - Supported channels:
   - Guild text channels
   - Threads
@@ -153,7 +165,7 @@ This section will contain:
   - Group DMs
 
 Messages are accessed **only** from channels where:
-- The bot is explicitly installed
+- The bot has explicit access, such as Direct Messages or Group DMs where it is a participant
 - The bot has permission to:
   - `ViewChannel`
   - `ReadMessageHistory`
@@ -228,7 +240,7 @@ If you need help, have questions, or want to report a problem, you have a few op
   - Questions about usage
   - Clarifications about behavior or limitations
 - You can also reach out directly on **Discord** for support and discussion:  
-  👉 **Discord:** <YOUR_DISCORD_INVITE_LINK>
+  👉 **Discord:** https://discord.gg/4ACFdtRQMy
 
 ### Feature Requests
 - Feature ideas and improvement suggestions are welcome

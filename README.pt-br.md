@@ -17,7 +17,7 @@ Uma biblioteca modular e focada em privacidade para exportar mensagens do Discor
   - [✨ Funcionalidades](#-funcionalidades)
   - [🧩 Conteúdo Suportado](#-conteúdo-suportado)
   - [🔦 Realce de Sintaxe](#-realce-de-sintaxe)
-  - [🖼️ Imagens e Anexos](#️-imagens-e-anexos)
+  - [🖼️ Imagens](#️-imagens)
   - [🔢 Controle e Limpeza de Mensagens](#-controle-e-limpeza-de-mensagens)
   - [🧪 Uso e API](#-uso-e-api)
   - [🔐 Permissões e Acesso](#-permissões-e-acesso)
@@ -70,7 +70,7 @@ Essa separação mantém a coleta de dados do Discord e a renderização totalme
 
 ## ✨ Funcionalidades
 
-- Renderização com fidelidade ao visual do Discord
+- Renderização com visual semelhante ao Discord
 - Saída HTML em arquivo único (HTML + CSS + JS)
 - Formato intermediário em JSON leve
 - Opções de exportação altamente configuráveis
@@ -87,7 +87,7 @@ Os transcripts podem incluir:
 
 - Markdown do Discord (negrito, itálico, sublinhado, títulos, citações, blocos de código, etc.)
 - Embeds
-- Componentes de mensagem (v1)
+- Componentes v1
 - Componentes v2
 - Enquetes (polls)
 - Anexos
@@ -97,25 +97,31 @@ Os transcripts podem incluir:
 
 ## 🔦 Realce de Sintaxe
 
-O HTML gerado utiliza **highlight.js** para fornecer realce de sintaxe em blocos de código.
+O HTML gerado utiliza **[highlight.js](https://highlightjs.org/)** para fornecer realce de sintaxe em blocos de código.
 
 - Este é o **único recurso externo** utilizado
 - Incluído via CDN no HTML gerado
 - Carregado **apenas no momento da renderização**
 - Não é necessário para a geração do JSON
+- O realce de sintaxe é realizado **inteiramente no lado do cliente (client-side)**
 
 ---
 
-## 🖼️ Imagens e Anexos
+## 🖼️ Imagens
 
-Por padrão, os transcripts utilizam URLs da CDN do Discord.
+Por padrão, os transcripts utilizam URLs da CDN do Discord para imagens.
 
 Quando a incorporação de imagens está habilitada:
-- Imagens e mídias são convertidas para Base64
+- As imagens são incorporadas em Base64
 - O tamanho do arquivo final aumenta
-- O transcript permanece válido mesmo se os links do Discord expirarem
+- As imagens no transcript permanecem disponíveis mesmo que os links da CDN do Discord expirem
 
-Isso é útil para arquivamento de longo prazo e auditorias.
+Quando a incorporação de imagens **não** está habilitada:
+- O transcript continuará funcionando normalmente
+- As imagens serão carregadas a partir de suas URLs originais da CDN do Discord
+- Funcionalidades relacionadas a imagens podem deixar de funcionar caso esses links expirem
+
+Essa opção é útil para arquivamento de longo prazo e auditorias.
 
 ---
 
@@ -145,18 +151,22 @@ Esta seção irá conter:
 ## 🔐 Permissões e Acesso
 
 - O bot precisa estar logado
-- Nenhuma intent privilegiada é necessária
+- **Nenhuma intent privilegiada de gateway é necessária**
+- Intents obrigatórias por contexto:
+  - **Mensagens Diretas (DMs / DMs em grupo):**
+    - `DirectMessages`
+  - **Canais de servidores (Guilds):**
+    - `Guilds`
+    - `GuildMessages`
 - Canais suportados:
   - Canais de texto de servidores
   - Threads
   - Mensagens privadas
   - DMs em grupo
 
-As mensagens são acessadas **apenas** em canais onde:
-- O bot está explicitamente instalado
-- O bot possui as permissões:
-  - `ViewChannel`
-  - `ReadMessageHistory`
+As mensagens são acessadas **apenas** em canais onde o bot está explicitamente autorizado e possui as permissões:
+- `ViewChannel`
+- `ReadMessageHistory`
 
 ---
 
@@ -179,7 +189,7 @@ Esta biblioteca acessa dados de mensagens **exclusivamente por meio da API ofici
 
 ### Responsabilidade e Conformidade
 
-Apesar de este projeto ser desenvolvido para respeitar as regras publicadas pelo Discord, **não há garantia de que todos os casos de uso estejam em conformidade com as políticas da plataforma**.
+Apesar de este projeto ser desenvolvido para operar com a API oficial do Discord e respeitar suas regras publicadas, **não há garantia de que todos os casos de uso estejam em conformidade com as políticas da plataforma**.
 
 Ao utilizar este projeto, você concorda que é responsável por garantir conformidade com:
 
@@ -195,7 +205,7 @@ Ao utilizar este projeto, você concorda que é responsável por garantir confor
 4. Leis e regulamentações locais aplicáveis  
 5. Regras específicas de servidores e requisitos de consentimento, quando aplicável
 
-Os mantenedores deste projeto **não se responsabilizam** pela forma como os transcripts gerados são armazenados, compartilhados ou utilizados.
+Os mantenedores deste projeto **não se responsabilizam** pela forma como os transcripts gerados são armazenados, compartilhados, publicados ou utilizados.
 
 ---
 
@@ -227,7 +237,7 @@ Se você precisar de ajuda, tiver dúvidas ou quiser relatar um problema, há al
   - Tirar dúvidas de uso
   - Esclarecer comportamentos ou limitações
 - Você também pode entrar em contato diretamente pelo **Discord** para suporte e discussões:  
-  👉 **Discord:** <SEU_LINK_DE_CONVITE_DO_DISCORD>
+  👉 **Discord:** https://discord.gg/4ACFdtRQMy
 
 ### Solicitação de Funcionalidades
 - Ideias e sugestões de melhorias são bem-vindas
