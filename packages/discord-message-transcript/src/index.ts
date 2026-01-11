@@ -23,6 +23,13 @@ export async function createTranscript(
 
     try {
 
+        if (!channel.isDMBased()) {
+            const permissions = channel.permissionsFor(channel.client.user);
+            if (!permissions || (!permissions.has("ViewChannel") || !permissions.has('ReadMessageHistory'))) {
+                throw new CustomError(`Channel selected, ${channel.name} with id: ${channel.id}, can't be use to create a transcript because the bot dosen't have permission for View the Channel or Read the Message History. Add the permissions or choose another channel!`);
+            } 
+        }
+
         const artificialReturnType = options.returnType == "attachment" ? "buffer" : options.returnType ?? "buffer";
 
         const {

@@ -5,6 +5,7 @@ export type JsonV2Component = JsonContainerComponent | JsonFileComponent | JsonM
 export type Locale = CommonLocales | (string & {});
 export type ReturnFormat = "HTML" | "JSON";
 export type ReturnType = "string" | "uploadable" | "stream" | "buffer";
+export type ReturnTypeParse = "attachment" | ReturnType;
 export type StyleTimeStampKey = "t" | "T" | "d" | "D" | "f" | "F";
 export type TimeZone = CommonTimeZones | (string & {});
 
@@ -43,6 +44,25 @@ export interface TranscriptOptions {
     saveImages: boolean,
     timeZone: TimeZone,
 }
+
+export interface TranscriptOptionsParse {
+    fileName: string,
+    includeAttachments: boolean,
+    includeButtons: boolean,
+    includeComponents: boolean,
+    includeEmpty: boolean,
+    includeEmbeds: boolean,
+    includePolls: boolean,
+    includeReactions: boolean,
+    includeV2Components: boolean,
+    localDate: Locale,
+    quantity: number,
+    returnFormat: ReturnFormat,
+    returnType: ReturnTypeParse,
+    saveImages: boolean,
+    timeZone: TimeZone,
+}
+
 
 export interface JsonActionRow {
     components: (JsonButtonComponent | JsonSelectMenu)[],
@@ -96,6 +116,14 @@ export interface JsonData {
     guild: JsonDataGuild | null,
     messages: JsonMessage[],
     options: TranscriptOptions,
+}
+
+export interface JsonDataParse {
+    authors: JsonAuthor[],
+    channel: JsonDataChannel,
+    guild: JsonDataGuild | null,
+    messages: JsonMessage[],
+    options: TranscriptOptionsParse,
 }
 
 export interface JsonDataChannel {
