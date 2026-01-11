@@ -79,14 +79,14 @@ export async function fetchMessages(channel, options, authors, after) {
             }
             return {
                 author: embed.author ? { name: embed.author.name, url: embed.author.url ?? null, iconURL: authorIcon } : null,
-                title: embed.title,
-                thumbnail: thumbnailUrl ? { url: thumbnailUrl } : null,
-                hexColor: embed.hexColor ?? null,
                 description: embed.description ?? null,
                 fields: embed.fields.map(field => ({ inline: field.inline ?? false, name: field.name, value: field.value })),
-                image: imageUrl ? { url: imageUrl } : null,
                 footer: embed.footer ? { iconURL: footerIcon, text: embed.footer.text } : null,
+                hexColor: embed.hexColor ?? null,
+                image: imageUrl ? { url: imageUrl } : null,
+                thumbnail: thumbnailUrl ? { url: thumbnailUrl } : null,
                 timestamp: embed.timestamp,
+                title: embed.title,
                 type: embed.data.type ?? "rich",
                 url: embed.url,
             };
@@ -98,11 +98,11 @@ export async function fetchMessages(channel, options, authors, after) {
                 displayName: message.author.displayName,
                 guildTag: message.author.primaryGuild?.tag ?? null,
                 id: message.author.id,
-                system: message.author.system,
                 member: message.member ? {
                     displayHexColor: message.member.displayHexColor,
                     displayName: message.member.displayName,
-                } : null
+                } : null,
+                system: message.author.system,
             });
         }
         const components = await componentsToJson(message.components, options);
@@ -117,37 +117,37 @@ export async function fetchMessages(channel, options, authors, after) {
             embeds: options.includeEmbeds ? embeds : [],
             id: message.id,
             mentions: {
-                users: message.mentions.members ? message.mentions.members.map(member => ({ id: member.id, name: member.displayName, color: member.displayHexColor }))
-                    : message.mentions.users.map(user => ({ id: user.id, name: user.displayName, color: user.hexAccentColor ?? null })),
                 channels: message.mentions.channels.map(channel => ({ id: channel.id, name: channel.type !== ChannelType.DM ? channel.name : channel.recipient?.displayName ?? null })),
-                roles: message.mentions.roles.map(role => ({ id: role.id, name: role.name, color: role.hexColor })),
                 everyone: message.mentions.everyone,
+                roles: message.mentions.roles.map(role => ({ id: role.id, name: role.name, color: role.hexColor })),
+                users: message.mentions.members ? message.mentions.members.map(member => ({ color: member.displayHexColor, id: member.id, name: member.displayName }))
+                    : message.mentions.users.map(user => ({ color: user.hexAccentColor ?? null, id: user.id, name: user.displayName })),
             },
             poll: message.poll ? {
-                question: message.poll.question.text ?? "",
                 answers: Array.from(message.poll.answers.values()).map(answer => ({
-                    id: answer.id,
-                    text: answer.text ?? "",
+                    count: answer.voteCount,
                     emoji: answer.emoji ? {
+                        animated: answer.emoji.animated ?? false,
                         id: answer.emoji.id,
                         name: answer.emoji.name,
-                        animated: answer.emoji.animated ?? false,
                     } : null,
-                    count: answer.voteCount
+                    id: answer.id,
+                    text: answer.text ?? "",
                 })),
+                expiry: message.poll.expiresTimestamp,
                 isFinalized: message.poll.resultsFinalized,
-                expiry: message.poll.expiresTimestamp
+                question: message.poll.question.text ?? "",
             } : null,
-            references: message.reference ? { messageId: message.reference.messageId ?? null } : null,
-            system: message.system,
             reactions: message.reactions.cache.map(reaction => {
                 if (reaction.emoji.name == null)
                     return null;
                 return {
+                    count: reaction.count,
                     emoji: reaction.emoji.name,
-                    count: reaction.count
                 };
-            }).filter(r => r != null)
+            }).filter(r => r != null),
+            references: message.reference ? { messageId: message.reference.messageId ?? null } : null,
+            system: message.system,
         };
     }));
     const messages = rawMessages.filter(m => m != null);
