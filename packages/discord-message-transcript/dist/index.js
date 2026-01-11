@@ -4,24 +4,24 @@ import { output } from "./core/output";
 import { CustomError } from "./core/error";
 export async function createTranscript(channel, options = {}) {
     try {
-        const { fileName = null, returnFormat = "HTML", returnType = "attachment", quantity = 0, includeEmbeds = true, includeAttachments = true, includeComponents = true, includeV2Components = true, includeButtons = true, includeEmpty = false, includePolls = true, includeReactions = true, timeZone = 'UTC', localDate = 'en-GB', saveImages = false } = options;
+        const { fileName = null, includeAttachments = true, includeButtons = true, includeComponents = true, includeEmpty = false, includeEmbeds = true, includePolls = true, includeReactions = true, includeV2Components = true, localDate = 'en-GB', quantity = 0, returnFormat = "HTML", returnType = "attachment", saveImages = false, timeZone = 'UTC' } = options;
         const checkedFileName = (fileName ?? `Transcript-${channel.isDMBased() ? "DirectMessage" : channel.name}-${channel.id}`);
         const internalOptions = {
             fileName: checkedFileName,
-            returnFormat,
-            returnType,
-            quantity,
-            includeEmbeds,
             includeAttachments,
-            includeComponents,
-            includeV2Components,
             includeButtons,
+            includeComponents,
             includeEmpty,
+            includeEmbeds,
             includePolls,
             includeReactions,
-            timeZone,
+            includeV2Components,
             localDate,
-            saveImages
+            quantity,
+            returnFormat,
+            returnType,
+            saveImages,
+            timeZone
         };
         const jsonTranscript = channel.isDMBased() ? new Json(null, channel, internalOptions) : new Json(channel.guild, channel, internalOptions);
         let lastMessageID;

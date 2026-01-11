@@ -21,38 +21,38 @@ export async function createTranscript(
 
         const {
             fileName = null,
-            returnFormat = "HTML",
-            returnType = "attachment",
-            quantity = 0,
-            includeEmbeds = true, 
-            includeAttachments = true, 
-            includeComponents = true, 
-            includeV2Components = true, 
+            includeAttachments = true,
             includeButtons = true,
+            includeComponents = true,
             includeEmpty = false,
+            includeEmbeds = true,
             includePolls = true,
             includeReactions = true,
-            timeZone = 'UTC',
+            includeV2Components = true,
             localDate = 'en-GB',
-            saveImages = false
+            quantity = 0,
+            returnFormat = "HTML",
+            returnType = "attachment",
+            saveImages = false,
+            timeZone = 'UTC'
         } = options;
         const checkedFileName = (fileName ?? `Transcript-${channel.isDMBased() ? "DirectMessage" : channel.name}-${channel.id}`);
         const internalOptions: TranscriptOptions = {
             fileName: checkedFileName,
-            returnFormat,
-            returnType,
-            quantity,
-            includeEmbeds,
             includeAttachments,
-            includeComponents,
-            includeV2Components,
             includeButtons,
+            includeComponents,
             includeEmpty,
+            includeEmbeds,
             includePolls,
             includeReactions,
-            timeZone,
+            includeV2Components,
             localDate,
-            saveImages
+            quantity,
+            returnFormat,
+            returnType,
+            saveImages,
+            timeZone
         }
 
         const jsonTranscript = channel.isDMBased() ? new Json(null, channel, internalOptions) : new Json(channel.guild, channel, internalOptions); 
