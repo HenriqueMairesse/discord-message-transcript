@@ -520,3 +520,144 @@ export const COMPONENTSV2_CSS = `
     display: block;
 }
 `;
+export const POLL_CSS = `
+.pollDiv {
+    background-color: #2b2d31;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-top: 0.5rem;
+    max-width: 420px;
+}
+.pollQuestion {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.pollAnswers {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.pollAnswer {
+    background-color: #3a3c42;
+    border-radius: 0.3rem;
+    padding: 0.75rem;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: border-color 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+.pollAnswer:hover {
+    border-color: #4d515a;
+}
+.pollAnswerBar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background-color: #5664fa7a;
+    border-radius: 0.2rem;
+    z-index: 1;
+}
+.pollAnswerContent {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.pollAnswerDetails {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.pollAnswerEmoji {
+    font-size: 1.25rem;
+}
+.pollAnswerText {
+    font-weight: 500;
+}
+.pollAnswerVotes {
+    font-size: 0.8rem;
+    color: #b5bac1;
+    font-weight: bold;
+}
+.pollFooter {
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: #949ba4;
+}
+`;
+export const POLL_RESULT_EMBED_CSS = `
+.pollResultEmbed {
+    background-color: #2b2d31;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-top: 0.5rem;
+    border: 1px solid #3a3c42;
+    min-width: 25rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+.pollResultEmbedWinner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+}
+.pollResultEmbedCheckmark {
+    color: #57f287;
+    font-size: 1.1em;
+}
+.pollResultEmbedSubtitle {
+    font-size: 0.9rem;
+    color: #b5bac1;
+}
+.pollResultEmbedButtonDiv {
+    margin-right: 0.5rem;
+    margin-left: 1rem;
+    align-self: center;
+}
+.pollResultEmbedButton {
+    background-color: black;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.3rem;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+.pollResultEmbedButton:hover {
+    filter: brightness(1.1);
+}
+`;
+export const REACTIONS_CSS = `
+.reactionsDiv {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+.reaction {
+    align-items: center;
+    background-color: #2b2d31;
+    border: 1px solid #3a3c42;
+    border-radius: 1rem;
+    padding: 0.25rem 0.6rem;
+    font-size: 1rem;
+    color: #dcddde;
+    font-weight: bold;
+    cursor: pointer;
+}
+.reaction:hover {
+    filter: brightness(1.1);
+}
+`;

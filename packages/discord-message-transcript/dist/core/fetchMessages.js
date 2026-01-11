@@ -4,7 +4,7 @@ import { urlToBase64 } from "./imageToBase64";
 import { CustomError } from "./error";
 export async function fetchMessages(channel, options, authors, after) {
     const originalMessages = await channel.messages.fetch({ limit: 100, cache: false, after: after });
-    const messages = await Promise.all(originalMessages.map(async (message) => {
+    const rawMessages = await Promise.all(originalMessages.map(async (message) => {
         let authorAvatar = message.author.displayAvatarURL();
         if (options.saveImages) {
             try {
@@ -105,10 +105,13 @@ export async function fetchMessages(channel, options, authors, after) {
                 } : null
             });
         }
+        const components = await componentsToJson(message.components, options);
+        if (!options.includeEmpty && attachments.length == 0 && components.length == 0 && message.content == "" && message.embeds.length == 0 && !message.poll)
+            return null;
         return {
             attachments: options.includeAttachments ? attachments : [],
             authorId: message.author.id,
-            components: await componentsToJson(message.components, options),
+            components: components,
             content: message.content,
             createdTimestamp: message.createdTimestamp,
             embeds: options.includeEmbeds ? embeds : [],
@@ -120,11 +123,34 @@ export async function fetchMessages(channel, options, authors, after) {
                 roles: message.mentions.roles.map(role => ({ id: role.id, name: role.name, color: role.hexColor })),
                 everyone: message.mentions.everyone,
             },
-            poll: message.poll,
+            poll: message.poll ? {
+                question: message.poll.question.text ?? "",
+                answers: Array.from(message.poll.answers.values()).map(answer => ({
+                    id: answer.id,
+                    text: answer.text ?? "",
+                    emoji: answer.emoji ? {
+                        id: answer.emoji.id,
+                        name: answer.emoji.name,
+                        animated: answer.emoji.animated ?? false,
+                    } : null,
+                    count: answer.voteCount
+                })),
+                isFinalized: message.poll.resultsFinalized,
+                expiry: message.poll.expiresTimestamp
+            } : null,
             references: message.reference ? { messageId: message.reference.messageId ?? null } : null,
             system: message.system,
+            reactions: message.reactions.cache.map(reaction => {
+                if (reaction.emoji.name == null)
+                    return null;
+                return {
+                    emoji: reaction.emoji.name,
+                    count: reaction.count
+                };
+            }).filter(r => r != null)
         };
     }));
+    const messages = rawMessages.filter(m => m != null);
     const end = originalMessages.size !== 100;
     return { messages, end };
 }

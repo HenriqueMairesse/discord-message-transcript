@@ -6,11 +6,14 @@ export declare class Html {
     private headerBuilder;
     private messagesBuilder;
     toHTML(): string;
+    private pollBuilder;
+    private pollResultEmbedBuilder;
     private embedBuilder;
     private attachmentBuilder;
     private componentBuilder;
     private buttonBuilder;
     private selectorBuilder;
+    private reactionsBuilder;
     private spoilerAttachmentBuilder;
     private svgBuilder;
 }

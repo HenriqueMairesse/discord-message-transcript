@@ -1,8 +1,3 @@
-Next Features:
-    - Poll
-    - Reply
-    - Reactions?
-
 Test Needed:
     - Media Gallery
     - Separator
@@ -12,22 +7,11 @@ Test Needed:
     - Select
     - Buttons
 
-To do: 
-    - Markdown:
-        - Improve Mentions
-    - Embeds: 
-        - Improve the style
-    - Relative Timestamp: 
-        - Improve the style
-
 In Mind: 
     - Markdown:
         - Change placeholder system
-    - Optimizations: 
-        - Compact JsonMessage (only what is needed)
-        - CSS on demand
     - Embeds: 
-        - Special builder to each type of embed 
+        - Special builder to each type of embed (rich and poll_result already implemented)
 
 Issues: 
     - No one (At least that I know)

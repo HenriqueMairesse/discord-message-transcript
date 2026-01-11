@@ -30,6 +30,8 @@ export async function createTranscript(
             includeV2Components = true, 
             includeButtons = true,
             includeEmpty = false,
+            includePolls = true,
+            includeReactions = true,
             timeZone = 'UTC',
             localDate = 'en-GB',
             saveImages = false
@@ -46,6 +48,8 @@ export async function createTranscript(
             includeV2Components,
             includeButtons,
             includeEmpty,
+            includePolls,
+            includeReactions,
             timeZone,
             localDate,
             saveImages
@@ -84,8 +88,16 @@ export async function jsonToHTMLTranscript(jsonString: string, returnType: "stre
 export async function jsonToHTMLTranscript(jsonString: string, returnType: "uploadable"): Promise<Uploadable>;
 
 export async function jsonToHTMLTranscript(jsonString: string, returnType?: ReturnType): Promise<string | AttachmentBuilder | Buffer | Stream | Uploadable> {
-    const json: JsonData = JSON.parse(jsonString);
-    json.options.returnFormat = "HTML";
-    json.options.returnType = returnType ?? "attachment";
-    return await output(json, json.options);
+    try {
+        const json: JsonData = JSON.parse(jsonString);
+        json.options.returnFormat = "HTML";
+        json.options.returnType = returnType ?? "attachment";
+        return await output(json, json.options);
+    } catch (error) {
+        if (error instanceof Error) {
+            throw new CustomError(`Error converting JSON to HTML: ${error.stack}`);
+        } 
+        const unknowErrorMessage = String(error);
+        throw new CustomError(`Unknow error: ${unknowErrorMessage}`);
+    }
 }

@@ -4,7 +4,7 @@ import { output } from "./core/output";
 import { CustomError } from "./core/error";
 export async function createTranscript(channel, options = {}) {
     try {
-        const { fileName = null, returnFormat = "HTML", returnType = "attachment", quantity = 0, includeEmbeds = true, includeAttachments = true, includeComponents = true, includeV2Components = true, includeButtons = true, includeEmpty = false, timeZone = 'UTC', localDate = 'en-GB', saveImages = false } = options;
+        const { fileName = null, returnFormat = "HTML", returnType = "attachment", quantity = 0, includeEmbeds = true, includeAttachments = true, includeComponents = true, includeV2Components = true, includeButtons = true, includeEmpty = false, includePolls = true, includeReactions = true, timeZone = 'UTC', localDate = 'en-GB', saveImages = false } = options;
         const checkedFileName = (fileName ?? `Transcript-${channel.isDMBased() ? "DirectMessage" : channel.name}-${channel.id}`);
         const internalOptions = {
             fileName: checkedFileName,
@@ -17,6 +17,8 @@ export async function createTranscript(channel, options = {}) {
             includeV2Components,
             includeButtons,
             includeEmpty,
+            includePolls,
+            includeReactions,
             timeZone,
             localDate,
             saveImages
@@ -45,8 +47,17 @@ export async function createTranscript(channel, options = {}) {
     }
 }
 export async function jsonToHTMLTranscript(jsonString, returnType) {
-    const json = JSON.parse(jsonString);
-    json.options.returnFormat = "HTML";
-    json.options.returnType = returnType ?? "attachment";
-    return await output(json, json.options);
+    try {
+        const json = JSON.parse(jsonString);
+        json.options.returnFormat = "HTML";
+        json.options.returnType = returnType ?? "attachment";
+        return await output(json, json.options);
+    }
+    catch (error) {
+        if (error instanceof Error) {
+            throw new CustomError(`Error converting JSON to HTML: ${error.stack}`);
+        }
+        const unknowErrorMessage = String(error);
+        throw new CustomError(`Unknow error: ${unknowErrorMessage}`);
+    }
 }

@@ -1,4 +1,7 @@
-export const script = `
+import { TranscriptOptions } from "../../types/types";
+
+export function script(options: TranscriptOptions) {
+    return `
 document.addEventListener('DOMContentLoaded', () => {
     const transcriptDataElement = document.getElementById('authorData');
     if (!transcriptDataElement) {
@@ -18,10 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const avatarImg = messageDiv.querySelector('.messageImg');
         if (avatarImg) avatarImg.src = author.avatarURL;
 
-        const usernameH3 = messageDiv.querySelector('.messageUsername');
-        if (usernameH3) {
-            usernameH3.textContent = author.member?.displayName ?? author.displayName;
-            usernameH3.style.color = author.member?.displayHexColor ?? '#dbdee1';
+        const username = messageDiv.querySelector('.messageUsername');
+        if (username) {
+            username.textContent = author.member?.displayName ?? author.displayName;
+            username.style.color = author.member?.displayHexColor ?? '#dbdee1';
         }
 
         const badgesDiv = messageDiv.querySelector('.badges');
@@ -88,9 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const replyTextDiv = replyDiv.querySelector('.messageReplyText');
         if (replyTextDiv) {
-            const originalContentEl = repliedToMessageDiv.querySelector('.messageContent');
-            if (originalContentEl) {
-                let content = originalContentEl.textContent || '';
+            const originalContent = repliedToMessageDiv.querySelector('.messageContent');
+            if (originalContent) {
+                let content = originalContent.textContent || '';
                 if (content.length > 100) {
                     content = content.substring(0, 100).trim() + '...';
                 }
@@ -112,38 +115,64 @@ document.addEventListener('DOMContentLoaded', () => {
             spoiler.classList.add('revealed');
         }
 
-        const selectorInput = event.target.closest('.selectorInput');
-        document.querySelectorAll('.selector').forEach(selector => {
-            if (!selector.contains(event.target)) {
-                selector.classList.remove('active');
-            }
-        });
-        if (selectorInput) {
-            const selector = selectorInput.closest('.selector');
-            if (selector) {
-                selector.classList.toggle('active');
-            }
-        }
-
         const replyDiv = event.target.closest('.messageReply');
         if (replyDiv) {
             event.preventDefault();
             const messageId = replyDiv.dataset.id;
             if (!messageId) return;
 
-            const targetMessage = document.getElementById(messageId);
-            if (targetMessage) {
-                targetMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                targetMessage.classList.add('highlight');
+            const message = document.getElementById(messageId);
+            if (message) {
+                message.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                message.classList.add('highlight');
                 setTimeout(() => {
-                    targetMessage.classList.remove('highlight');
+                    message.classList.remove('highlight');
                 }, 1500);
             }
         }
+
+        ${options.includeComponents ? SELECTOR_JS : ""}
+
+        ${options.includePolls ? POLL_JS : ""}
     });
     
     if (window.hljs) {
         hljs.highlightAll();
     }
 });
+`
+}
+
+export const POLL_JS = `
+const pollDiv = event.target.closest('.pollResultEmbedButton');
+if (pollDiv) {
+    event.preventDefault();
+    const messageId = pollDiv.dataset.id;
+    if (!messageId || messageId == "") return;
+    const message = document.getElementById(messageId);
+
+    if (message) {
+        message.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        message.classList.add('highlight');
+        setTimeout(() => {
+            message.classList.remove('highlight');
+        }, 1500);
+    }
+}
+`
+
+export const SELECTOR_JS = `
+const selectorInput = event.target.closest('.selectorInput');
+document.querySelectorAll('.selector').forEach(selector => {
+    if (!selector.contains(event.target)) {
+        selector.classList.remove('active');
+    }
+});
+
+if (selectorInput) {
+    const selector = selectorInput.closest('.selector');
+    if (selector) {
+        selector.classList.toggle('active');
+    }
+}
 `

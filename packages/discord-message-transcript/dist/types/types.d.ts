@@ -1,4 +1,3 @@
-import { Poll } from "discord.js";
 export type ReturnFormat = "HTML" | "JSON";
 export type ReturnType = "string" | "attachment" | "uploadable" | "stream" | "buffer";
 export type StyleTimeStampKey = "t" | "T" | "d" | "D" | "f" | "F";
@@ -13,6 +12,8 @@ export interface CreateTranscriptOptions {
     includeV2Components?: boolean;
     includeButtons?: boolean;
     includeEmpty?: boolean;
+    includePolls?: boolean;
+    includeReactions?: boolean;
     timeZone?: TimeZone;
     localDate?: Locale;
     saveImages?: boolean;
@@ -28,7 +29,9 @@ export interface TranscriptOptions {
     includeV2Components: boolean;
     includeButtons: boolean;
     includeEmpty: boolean;
-    timeZone?: TimeZone;
+    includePolls: boolean;
+    includeReactions: boolean;
+    timeZone: TimeZone;
     localDate: Locale;
     saveImages: boolean;
 }
@@ -46,11 +49,32 @@ export interface JsonMessage {
     embeds: JsonEmbed[];
     id: string;
     mentions: JsonMessageMentions;
-    poll: Poll | null;
+    poll: JsonPoll | null;
     system: boolean;
     references: {
         messageId: string | null;
     } | null;
+    reactions: JsonReaction[];
+}
+export interface JsonReaction {
+    emoji: string;
+    count: number;
+}
+export interface JsonPoll {
+    question: string;
+    answers: JsonPollAnswer[];
+    isFinalized: boolean;
+    expiry: number | null;
+}
+export interface JsonPollAnswer {
+    id: number;
+    text: string;
+    emoji: {
+        id: string | null;
+        name: string | null;
+        animated: boolean;
+    } | null;
+    count: number;
 }
 export interface JsonAttachment {
     contentType: string | null;
