@@ -1,8 +1,8 @@
-import { CustomError } from "../../core/error";
-import { markdownToHTML } from "../../core/markdown";
-import { JsonAttachment, JsonButtonComponent, JsonButtonStyle, JsonComponentType, JsonData, JsonEmbed, JsonMessage, JsonPoll, JsonReaction, JsonSelectMenu, JsonTopLevelComponent } from "../../types/types";
-import { ACTIONROW_CSS, ATTACHMENT_CSS, BUTTON_CSS, COMPONENTS_CSS, COMPONENTSV2_CSS, DEFAULT_CSS, EMBED_CSS, MESSAGE_CSS, POLL_CSS, POLL_RESULT_EMBED_CSS, REACTIONS_CSS } from "./css";
-import { script } from "./js";
+import { CustomError } from "../../core/error.js";
+import { markdownToHTML } from "../../core/markdown.js";
+import { JsonAttachment, JsonButtonComponent, JsonButtonStyle, JsonComponentType, JsonData, JsonEmbed, JsonMessage, JsonPoll, JsonReaction, JsonSelectMenu, JsonTopLevelComponent } from "../../types/types.js";
+import { ACTIONROW_CSS, ATTACHMENT_CSS, BUTTON_CSS, COMPONENTS_CSS, COMPONENTSV2_CSS, DEFAULT_CSS, EMBED_CSS, MESSAGE_CSS, POLL_CSS, POLL_RESULT_EMBED_CSS, REACTIONS_CSS } from "./css.js";
+import { script } from "./js.js";
 
 const COUNT_UNIT = ["KB", "MB", "GB", "TB"];
 const BUTTON_COLOR = ["black", "#5865f2", "gray", "lime", "red", "black", "#5865f2"];
@@ -129,7 +129,7 @@ export class Html {
         ${JSON.stringify({ authors: this.data.authors })}
     </script>
     <script>
-        ${script(options)}
+        ${script(options.includeComponents, options.includePolls)}
     </script>
 </body>
 </html>     

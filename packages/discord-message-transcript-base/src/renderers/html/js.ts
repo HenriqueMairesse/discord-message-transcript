@@ -1,6 +1,4 @@
-import { TranscriptOptions } from "../../types/types";
-
-export function script(options: TranscriptOptions) {
+export function script(includeComponents: boolean, includePolls: boolean) {
     return `
 document.addEventListener('DOMContentLoaded', () => {
     const transcriptDataElement = document.getElementById('authorData');
@@ -131,9 +129,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        ${options.includeComponents ? SELECTOR_JS : ""}
+        ${includeComponents ? SELECTOR_JS : ""}
 
-        ${options.includePolls ? POLL_JS : ""}
+        ${includePolls ? POLL_JS : ""}
     });
     
     if (window.hljs) {

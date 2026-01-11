@@ -1,5 +1,6 @@
 import { Guild, TextBasedChannel } from "discord.js";
-import { JsonAuthor, JsonData, JsonMessage, TranscriptOptions } from "../../types/types";
+import { JsonAuthor, JsonMessage } from "discord-message-transcript-base/types/types";
+import { TranscriptOptions, JsonData } from "discord-message-transcript-base/types/types";
 export declare class Json {
     guild: Guild | null;
     channel: TextBasedChannel;

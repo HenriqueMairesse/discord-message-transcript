@@ -1,5 +1,5 @@
 import https from 'https';
-import { CustomError } from './error';
+import { CustomError } from 'discord-message-transcript-base/core/error';
 
 export async function urlToBase64(url: string): Promise<string> {
     return new Promise((resolve, reject) => {

@@ -1,4 +1,4 @@
 import { AttachmentBuilder } from "discord.js";
-import { JsonData, TranscriptOptions, Uploadable } from "../types/types";
+import { JsonData, Uploadable } from "discord-message-transcript-base/types/types";
 import Stream from 'stream';
-export declare function output(json: JsonData, options: TranscriptOptions): Promise<string | Stream | AttachmentBuilder | Buffer | Uploadable>;
+export declare function output(json: JsonData): Promise<string | Stream | AttachmentBuilder | Buffer | Uploadable>;

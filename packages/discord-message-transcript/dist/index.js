@@ -1,10 +1,13 @@
-import { Json } from "./renderers/json/json";
-import { fetchMessages } from "./core/fetchMessages";
-import { output } from "./core/output";
-import { CustomError } from "./core/error";
+import { AttachmentBuilder } from "discord.js";
+import { Json } from "./renderers/json/json.js";
+import { fetchMessages } from "./core/fetchMessages.js";
+import { output } from "./core/output.js";
+import { output as outputBase } from "discord-message-transcript-base/core/output";
+import { CustomError } from "discord-message-transcript-base/core/error";
 export async function createTranscript(channel, options = {}) {
     try {
-        const { fileName = null, includeAttachments = true, includeButtons = true, includeComponents = true, includeEmpty = false, includeEmbeds = true, includePolls = true, includeReactions = true, includeV2Components = true, localDate = 'en-GB', quantity = 0, returnFormat = "HTML", returnType = "attachment", saveImages = false, timeZone = 'UTC' } = options;
+        const artificialReturnType = options.returnType == "attachment" ? "buffer" : options.returnType ?? "buffer";
+        const { fileName = null, includeAttachments = true, includeButtons = true, includeComponents = true, includeEmpty = false, includeEmbeds = true, includePolls = true, includeReactions = true, includeV2Components = true, localDate = 'en-GB', quantity = 0, returnFormat = "HTML", saveImages = false, timeZone = 'UTC' } = options;
         const checkedFileName = (fileName ?? `Transcript-${channel.isDMBased() ? "DirectMessage" : channel.name}-${channel.id}`);
         const internalOptions = {
             fileName: checkedFileName,
@@ -19,7 +22,7 @@ export async function createTranscript(channel, options = {}) {
             localDate,
             quantity,
             returnFormat,
-            returnType,
+            returnType: artificialReturnType,
             saveImages,
             timeZone
         };
@@ -36,7 +39,15 @@ export async function createTranscript(channel, options = {}) {
         }
         jsonTranscript.sliceMessages(quantity);
         jsonTranscript.setAuthors(Array.from(authors.values()));
-        return await output(await jsonTranscript.toJson(), internalOptions);
+        const result = await output(await jsonTranscript.toJson());
+        if (options.returnType == "attachment") {
+            if (!(result instanceof Buffer)) {
+                throw new CustomError("Expected buffer from output when *attachment* returnType is used.");
+            }
+            const fileExtension = returnFormat == "HTML" ? ".html" : ".json";
+            return new AttachmentBuilder(result, { name: internalOptions.fileName + fileExtension });
+        }
+        return result;
     }
     catch (error) {
         if (error instanceof Error) {
@@ -50,8 +61,17 @@ export async function jsonToHTMLTranscript(jsonString, returnType) {
     try {
         const json = JSON.parse(jsonString);
         json.options.returnFormat = "HTML";
-        json.options.returnType = returnType ?? "attachment";
-        return await output(json, json.options);
+        const officialReturnType = returnType ?? "attachment";
+        if (officialReturnType == "attachment")
+            json.options.returnType = "buffer";
+        const result = await outputBase(json);
+        if (officialReturnType == "attachment") {
+            if (!(result instanceof Buffer)) {
+                throw new CustomError("Expected buffer from outputBase when *attachment* returnType is used.");
+            }
+            return new AttachmentBuilder(result, { name: json.options.fileName + ".html" });
+        }
+        return result;
     }
     catch (error) {
         if (error instanceof Error) {

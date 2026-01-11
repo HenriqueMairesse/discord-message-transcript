@@ -26,6 +26,24 @@ export interface CreateTranscriptOptions {
     timeZone?: TimeZone,
 }
 
+export interface TranscriptOptions {
+    fileName: string,
+    includeAttachments: boolean,
+    includeButtons: boolean,
+    includeComponents: boolean,
+    includeEmpty: boolean,
+    includeEmbeds: boolean,
+    includePolls: boolean,
+    includeReactions: boolean,
+    includeV2Components: boolean,
+    localDate: Locale,
+    quantity: number,
+    returnFormat: ReturnFormat,
+    returnType: ReturnType,
+    saveImages: boolean,
+    timeZone: TimeZone,
+}
+
 export interface JsonActionRow {
     components: (JsonButtonComponent | JsonSelectMenu)[],
     type: JsonComponentType.ActionRow,
@@ -233,24 +251,6 @@ export interface JsonThumbnailComponent {
     },
     spoiler: boolean,
     type: JsonComponentType.Thumbnail,
-}
-
-export interface TranscriptOptions {
-    fileName: string,
-    includeAttachments: boolean,
-    includeButtons: boolean,
-    includeComponents: boolean,
-    includeEmpty: boolean,
-    includeEmbeds: boolean,
-    includePolls: boolean,
-    includeReactions: boolean,
-    includeV2Components: boolean,
-    localDate: Locale,
-    quantity: number,
-    returnFormat: ReturnFormat,
-    returnType: ReturnType,
-    saveImages: boolean,
-    timeZone: TimeZone,
 }
 
 export interface Uploadable {

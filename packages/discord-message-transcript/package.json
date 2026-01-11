@@ -35,6 +35,9 @@
     "typescript": "^5.9.3",
     "discord.js": "^14.25.1"
   },
+  "dependencies": {
+    "discord-message-transcript-base": "workspace:*"
+  },
   "peerDependencies": {
     "discord.js": ">=14.19.0 <15"
   }

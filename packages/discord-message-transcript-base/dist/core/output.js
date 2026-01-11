@@ -1,9 +1,6 @@
-import { JsonData, Uploadable } from "../types/types.js";
-import Stream, { Readable } from 'stream'
+import { Readable } from 'stream';
 import { Html } from "../renderers/html/html.js";
-
-export async function output(json: JsonData,): Promise<string | Stream | Buffer | Uploadable> {
-
+export async function output(json) {
     const objectHTML = new Html(json);
     const stringHTML = objectHTML.toHTML();
     if (json.options.returnType == "string") {
@@ -21,8 +18,7 @@ export async function output(json: JsonData,): Promise<string | Stream | Buffer 
             content: stringHTML,
             contentType: 'text/html',
             fileName: json.options.fileName
-        }
+        };
     }
-    
     throw new Error("Return format or return type invalid!");
 }

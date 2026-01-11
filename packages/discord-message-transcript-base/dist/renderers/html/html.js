@@ -1,17 +1,14 @@
-import { CustomError } from "../../core/error";
-import { markdownToHTML } from "../../core/markdown";
-import { JsonAttachment, JsonButtonComponent, JsonButtonStyle, JsonComponentType, JsonData, JsonEmbed, JsonMessage, JsonPoll, JsonReaction, JsonSelectMenu, JsonTopLevelComponent } from "../../types/types";
-import { ACTIONROW_CSS, ATTACHMENT_CSS, BUTTON_CSS, COMPONENTS_CSS, COMPONENTSV2_CSS, DEFAULT_CSS, EMBED_CSS, MESSAGE_CSS, POLL_CSS, POLL_RESULT_EMBED_CSS, REACTIONS_CSS } from "./css";
-import { script } from "./js";
-
+import { CustomError } from "../../core/error.js";
+import { markdownToHTML } from "../../core/markdown.js";
+import { JsonButtonStyle, JsonComponentType } from "../../types/types.js";
+import { ACTIONROW_CSS, ATTACHMENT_CSS, BUTTON_CSS, COMPONENTS_CSS, COMPONENTSV2_CSS, DEFAULT_CSS, EMBED_CSS, MESSAGE_CSS, POLL_CSS, POLL_RESULT_EMBED_CSS, REACTIONS_CSS } from "./css.js";
+import { script } from "./js.js";
 const COUNT_UNIT = ["KB", "MB", "GB", "TB"];
 const BUTTON_COLOR = ["black", "#5865f2", "gray", "lime", "red", "black", "#5865f2"];
-
 export class Html {
-    data: JsonData;
-    dateFormat: Intl.DateTimeFormat;
-
-    constructor(data: JsonData) {
+    data;
+    dateFormat;
+    constructor(data) {
         this.data = data;
         try {
             this.dateFormat = new Intl.DateTimeFormat(data.options.localDate, {
@@ -23,12 +20,12 @@ export class Html {
                 minute: '2-digit',
                 second: '2-digit'
             });
-        } catch (error) {
+        }
+        catch (error) {
             throw new CustomError("[discord-message-transcript] Invalid LocalDate and/or TimeZone.");
         }
     }
-
-    private headerBuilder() {
+    headerBuilder() {
         const { channel, guild } = this.data;
         return `
         <div style="display: flex;  gap: 1.5rem; align-items: center; width 100vw">
@@ -54,15 +51,13 @@ export class Html {
         </div>
         `;
     }
-
-    private messagesBuilder() {
+    messagesBuilder() {
         return this.data.messages.map(message => {
             const date = new Date(message.createdTimestamp);
-            
             return `
 <div class="messageDiv" id="${message.id}" data-author-id="${message.authorId}">
-    ${ message.references && message.references.messageId ? 
-    `<div class="messageReply" data-id="${message.references.messageId}">
+    ${message.references && message.references.messageId ?
+                `<div class="messageReply" data-id="${message.references.messageId}">
         <svg class="messageReplySvg"><use href="#reply-icon"></use></svg>
         <img class="messageReplyImg" src="">
         <div class="replyBadges"></div>
@@ -88,7 +83,6 @@ export class Html {
         `;
         }).join("");
     }
-
     toHTML() {
         const { options } = this.data;
         return `
@@ -129,32 +123,29 @@ export class Html {
         ${JSON.stringify({ authors: this.data.authors })}
     </script>
     <script>
-        ${script(options)}
+        ${script(options.includeComponents, options.includePolls)}
     </script>
 </body>
 </html>     
         `;
     }
-    
-    private pollBuilder(poll: JsonPoll): string {
+    pollBuilder(poll) {
         const totalVotes = poll.answers.reduce((acc, answer) => acc + answer.count, 0);
-
         let footerText = `${totalVotes} votes`;
         if (poll.isFinalized) {
             footerText = `Final results • ${totalVotes} votes`;
-        } else if (poll.expiry) {
+        }
+        else if (poll.expiry) {
             footerText += ` • Ends on ${this.dateFormat.format(new Date(poll.expiry))}`;
         }
-
         return `
         <div class="pollDiv">
             <div class="pollQuestion">${poll.question}</div>
             <div class="pollAnswers">
                 ${poll.answers.map(answer => {
-                    const voteCount = answer.count;
-                    const percentage = totalVotes > 0 ? (voteCount / totalVotes) * 100 : 0;
-
-                    return `
+            const voteCount = answer.count;
+            const percentage = totalVotes > 0 ? (voteCount / totalVotes) * 100 : 0;
+            return `
                     <div class="pollAnswer">
                         <div class="pollAnswerBar" style="width: ${percentage}%;"></div>
                         <div class="pollAnswerContent">
@@ -166,22 +157,20 @@ export class Html {
                         </div>
                     </div>
                     `;
-                }).join('')}
+        }).join('')}
             </div>
             <div class="pollFooter">${footerText}</div>
         </div>
         `;
     }
-    
-    private pollResultEmbedBuilder(embed: JsonEmbed, message: JsonMessage): string {
-        const getField = (name: string) => embed.fields?.find(f => f.name === name)?.value;
+    pollResultEmbedBuilder(embed, message) {
+        const getField = (name) => embed.fields?.find(f => f.name === name)?.value;
         const winnerText = getField("victor_answer_text");
         const winnerVotes = parseInt(getField("victor_answer_votes") ?? "0");
         const totalVotes = parseInt(getField("total_votes") ?? "0");
         const winnerPercentage = totalVotes > 0 ? (winnerVotes / totalVotes) * 100 : 0;
-
-        if (!winnerText) return '';
-
+        if (!winnerText)
+            return '';
         return `
         <div class="pollResultEmbed">
             <div>
@@ -197,14 +186,12 @@ export class Html {
         </div>
         `;
     }
-
-    private embedBuilder(message: JsonMessage, embeds: JsonEmbed[]): string {
+    embedBuilder(message, embeds) {
         return embeds.map(embed => {
-            if (embed.type === 'poll_result') return this.data.options.includePolls ? this.pollResultEmbedBuilder(embed, message) : "";
-
+            if (embed.type === 'poll_result')
+                return this.data.options.includePolls ? this.pollResultEmbedBuilder(embed, message) : "";
             const embedAuthor = embed.author ? (embed.author.url ? `<a class="embedHeaderRightAuthorName" href="${embed.author.url}" target="_blank">${embed.author.name}</a>` : `<p class="embedHeaderRightAuthorName">${embed.author.name}</p>`) : "";
             const embedTitle = embed.title ? (embed.url ? `<a class="embedHeaderRightTitle" href="${embed.url}" target="_blank">${embed.title}</a>` : `<p class="embedHeaderRightTitle">${embed.title}</p>`) : "";
-
             return `
                 <div class="embed" style="${embed.hexColor ? `border-left-color: ${embed.hexColor}` : ''}">
                     ${embed.author || embed.title || embed.thumbnail ? `
@@ -241,25 +228,25 @@ export class Html {
             `;
         }).join("");
     }
-
-    private attachmentBuilder(attachments: JsonAttachment[]): string {
+    attachmentBuilder(attachments) {
         return attachments.map(attachment => {
             let html = "";
-
             if (attachment.contentType?.startsWith('image/')) {
                 html = `<img class="attachmentImage" src="${attachment.url}">`;
-            } else if (attachment.contentType?.startsWith('video/')) {
+            }
+            else if (attachment.contentType?.startsWith('video/')) {
                 html = `<video class="attachmentVideo" controls src="${attachment.url}"></video>`;
-            } else if (attachment.contentType?.startsWith('audio/')) {
+            }
+            else if (attachment.contentType?.startsWith('audio/')) {
                 html = `<audio class="attachmentAudio" controls src="${attachment.url}"></audio>`;
-            } else {
+            }
+            else {
                 let fileSize = attachment.size / 1024;
                 let count = 0;
                 while (fileSize > 512 && count < COUNT_UNIT.length - 1) {
                     fileSize = fileSize / 1024;
                     count++;
                 }
-
                 html = `
                     <div class="attachmentFile">
                         <div class="attachmentFileInfo">
@@ -272,28 +259,24 @@ export class Html {
                     </div>
                 `;
             }
-
             return this.spoilerAttachmentBuilder(attachment.spoiler, html);
         }).join("");
     }
-
-    private componentBuilder(message: JsonMessage, components: JsonTopLevelComponent[]): string {
+    componentBuilder(message, components) {
         return components.map(component => {
             switch (component.type) {
                 case JsonComponentType.ActionRow: {
-                    if (!component.components[0]) return "";
-
+                    if (!component.components[0])
+                        return "";
                     return `
                     <div class="actionRow">
                         ${component.components[0].type == JsonComponentType.Button ? component.components.map(button => {
-                            return button.type == JsonComponentType.Button ? this.buttonBuilder(button) : "";
-                        }).join("") : this.selectorBuilder(component.components[0])}
+                        return button.type == JsonComponentType.Button ? this.buttonBuilder(button) : "";
+                    }).join("") : this.selectorBuilder(component.components[0])}
                     </div>
                     `;
                 }
-
                 case JsonComponentType.Container: {
-
                     const html = `
                     <div class="container" style="${component.hexAccentColor ? `border-left-color: ${component.hexAccentColor}` : ''}">
                         ${this.componentBuilder(message, component.components)}
@@ -301,16 +284,13 @@ export class Html {
                     `;
                     return this.spoilerAttachmentBuilder(component.spoiler, html);
                 }
-
                 case JsonComponentType.File: {
-                    
                     let fileSize = (component.size ?? 0) / 1024;
                     let count = 0;
                     while (fileSize > 512 && count < COUNT_UNIT.length - 1) {
                         fileSize = fileSize / 1024;
                         count++;
                     }
-
                     const html = `
                         <div class="attachmentFile">
                             <div class="attachmentFileInfo">
@@ -322,24 +302,21 @@ export class Html {
                             </a>
                         </div>
                     `;
-
                     return this.spoilerAttachmentBuilder(component.spoiler, html);
                 }
-
                 case JsonComponentType.MediaGallery: {
                     return `
                     <div class="mediaGallery"> 
                         ${component.items.map(image => {
-                            return `
+                        return `
                             <div class="mediaGalleryItem"> 
                                 ${this.spoilerAttachmentBuilder(image.spoiler, `<img class="mediaGalleryImg" src="${image.media.url}">`)}
                             </div>
-                            `    
-                        }).join("")}
+                            `;
+                    }).join("")}
                     </div>
-                    `
+                    `;
                 }
-
                 case JsonComponentType.Section: {
                     return `
                     <div class="section">
@@ -348,30 +325,25 @@ export class Html {
                         </div>
                         <div class="sectionRight">
                             ${component.accessory.type == JsonComponentType.Button ? this.buttonBuilder(component.accessory)
-                            : component.accessory.type == JsonComponentType.Thumbnail ? this.spoilerAttachmentBuilder(component.accessory.spoiler, `
+                        : component.accessory.type == JsonComponentType.Thumbnail ? this.spoilerAttachmentBuilder(component.accessory.spoiler, `
                             <img class="sectionThumbnail" src="${component.accessory.media.url}">
-                            `) : ""
-                            }
+                            `) : ""}
                         </div>
                     </div> 
-                    `
+                    `;
                 }
-
                 case JsonComponentType.Separator: {
-                    return `<hr>`
+                    return `<hr>`;
                 }
-
                 case JsonComponentType.TextDisplay: {
                     return markdownToHTML(component.content, message.mentions, this.dateFormat);
                 }
-            
                 default:
                     return ``;
             }
         }).join("");
     }
-
-    private buttonBuilder(button: JsonButtonComponent): string {
+    buttonBuilder(button) {
         return `
         <div class="button" style="background-color: ${BUTTON_COLOR[button.style]}">
             ${button.style == JsonButtonStyle.Link ? `
@@ -386,8 +358,7 @@ export class Html {
         </div>
         `;
     }
-
-    private selectorBuilder(selector: JsonSelectMenu): string {
+    selectorBuilder(selector) {
         return `
         <div class="selector">
             <div class="selectorInput">
@@ -395,7 +366,7 @@ export class Html {
             </div>
             <div class="selectorOptionMenu">
                 ${selector.type == JsonComponentType.StringSelect ? selector.options.map(option => {
-                    return `
+            return `
                     <div class="selectorOption">
                         ${option.emoji ? `<p class="selectorOptionEmoji">${option.emoji}</p>` : ""}
                         <div class="selectorOptionRight">
@@ -404,13 +375,12 @@ export class Html {
                         </div>
                     </div>
                     `;
-                }).join("") : ""}
+        }).join("") : ""}
             </div>
         </div>
         `;
     }
-
-    private reactionsBuilder(reactions: JsonReaction[]): string {
+    reactionsBuilder(reactions) {
         return `
             <div class="reactionsDiv">
                 ${reactions.map(reaction => `
@@ -419,12 +389,10 @@ export class Html {
             </div>
         `;
     }
-
-    private spoilerAttachmentBuilder(spoiler: boolean, html: string): string {
+    spoilerAttachmentBuilder(spoiler, html) {
         return spoiler ? `<div class="spoilerAttachment"><div class="spoilerAttachmentOverlay">SPOILER</div><div class="spoilerAttachmentContent">${html}</div></div>` : html;
     }
-
-    private svgBuilder() {
+    svgBuilder() {
         const { options } = this.data;
         return `
     <svg style="display: none;">

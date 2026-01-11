@@ -1,12 +1,16 @@
 import { AttachmentBuilder, TextBasedChannel } from "discord.js";
-import { Json } from "./renderers/json/json";
-import { fetchMessages } from "./core/fetchMessages";
-import { CreateTranscriptOptions, JsonData, TranscriptOptions, Uploadable, ReturnType, JsonAuthor } from "./types/types";
-import { output } from "./core/output";
+import { Json } from "./renderers/json/json.js";
+import { fetchMessages } from "./core/fetchMessages.js";
+import { CreateTranscriptOptions, ReturnType } from "./types/types.js";
+import { output } from "./core/output.js";
+import { output as outputBase } from "discord-message-transcript-base/core/output"
 import Stream from "stream";
-import { CustomError } from "./core/error";
+import { CustomError } from "discord-message-transcript-base/core/error"
+import { Uploadable, JsonAuthor, JsonData, TranscriptOptions } from "discord-message-transcript-base/types/types";
 
+export async function createTranscript(channel: TextBasedChannel): Promise<AttachmentBuilder>;
 export async function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & { returnType: 'string' }): Promise<string>;
+export async function createTranscript(channel: TextBasedChannel, options?: CreateTranscriptOptions & { returnType: "attachment" }): Promise<AttachmentBuilder>;
 export async function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & { returnType: 'buffer' }): Promise<Buffer>;
 export async function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & { returnType: 'stream' }): Promise<Stream>;
 export async function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & { returnType: 'uploadable' }): Promise<Uploadable>;
@@ -18,6 +22,8 @@ export async function createTranscript(
 ): Promise<string | AttachmentBuilder | Buffer | Stream | Uploadable> {
 
     try {
+
+        const artificialReturnType = options.returnType == "attachment" ? "buffer" : options.returnType ?? "buffer";
 
         const {
             fileName = null,
@@ -32,7 +38,6 @@ export async function createTranscript(
             localDate = 'en-GB',
             quantity = 0,
             returnFormat = "HTML",
-            returnType = "attachment",
             saveImages = false,
             timeZone = 'UTC'
         } = options;
@@ -50,7 +55,7 @@ export async function createTranscript(
             localDate,
             quantity,
             returnFormat,
-            returnType,
+            returnType: artificialReturnType,
             saveImages,
             timeZone
         }
@@ -69,7 +74,15 @@ export async function createTranscript(
         }
         jsonTranscript.sliceMessages(quantity);
         jsonTranscript.setAuthors(Array.from(authors.values()));
-        return await output(await jsonTranscript.toJson(), internalOptions);
+        const result = await output(await jsonTranscript.toJson());
+        if (options.returnType == "attachment") {
+            if (!(result instanceof Buffer)) {
+                throw new CustomError("Expected buffer from output when *attachment* returnType is used.");
+            }
+            const fileExtension = returnFormat == "HTML" ? ".html" : ".json";
+            return new AttachmentBuilder(result, { name: internalOptions.fileName + fileExtension});
+        }
+        return result;
         
     } catch (error) {
         if (error instanceof Error) {
@@ -91,8 +104,16 @@ export async function jsonToHTMLTranscript(jsonString: string, returnType?: Retu
     try {
         const json: JsonData = JSON.parse(jsonString);
         json.options.returnFormat = "HTML";
-        json.options.returnType = returnType ?? "attachment";
-        return await output(json, json.options);
+        const officialReturnType = returnType ?? "attachment";
+        if (officialReturnType == "attachment") json.options.returnType = "buffer";
+        const result = await outputBase(json);
+        if (officialReturnType == "attachment") {
+            if (!(result instanceof Buffer)) {
+                throw new CustomError("Expected buffer from outputBase when *attachment* returnType is used.");
+            }
+            return new AttachmentBuilder(result, { name: json.options.fileName + ".html"});
+        }
+        return result;
     } catch (error) {
         if (error instanceof Error) {
             throw new CustomError(`Error converting JSON to HTML: ${error.stack}`);

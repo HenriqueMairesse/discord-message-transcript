@@ -1,9 +1,14 @@
 import { AttachmentBuilder, TextBasedChannel } from "discord.js";
-import { CreateTranscriptOptions, Uploadable } from "./types/types";
+import { CreateTranscriptOptions } from "./types/types.js";
 import Stream from "stream";
+import { Uploadable } from "discord-message-transcript-base/types/types";
+export declare function createTranscript(channel: TextBasedChannel): Promise<AttachmentBuilder>;
 export declare function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & {
     returnType: 'string';
 }): Promise<string>;
+export declare function createTranscript(channel: TextBasedChannel, options?: CreateTranscriptOptions & {
+    returnType: "attachment";
+}): Promise<AttachmentBuilder>;
 export declare function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & {
     returnType: 'buffer';
 }): Promise<Buffer>;

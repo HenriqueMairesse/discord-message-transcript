@@ -78,7 +78,6 @@ blockquote {
     background-color: #5664fa7e;
 }
 `;
-
 export const MESSAGE_CSS = `
 .messageDiv {
     display: flex;
@@ -191,7 +190,6 @@ export const MESSAGE_CSS = `
     font-size: 0.75rem;
 }
 `;
-
 export const EMBED_CSS = `
 .embed {
     background-color: #2b2d31;
@@ -303,7 +301,6 @@ export const EMBED_CSS = `
     color: #999999;
 }
 `;
-
 export const ATTACHMENT_CSS = `
 .attachmentImage, .attachmentVideo {
     max-width: 400px;
@@ -397,7 +394,6 @@ export const ATTACHMENT_CSS = `
     display: none;
 }
 `;
-
 export const ACTIONROW_CSS = `
 .actionRow {
     display: flex;
@@ -405,7 +401,6 @@ export const ACTIONROW_CSS = `
     margin-top: 0.5rem;
 }
 `;
-
 export const BUTTON_CSS = `
 .button {
     display: flex;
@@ -440,7 +435,6 @@ export const BUTTON_CSS = `
     height: 1.25rem;
 }
 `;
-
 export const COMPONENTS_CSS = `
 .selector {
     width: 100%;
@@ -502,7 +496,6 @@ export const COMPONENTS_CSS = `
     color: #808080;
 }
 `;
-
 export const COMPONENTSV2_CSS = `
 .mediaGallery {
     display: flex;
@@ -527,7 +520,6 @@ export const COMPONENTSV2_CSS = `
     display: block;
 }
 `;
-
 export const POLL_CSS = `
 .pollDiv {
     background-color: #2b2d31;
@@ -600,7 +592,6 @@ export const POLL_CSS = `
     color: #949ba4;
 }
 `;
-
 export const POLL_RESULT_EMBED_CSS = `
 .pollResultEmbed {
     background-color: #2b2d31;
@@ -648,7 +639,6 @@ export const POLL_RESULT_EMBED_CSS = `
     filter: brightness(1.1);
 }
 `;
-
 export const REACTIONS_CSS = `
 .reactionsDiv {
     display: flex;

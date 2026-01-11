@@ -1,7 +1,7 @@
 import { ChannelType } from "discord.js";
-import { componentsToJson } from "./componentToJson";
-import { urlToBase64 } from "./imageToBase64";
-import { CustomError } from "./error";
+import { componentsToJson } from "./componentToJson.js";
+import { urlToBase64 } from "./imageToBase64.js";
+import { CustomError } from "discord-message-transcript-base/core/error";
 export async function fetchMessages(channel, options, authors, after) {
     const originalMessages = await channel.messages.fetch({ limit: 100, cache: false, after: after });
     const rawMessages = await Promise.all(originalMessages.map(async (message) => {

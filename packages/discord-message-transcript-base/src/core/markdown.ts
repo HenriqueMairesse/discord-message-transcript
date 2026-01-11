@@ -1,4 +1,4 @@
-import { JsonMessageMentions, StyleTimeStampKey } from "../types/types";
+import { JsonMessageMentions, StyleTimeStampKey } from "../types/types.js";
 
 export function markdownToHTML(text: string, mentions: JsonMessageMentions, dateFormat: Intl.DateTimeFormat): string {
 

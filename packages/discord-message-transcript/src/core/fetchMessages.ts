@@ -1,8 +1,8 @@
 import { ChannelType, TextBasedChannel } from "discord.js";
-import { JsonAuthor, JsonMessage, TranscriptOptions } from "../types/types";
-import { componentsToJson } from "./componentToJson";
-import { urlToBase64 } from "./imageToBase64";
-import { CustomError } from "./error";
+import { componentsToJson } from "./componentToJson.js";
+import { urlToBase64 } from "./imageToBase64.js";
+import { CustomError } from "discord-message-transcript-base/core/error";
+import { JsonAuthor, JsonMessage, TranscriptOptions } from "discord-message-transcript-base/types/types";
 
 export async function fetchMessages(channel: TextBasedChannel, options: TranscriptOptions, authors: Map<string,JsonAuthor>, after?: string): Promise<{ messages: JsonMessage[], end: boolean }> {
     const originalMessages = await channel.messages.fetch({ limit: 100, cache: false, after: after });

@@ -1,6 +1,4 @@
-import { TranscriptOptions } from "../../types/types";
-
-export function script(options: TranscriptOptions) {
+export function script(includeComponents, includePolls) {
     return `
 document.addEventListener('DOMContentLoaded', () => {
     const transcriptDataElement = document.getElementById('authorData');
@@ -131,18 +129,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        ${options.includeComponents ? SELECTOR_JS : ""}
+        ${includeComponents ? SELECTOR_JS : ""}
 
-        ${options.includePolls ? POLL_JS : ""}
+        ${includePolls ? POLL_JS : ""}
     });
     
     if (window.hljs) {
         hljs.highlightAll();
     }
 });
-`
+`;
 }
-
 export const POLL_JS = `
 const pollDiv = event.target.closest('.pollResultEmbedButton');
 if (pollDiv) {
@@ -159,8 +156,7 @@ if (pollDiv) {
         }, 1500);
     }
 }
-`
-
+`;
 export const SELECTOR_JS = `
 const selectorInput = event.target.closest('.selectorInput');
 document.querySelectorAll('.selector').forEach(selector => {
@@ -175,4 +171,4 @@ if (selectorInput) {
         selector.classList.toggle('active');
     }
 }
-`
+`;
