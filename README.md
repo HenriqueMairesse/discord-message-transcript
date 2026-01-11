@@ -3,7 +3,7 @@
 🌍 Read this document in:
 - 🇧🇷 [Português](README.pt-BR.md)
 
-A modular and privacy-focused library for exporting Discord messages into **JSON** or **HTML** transcripts, with high visual fidelity and long-term archival support.
+A modular and privacy-focused library for exporting Discord messages into **JSON** or **HTML** transcripts, with visual fidelity and long-term archival support.
 
 ---
 

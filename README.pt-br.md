@@ -3,7 +3,7 @@
 🌍 Leia este documento em:
 - 🇺🇸 [English](README.md)
 
-Uma biblioteca modular e focada em privacidade para exportar mensagens do Discord em **JSON** ou **HTML**, com alta fidelidade visual e suporte para arquivamento de longo prazo.
+Uma biblioteca modular e focada em privacidade para exportar mensagens do Discord em **JSON** ou **HTML**, com fidelidade visual e suporte para arquivamento de longo prazo.
 
 ---
 
