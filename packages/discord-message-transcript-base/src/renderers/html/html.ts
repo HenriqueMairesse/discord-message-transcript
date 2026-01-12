@@ -5,7 +5,7 @@ import { ACTIONROW_CSS, ATTACHMENT_CSS, BUTTON_CSS, COMPONENTS_CSS, COMPONENTSV2
 import { script } from "./js.js";
 
 const COUNT_UNIT = ["KB", "MB", "GB", "TB"];
-const BUTTON_COLOR = ["black", "#5865f2", "gray", "lime", "red", "black", "#5865f2"];
+const BUTTON_COLOR = ["black", "#5865f2", "#323538", "#32c05f", "#be3638", "#323538", "#5865f2"];
 
 export class Html {
     data: JsonData;
@@ -28,11 +28,33 @@ export class Html {
         }
     }
 
+    private getIcon(): string {
+        const { guild, channel } = this.data;
+        if (guild) {
+            if (guild.icon) {
+                return `<img src="${guild.icon}" style="width: 7rem; height: 7rem; border-radius: 50%;">`;
+            } else {
+                return `<div class="guildInitialsIcon">${initials(guild.name)}</div>`;
+            }
+        } else {
+            return `<img src="${channel.img}" style="width: 7rem; height: 7rem; border-radius: 50%;">`;
+        }
+
+        function initials(name: string) {
+            const words = name.split(' ').filter(word => word.length > 0);
+            if (words.length >= 1) {
+                return words.map(word => word[0]).join('').substring(0, 3).toUpperCase();
+            }
+            return name.substring(0, 0).toUpperCase();
+        }
+    }
+
     private headerBuilder() {
         const { channel, guild } = this.data;
+    
         return `
         <div style="display: flex;  gap: 1.5rem; align-items: center; width 100vw">
-            ${channel.img ? `<img src="${channel.img}" style="width: 7rem; height: 7rem; border-radius: 50%;">` : ""}
+            ${this.getIcon()}
             <div style="display: flex; flex-direction: column; justify-content: center; gap: 1.25rem;">
                 ${guild ? `<div id="guild" class="line">
                     <h4>Guild: </h4>
@@ -76,7 +98,7 @@ export class Html {
                 <div class="badges"></div>
                 <p class="messageTimeStamp">${this.dateFormat.format(date)}</p>
             </div>
-            <div class="messageContent">${markdownToHTML(message.content, message.mentions, this.dateFormat)}</div>
+            <div class="messageContent">${markdownToHTML(message.content, this.data.mentions, message.mentions, this.dateFormat)}</div>
             ${message.poll ? this.pollBuilder(message.poll) : ""}
             ${message.embeds.length > 0 ? this.embedBuilder(message, message.embeds) : ""}
             ${message.attachments.length > 0 ? this.attachmentBuilder(message.attachments) : ""}
@@ -141,9 +163,9 @@ export class Html {
 
         let footerText = `${totalVotes} votes`;
         if (poll.isFinalized) {
-            footerText = `Final results • ${totalVotes} votes`;
+            footerText += ` • Poll closed`;
         } else if (poll.expiry) {
-            footerText += ` • Ends on ${this.dateFormat.format(new Date(poll.expiry))}`;
+            footerText += ` • ${poll.expiry}`;
         }
 
         return `
@@ -176,18 +198,20 @@ export class Html {
     private pollResultEmbedBuilder(embed: JsonEmbed, message: JsonMessage): string {
         const getField = (name: string) => embed.fields?.find(f => f.name === name)?.value;
         const winnerText = getField("victor_answer_text");
+        const emojiText = getField("victor_answer_emoji_name");
         const winnerVotes = parseInt(getField("victor_answer_votes") ?? "0");
         const totalVotes = parseInt(getField("total_votes") ?? "0");
         const winnerPercentage = totalVotes > 0 ? (winnerVotes / totalVotes) * 100 : 0;
 
-        if (!winnerText) return '';
+        if (!winnerText && winnerVotes != 0) return '';
 
         return `
         <div class="pollResultEmbed">
             <div>
                 <div class="pollResultEmbedWinner">
-                    <span>${winnerText}</span>
-                    <span class="pollResultEmbedCheckmark">✔</span>
+                    ${emojiText ? emojiText : ""}
+                    ${winnerText ?? "There was no winner"}
+                    ${winnerVotes != 0 ? `<span class="pollResultEmbedCheckmark">✔</span>` : ""}
                 </div>
                 <div class="pollResultEmbedSubtitle">${totalVotes} votes (${winnerPercentage.toFixed(1)}%)</div>
             </div>
@@ -202,30 +226,30 @@ export class Html {
         return embeds.map(embed => {
             if (embed.type === 'poll_result') return this.data.options.includePolls ? this.pollResultEmbedBuilder(embed, message) : "";
 
-            const embedAuthor = embed.author ? (embed.author.url ? `<a class="embedHeaderRightAuthorName" href="${embed.author.url}" target="_blank">${embed.author.name}</a>` : `<p class="embedHeaderRightAuthorName">${embed.author.name}</p>`) : "";
-            const embedTitle = embed.title ? (embed.url ? `<a class="embedHeaderRightTitle" href="${embed.url}" target="_blank">${embed.title}</a>` : `<p class="embedHeaderRightTitle">${embed.title}</p>`) : "";
+            const embedAuthor = embed.author ? (embed.author.url ? `<a class="embedHeaderLefttAuthorName" href="${embed.author.url}" target="_blank">${embed.author.name}</a>` : `<p class="embedHeaderLeftAuthorName">${embed.author.name}</p>`) : "";
+            const embedTitle = embed.title ? (embed.url ? `<a class="embedHeaderLeftTitle" href="${embed.url}" target="_blank">${embed.title}</a>` : `<p class="embedHeaderLeftTitle">${embed.title}</p>`) : "";
 
             return `
                 <div class="embed" style="${embed.hexColor ? `border-left-color: ${embed.hexColor}` : ''}">
-                    ${embed.author || embed.title || embed.thumbnail ? `
+                    ${embed.author || embed.title || embed.thumbnail || embed.description ? `
                     <div class="embedHeader">
-                        <div class="embedHeaderRight">
+                        <div class="embedHeaderLeft">
                             ${embed.author ? `
-                            <div class="embedHeaderRightAuthor">
-                                ${embed.author.iconURL ? `<img class="embedHeaderRightAuthorImg" src="${embed.author.iconURL}">` : ""}
+                            <div class="embedHeaderLeftAuthor">
+                                ${embed.author.iconURL ? `<img class="embedHeaderLeftAuthorImg" src="${embed.author.iconURL}">` : ""}
                                 ${embedAuthor}
                             </div>` : ""}
                             ${embedTitle}
+                            ${embed.description ? `<div class="embedDescription">${markdownToHTML(embed.description, this.data.mentions, message.mentions, this.dateFormat)}</div>` : ""}
                         </div>
                         ${embed.thumbnail ? `<img class="embedHeaderThumbnail" src="${embed.thumbnail.url}">` : ""}
                     </div>` : ""}
-                    ${embed.description ? `<div class="embedDescription">${markdownToHTML(embed.description, message.mentions, this.dateFormat)}</div>` : ""}
                     ${embed.fields && embed.fields.length > 0 ? `
                     <div class="embedFields">
                         ${embed.fields.map(field => `
                         <div class="embedFieldsField" style="${field.inline ? 'display: inline-block;' : ''}">
                             <p class="embedFieldsFieldTitle">${field.name}</p>
-                            <p class="embedFieldsFieldValue">${markdownToHTML(field.value, message.mentions, this.dateFormat)}</p>
+                            <p class="embedFieldsFieldValue">${markdownToHTML(field.value, this.data.mentions, message.mentions, this.dateFormat)}</p>
                         </div>`).join("")}
                     </div>` : ""}
                     ${embed.image ? `
@@ -358,11 +382,11 @@ export class Html {
                 }
 
                 case JsonComponentType.Separator: {
-                    return `<hr>`
+                    return `<hr class="separator" style="${component.divider ? "" : "visibility: hidden;"} ${component.spacing == 1 ? "margin: 0.15rem 0;" : "margin: 0.3rem 0;"}">`
                 }
 
                 case JsonComponentType.TextDisplay: {
-                    return markdownToHTML(component.content, message.mentions, this.dateFormat);
+                    return `<div class="textDisplay">${markdownToHTML(component.content, this.data.mentions, message.mentions, this.dateFormat)}</div>`;
                 }
             
                 default:

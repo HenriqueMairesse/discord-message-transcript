@@ -19,11 +19,7 @@ export async function componentsToJson(components: TopLevelComponent[], options:
                             type: JsonComponentType.Button,
                             style: mapButtonStyle(c.style),
                             label: c.label,
-                            emoji: c.emoji ? {
-                                id: c.emoji.id ?? null,
-                                name: c.emoji.name ?? null,
-                                animated: c.emoji.animated ?? false,
-                            } : null,
+                            emoji: c.emoji?.name ? c.emoji.name : null,
                             url: c.url,
                             disabled: c.disabled,
                         };
@@ -107,11 +103,7 @@ export async function componentsToJson(components: TopLevelComponent[], options:
                         type: JsonComponentType.Button,
                         style: mapButtonStyle(component.accessory.style),
                         label: component.accessory.label,
-                        emoji: component.accessory.emoji ? {
-                            id: component.accessory.emoji.id ?? null,
-                            name: component.accessory.emoji.name ?? null,
-                            animated: component.accessory.emoji.animated ?? false,
-                        } : null,
+                        emoji: component.accessory.emoji?.name ? component.accessory.emoji.name : null,
                         url: component.accessory.url,
                         disabled: component.accessory.disabled,
                     };

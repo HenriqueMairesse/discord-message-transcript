@@ -5,6 +5,7 @@ export type JsonV2Component = JsonContainerComponent | JsonFileComponent | JsonM
 export type Locale = CommonLocales | (string & {});
 export type ReturnFormat = "HTML" | "JSON";
 export type ReturnType = "string" | "uploadable" | "stream" | "buffer";
+export type ReturnTypeParse = "attachment" | ReturnType;
 export type StyleTimeStampKey = "t" | "T" | "d" | "D" | "f" | "F";
 export type TimeZone = CommonTimeZones | (string & {});
 export interface CreateTranscriptOptions {
@@ -35,11 +36,35 @@ export interface TranscriptOptions {
     includeReactions: boolean;
     includeV2Components: boolean;
     localDate: Locale;
+    offlineStyleAndJs: boolean;
     quantity: number;
     returnFormat: ReturnFormat;
     returnType: ReturnType;
     saveImages: boolean;
     timeZone: TimeZone;
+}
+export interface TranscriptOptionsParse {
+    fileName: string;
+    includeAttachments: boolean;
+    includeButtons: boolean;
+    includeComponents: boolean;
+    includeEmpty: boolean;
+    includeEmbeds: boolean;
+    includePolls: boolean;
+    includeReactions: boolean;
+    includeV2Components: boolean;
+    localDate: Locale;
+    offlineStyleAndJs: boolean;
+    quantity: number;
+    returnFormat: ReturnFormat;
+    returnType: ReturnTypeParse;
+    saveImages: boolean;
+    timeZone: TimeZone;
+}
+export interface ArrayMentions {
+    channels: JsonMessageMentionsChannels[];
+    roles: JsonMessageMentionsRoles[];
+    users: JsonMessageMentionsUsers[];
 }
 export interface JsonActionRow {
     components: (JsonButtonComponent | JsonSelectMenu)[];
@@ -66,11 +91,7 @@ export interface JsonAuthor {
 }
 export interface JsonButtonComponent {
     disabled: boolean;
-    emoji: {
-        id: string | null;
-        name: string | null;
-        animated: boolean;
-    } | null;
+    emoji: string | null;
     label: string | null;
     style: JsonButtonStyle;
     type: JsonComponentType.Button;
@@ -88,6 +109,15 @@ export interface JsonData {
     guild: JsonDataGuild | null;
     messages: JsonMessage[];
     options: TranscriptOptions;
+    mentions: ArrayMentions;
+}
+export interface JsonDataParse {
+    authors: JsonAuthor[];
+    channel: JsonDataChannel;
+    guild: JsonDataGuild | null;
+    messages: JsonMessage[];
+    options: TranscriptOptionsParse;
+    mentions: ArrayMentions;
 }
 export interface JsonDataChannel {
     id: string;
@@ -156,7 +186,7 @@ export interface JsonMessage {
     createdTimestamp: number;
     embeds: JsonEmbed[];
     id: string;
-    mentions: JsonMessageMentions;
+    mentions: boolean;
     poll: JsonPoll | null;
     reactions: JsonReaction[];
     references: {
@@ -165,25 +195,27 @@ export interface JsonMessage {
     system: boolean;
 }
 export interface JsonMessageMentions {
-    channels: {
-        id: string;
-        name: string | null;
-    }[];
-    everyone: boolean;
-    roles: {
-        id: string;
-        name: string;
-        color: string;
-    }[];
-    users: {
-        id: string;
-        name: string;
-        color: string | null;
-    }[];
+    channels: JsonMessageMentionsChannels[];
+    roles: JsonMessageMentionsRoles[];
+    users: JsonMessageMentionsUsers[];
+}
+export interface JsonMessageMentionsChannels {
+    id: string;
+    name: string | null;
+}
+export interface JsonMessageMentionsRoles {
+    id: string;
+    name: string;
+    color: string;
+}
+export interface JsonMessageMentionsUsers {
+    id: string;
+    name: string;
+    color: string | null;
 }
 export interface JsonPoll {
     answers: JsonPollAnswer[];
-    expiry: number | null;
+    expiry: string | null;
     isFinalized: boolean;
     question: string;
 }
@@ -217,7 +249,7 @@ export interface JsonSelectOption {
 }
 export interface JsonSeparatorComponent {
     divider: boolean;
-    spacing: JsonSeparatorSpacingSize | null;
+    spacing: JsonSeparatorSpacingSize;
     type: JsonComponentType.Separator;
 }
 export interface JsonTextDisplayComponent {

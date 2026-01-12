@@ -1,4 +1,4 @@
-export function markdownToHTML(text, mentions, dateFormat) {
+export function markdownToHTML(text, mentions, everyone, dateFormat) {
     const codeBlock = [];
     const codeLine = [];
     // Code Block (```)
@@ -71,7 +71,7 @@ export function markdownToHTML(text, mentions, dateFormat) {
             return channel && channel.name ? `<span class="mention">#${channel.name}</span> ` : `<span class="mention"><#${id}></span> `;
         });
     }
-    if (mentions.everyone) {
+    if (everyone) {
         text = text.replace("@everyone", `<span class="mention">@everyone</span> `);
         text = text.replace("@here", `<span class="mention">@here</span> `);
     }

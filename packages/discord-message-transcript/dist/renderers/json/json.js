@@ -5,12 +5,14 @@ export class Json {
     authors;
     messages;
     options;
+    mentions;
     constructor(guild, channel, options) {
         this.guild = guild;
         this.channel = channel;
         this.messages = [];
         this.options = options;
         this.authors = [];
+        this.mentions = { channels: [], roles: [], users: [] };
     }
     addMessages(messages) {
         this.messages.push(...messages);
@@ -23,6 +25,9 @@ export class Json {
     }
     setAuthors(authors) {
         this.authors = authors;
+    }
+    setMentions(mentions) {
+        this.mentions = mentions;
     }
     async toJson() {
         const channel = await this.channel.fetch();
@@ -43,7 +48,8 @@ export class Json {
                 img: channel instanceof DMChannel ? channel.recipient?.displayAvatarURL() ?? "cdn.discordapp.com/embed/avatars/4.png" : channel.isDMBased() ? channel.iconURL() ?? (await channel.fetchOwner()).displayAvatarURL() : null,
             },
             authors: this.authors,
-            messages: this.messages.reverse()
+            messages: this.messages.reverse(),
+            mentions: this.mentions
         };
     }
 }

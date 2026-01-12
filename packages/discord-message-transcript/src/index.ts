@@ -1,12 +1,12 @@
 import { AttachmentBuilder, TextBasedChannel } from "discord.js";
 import { Json } from "./renderers/json/json.js";
 import { fetchMessages } from "./core/fetchMessages.js";
-import { CreateTranscriptOptions, ReturnType } from "./types/types.js";
+import { CreateTranscriptOptions, MapMentions, ReturnType } from "./types/types.js";
 import { output } from "./core/output.js";
 import { output as outputBase } from "discord-message-transcript-base/core/output"
 import Stream from "stream";
 import { CustomError } from "discord-message-transcript-base/core/error"
-import { Uploadable, JsonAuthor, JsonData, TranscriptOptions } from "discord-message-transcript-base/types/types";
+import { Uploadable, JsonAuthor, JsonData, TranscriptOptions, JsonMessageMentionsChannels, JsonMessageMentionsUsers, JsonMessageMentionsRoles } from "discord-message-transcript-base/types/types";
 
 export async function createTranscript(channel: TextBasedChannel): Promise<AttachmentBuilder>;
 export async function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & { returnType: 'string' }): Promise<string>;
@@ -70,9 +70,14 @@ export async function createTranscript(
         const jsonTranscript = channel.isDMBased() ? new Json(null, channel, internalOptions) : new Json(channel.guild, channel, internalOptions); 
         let lastMessageID: string | undefined;
         const authors = new Map<string, JsonAuthor>();
+        const mentions: MapMentions = {
+            channels: new Map<string, JsonMessageMentionsChannels>(),
+            roles: new Map<string, JsonMessageMentionsRoles>(),
+            users: new Map<string, JsonMessageMentionsUsers>(),
+        }
 
         while (true) {
-            const { messages, end } = await fetchMessages(channel, internalOptions, authors, lastMessageID);
+            const { messages, end } = await fetchMessages(channel, internalOptions, authors, mentions, lastMessageID);
             jsonTranscript.addMessages(messages);
             lastMessageID = messages[messages.length - 1]?.id;
             if (end || (jsonTranscript.messages.length >= quantity && quantity != 0)) {
@@ -81,6 +86,7 @@ export async function createTranscript(
         }
         jsonTranscript.sliceMessages(quantity);
         jsonTranscript.setAuthors(Array.from(authors.values()));
+        jsonTranscript.setMentions({ channels: Array.from(mentions.channels.values()), roles: Array.from(mentions.roles.values()), users: Array.from(mentions.users.values()) });
         const result = await output(await jsonTranscript.toJson());
         if (options.returnType == "attachment") {
             if (!(result instanceof Buffer)) {

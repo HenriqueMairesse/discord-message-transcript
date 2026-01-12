@@ -3,6 +3,7 @@ export declare class Html {
     data: JsonData;
     dateFormat: Intl.DateTimeFormat;
     constructor(data: JsonData);
+    private getIcon;
     private headerBuilder;
     private messagesBuilder;
     toHTML(): string;

@@ -1,5 +1,5 @@
 import { BaseGuildTextChannel, DMChannel, Guild, TextBasedChannel } from "discord.js";
-import { JsonAuthor, JsonMessage } from "discord-message-transcript-base/types/types";
+import { ArrayMentions, JsonAuthor, JsonMessage } from "discord-message-transcript-base/types/types";
 import { TranscriptOptions, JsonData } from "discord-message-transcript-base/types/types";
 
 export class Json {
@@ -8,6 +8,7 @@ export class Json {
     authors: JsonAuthor[];
     messages: JsonMessage[];
     options: TranscriptOptions;
+    mentions: ArrayMentions;
 
     constructor(guild: Guild | null, channel: TextBasedChannel, options: TranscriptOptions) {
         this.guild = guild;
@@ -15,6 +16,7 @@ export class Json {
         this.messages = [];
         this.options = options;
         this.authors = [];
+        this.mentions = { channels: [], roles: [], users: []};
     }
 
     addMessages(messages: JsonMessage[]): void {
@@ -30,6 +32,10 @@ export class Json {
 
     setAuthors(authors: JsonAuthor[]) {
         this.authors = authors;
+    }
+
+    setMentions(mentions: ArrayMentions) {
+        this.mentions = mentions;
     }
 
     async toJson(): Promise<JsonData> {
@@ -54,7 +60,8 @@ export class Json {
                 img: channel instanceof DMChannel ? channel.recipient?.displayAvatarURL() ?? "cdn.discordapp.com/embed/avatars/4.png" : channel.isDMBased() ? channel.iconURL() ?? (await channel.fetchOwner()).displayAvatarURL() : null,
             },
             authors: this.authors,
-            messages: this.messages.reverse()
+            messages: this.messages.reverse(),
+            mentions: this.mentions
         };
     }
 

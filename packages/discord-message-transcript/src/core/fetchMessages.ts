@@ -1,10 +1,12 @@
-import { ChannelType, TextBasedChannel } from "discord.js";
+import { TextBasedChannel } from "discord.js";
 import { componentsToJson } from "./componentToJson.js";
 import { urlToBase64 } from "./imageToBase64.js";
 import { CustomError } from "discord-message-transcript-base/core/error";
 import { JsonAuthor, JsonMessage, TranscriptOptions } from "discord-message-transcript-base/types/types";
+import { MapMentions } from "../types/types.js";
+import { getMentions } from "./getMentions.js";
 
-export async function fetchMessages(channel: TextBasedChannel, options: TranscriptOptions, authors: Map<string,JsonAuthor>, after?: string): Promise<{ messages: JsonMessage[], end: boolean }> {
+export async function fetchMessages(channel: TextBasedChannel, options: TranscriptOptions, authors: Map<string,JsonAuthor>, mentions: MapMentions, after?: string): Promise<{ messages: JsonMessage[], end: boolean }> {
     const originalMessages = await channel.messages.fetch({ limit: 100, cache: false, after: after });
 
     const rawMessages: (JsonMessage | null)[] = await Promise.all(originalMessages.map(async (message) => {
@@ -86,7 +88,7 @@ export async function fetchMessages(channel: TextBasedChannel, options: Transcri
         }));
 
         if (!authors.has(message.author.id))  {
-                authors.set(message.author.id, {
+            authors.set(message.author.id, {
                 avatarURL: authorAvatar,
                 bot: message.author.bot,
                 displayName: message.author.displayName,
@@ -102,6 +104,8 @@ export async function fetchMessages(channel: TextBasedChannel, options: Transcri
 
         const components = await componentsToJson(message.components, options);
 
+        getMentions(message, mentions);
+
         if (!options.includeEmpty && attachments.length == 0 && components.length == 0 && message.content == "" && message.embeds.length == 0 && !message.poll) return null;
 
         return {
@@ -112,13 +116,7 @@ export async function fetchMessages(channel: TextBasedChannel, options: Transcri
             createdTimestamp: message.createdTimestamp,
             embeds: options.includeEmbeds ? embeds : [],
             id: message.id,
-            mentions: {
-                channels: message.mentions.channels.map(channel => ({ id: channel.id, name: channel.type !== ChannelType.DM ? channel.name : channel.recipient?.displayName ?? null })),
-                everyone: message.mentions.everyone,
-                roles: message.mentions.roles.map(role => ({ id: role.id, name: role.name, color: role.hexColor })),
-                users: message.mentions.members ? message.mentions.members.map(member => ({ color: member.displayHexColor, id: member.id, name: member.displayName }))
-                    : message.mentions.users.map(user => ({ color: user.hexAccentColor ?? null, id: user.id, name: user.displayName })),
-            },
+            mentions: message.mentions.everyone,
             poll: message.poll ? {
                 answers: Array.from(message.poll.answers.values()).map(answer => ({
                     count: answer.voteCount,
@@ -130,7 +128,7 @@ export async function fetchMessages(channel: TextBasedChannel, options: Transcri
                     id: answer.id,
                     text: answer.text ?? "",
                 })),
-                expiry: message.poll.expiresTimestamp,
+                expiry: message.poll.expiresTimestamp ? formatTimeLeftPoll(message.poll.expiresTimestamp) : null,
                 isFinalized: message.poll.resultsFinalized,
                 question: message.poll.question.text ?? "",
             } : null,
@@ -150,3 +148,24 @@ export async function fetchMessages(channel: TextBasedChannel, options: Transcri
     const end = originalMessages.size !== 100;
     return { messages, end };
 }
+
+
+function formatTimeLeftPoll(timestamp: number): string {
+    const now = new Date();
+    const leftDate = new Date(timestamp);
+
+    const diffSeconds = Math.floor((leftDate.getTime() - now.getTime()) / 1000);
+
+    const day = Math.floor(diffSeconds / 86400);
+    if (day > 0) return `${day}d left`;
+
+    const hour = Math.floor(diffSeconds / 3600);
+    if (hour > 0) return `${hour}h left`;
+
+    const min = Math.floor(diffSeconds / 60);
+    if (min > 0) return `${min}m left`;
+
+    if (diffSeconds > 0) return `${diffSeconds}s left`;
+
+    return "now"; // fallback
+} 

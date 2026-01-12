@@ -1,6 +1,6 @@
 export const DEFAULT_CSS = `
 body {
-    background-color: #313338;
+    background-color: #3a3c43;
     color: #dbdee1;
     font-family: "Whitney", "Helvetica Neue", Helvetica, Arial, sans-serif;
     margin: 0;
@@ -24,6 +24,15 @@ a {
 }
 p {
     margin: 0;
+}
+h1 {
+    margin: 0.5rem 0;
+}
+h2 {
+    margin: 0.3rem 0;
+}
+h3 {
+    margin: 0.15rem
 }
 h4 {
     margin: 0;
@@ -76,6 +85,17 @@ blockquote {
 }
 .mention:hover {
     background-color: #5664fa7e;
+}
+.guildInitialsIcon {
+    width: 7rem;
+    height: 7rem;
+    border-radius: 50%;
+    background-color: #4f545c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: 600;
 }
 `;
 export const MESSAGE_CSS = `
@@ -201,7 +221,8 @@ export const EMBED_CSS = `
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    max-width: 520px;
+    max-width: 40rem;
+    min-width: 30rem;
 }
 .embed a {
     color: #00aff4;
@@ -216,32 +237,34 @@ export const EMBED_CSS = `
     align-items: flex-start;
     gap: 0.5rem;
 }
-.embedHeaderRight {
+.embedHeaderLeft {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
 }
-.embedHeaderRightAuthor {
+.embedHeaderLeftAuthor {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     font-size: 0.875rem;
     font-weight: 500;
     color: #ffffff;
+    margin-bottom: 0.5rem;
 }
-.embedHeaderRightAuthorImg {
+.embedHeaderLeftAuthorImg {
     width: 1.5rem;
     height: 1.5rem;
     border-radius: 50%;
 }
-.embedHeaderRightAuthorName {
+.embedHeaderLeftAuthorName {
     color: #ffffff;
     font-weight: 500;
 }
-.embedHeaderRightTitle {
+.embedHeaderLeftTitle {
     font-size: 1rem;
     font-weight: bold;
     color: #ffffff;
+    margin-bottom: 0.75rem;
 }
 .embedHeaderThumbnail {
     max-width: 80px;
@@ -372,6 +395,8 @@ export const ATTACHMENT_CSS = `
     filter: blur(64px);
     pointer-events: none;
     transition: filter 0.2s ease;
+    width: 100%;
+    height: 100%;
 }
 .spoilerAttachment .spoilerAttachmentOverlay {
     position: absolute;
@@ -500,17 +525,18 @@ export const COMPONENTSV2_CSS = `
 .mediaGallery {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.35rem;
-    width: 20rem;
-    height: 20rem;
+    gap: 0.25rem;
+    width: 100%;
+    max-width: 40rem;
+    aspect-ratio: 1 / 1;
     border: 1px solid #202225
     padding: 0.35rem;
     overflow: hidden;
 }
 .mediaGalleryItem {
     flex-grow: 1;
-    flex-basis: 6rem;
-    min-width: 0;
+    flex-basis: 0;
+    min-width: 30%;
     display: flex;
 }
 .mediaGalleryImg {
@@ -518,6 +544,36 @@ export const COMPONENTSV2_CSS = `
     height: 100%;
     object-fit: cover;
     display: block;
+    border-radius: 1rem;
+}
+.container {
+    background-color: #2b2d31;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    max-width: 40rem;
+    min-width: 30rem;
+    border-left: 0.25rem solid;
+}
+.section {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+}
+.sectionRight {
+    margin-right: 0.5rem;
+    margin-left: 1rem;
+}
+.sectionThumbnail {
+    width: 5rem;
+    height: 5rem;
+    border-radius: 0.5rem;
+}
+.textDisplay {
+    padding: 0.5rem 0;
+}
+.separator {
+    border: 1px solid #808080;
 }
 `;
 export const POLL_CSS = `
@@ -526,7 +582,8 @@ export const POLL_CSS = `
     border-radius: 0.5rem;
     padding: 1rem;
     margin-top: 0.5rem;
-    max-width: 420px;
+    max-width: 40rem;
+    min-width: 25rem
 }
 .pollQuestion {
     font-size: 1.1rem;
@@ -599,7 +656,8 @@ export const POLL_RESULT_EMBED_CSS = `
     padding: 1rem;
     margin-top: 0.5rem;
     border: 1px solid #3a3c42;
-    min-width: 25rem;
+    min-width: 20rem;
+    max-width: 40rem;
     display: flex;
     flex-direction: row;
     justify-content: space-between;

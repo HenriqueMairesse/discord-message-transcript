@@ -1,6 +1,6 @@
-import { JsonMessageMentions, StyleTimeStampKey } from "../types/types.js";
+import { ArrayMentions, StyleTimeStampKey } from "../types/types.js";
 
-export function markdownToHTML(text: string, mentions: JsonMessageMentions, dateFormat: Intl.DateTimeFormat): string {
+export function markdownToHTML(text: string, mentions: ArrayMentions, everyone: boolean, dateFormat: Intl.DateTimeFormat): string {
 
     const codeBlock: string[] = [];
     const codeLine: string[] = [];
@@ -89,7 +89,7 @@ export function markdownToHTML(text: string, mentions: JsonMessageMentions, date
             return channel && channel.name ? `<span class="mention">#${channel.name}</span> ` : `<span class="mention"><#${id}></span> `;
         });
     }
-    if (mentions.everyone) {
+    if (everyone) {
         text = text.replace("@everyone", `<span class="mention">@everyone</span> `);
         text = text.replace("@here", `<span class="mention">@here</span> `);
     }
