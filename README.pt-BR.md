@@ -20,6 +20,10 @@ Uma biblioteca modular e focada em privacidade para exportar mensagens do Discor
   - [🖼️ Imagens](#️-imagens)
   - [🔢 Controle e Limpeza de Mensagens](#-controle-e-limpeza-de-mensagens)
   - [🧪 Uso e API](#-uso-e-api)
+    - [Instalação](#instalação)
+    - [Funções](#funções)
+      - [`createTranscript(channel, options)`](#createtranscriptchannel-options)
+      - [`jsonToHTMLTranscript(jsonString, options)`](#jsontohtmltranscriptjsonstring-options)
   - [🔐 Permissões e Acesso](#-permissões-e-acesso)
   - [⚠️ Aviso Legal, Políticas do Discord e Responsabilidade do Usuário](#️-aviso-legal-políticas-do-discord-e-responsabilidade-do-usuário)
     - [Aviso Importante](#aviso-importante)
@@ -138,13 +142,73 @@ Isso garante transcripts mais limpos e legíveis.
 
 ## 🧪 Uso e API
 
-> 🚧 **Documentação em andamento**
+Este projeto fornece dois pacotes: `discord-message-transcript` e `discord-message-transcript-base`.
 
-Esta seção irá conter:
-- Instruções de instalação
-- Exemplos de uso
-- Referência da API
-- Opções de configuração
+### Instalação
+
+```bash
+# Para o pacote principal (requer discord.js)
+npm install discord-message-transcript
+yarn add discord-message-transcript
+pnpm add discord-message-transcript
+
+# Para o pacote base (apenas renderizador)
+npm install discord-message-transcript-base
+yarn add discord-message-transcript-base
+pnpm add discord-message-transcript-base
+```
+
+### Funções
+
+#### `createTranscript(channel, options)`
+
+Busca mensagens de um canal do Discord e gera um transcript. Esta função está disponível apenas no pacote `discord-message-transcript`.
+
+-   **`channel`**: O canal do Discord para buscar as mensagens.
+-   **`options`**: Um objeto com as seguintes propriedades:
+    -   `fileName`: O nome do arquivo a ser gerado. (Padrão: `Transcript-{nome-do-canal}-{id-do-canal}`)
+    -   `includeAttachments`: Se deve incluir anexos de mensagens. (Padrão: `true`)
+    -   `includeButtons`: Se deve incluir botões de mensagens. (Padrão: `true`)
+    -   `includeComponents`: Se deve incluir componentes de mensagens. (Padrão: `true`)
+    -   `includeEmpty`: Se deve incluir mensagens vazias. (Padrão: `false`)
+    -   `includeEmbeds`: Se deve incluir embeds de mensagens. (Padrão: `true`)
+    -   `includePolls`: Se deve incluir enquetes de mensagens. (Padrão: `true`)
+    -   `includeReactions`: Se deve incluir reações de mensagens. (Padrão: `true`)
+    -   `includeV2Components`: Se deve incluir componentes de mensagens V2. (Padrão: `true`)
+    -   `localDate`: A localidade a ser usada para datas. (Padrão: `'en-GB'`)
+    -   `quantity`: A quantidade máxima de mensagens a serem buscadas. (Padrão: `0` - todas as mensagens)
+    -   `returnFormat`: O formato do transcript. (Padrão: `'HTML'`)
+        -   `'HTML'`: Retorna um transcript em HTML.
+        -   `'JSON'`: Retorna um transcript em JSON.
+    -   `returnType`: O formato de retorno do transcript.
+        -   `'attachment'`: (Padrão) Retorna um objeto `AttachmentBuilder`.
+        -   `'string'`: Retorna uma string (HTML ou JSON).
+        -   `'buffer'`: Retorna um `Buffer`.
+        -   `'stream'`: Retorna um `Stream`.
+        -   `'uploadable'`: Retorna um objeto `Uploadable`.
+    -   `saveImages`: Se deve salvar imagens localmente. (Padrão: `false`)
+    -   `selfContained`: Se deve incluir todos os ativos em um único arquivo. (Padrão: `false`)
+    -   `timeZone`: O fuso horário a ser usado para datas. (Padrão: `'UTC'`)
+
+#### `jsonToHTMLTranscript(jsonString, options)`
+
+Converte uma string de transcript JSON em um transcript HTML. Esta função está disponível em ambos os pacotes.
+
+-   **`jsonString`**: A string do transcript JSON.
+-   **`options`**: Um objeto com as seguintes propriedades:
+    -   `returnType`: O formato de retorno do transcript.
+        -   **`discord-message-transcript`**:
+            -   `'attachment'`: (Padrão) Retorna um objeto `AttachmentBuilder`.
+            -   `'string'`: Retorna uma string.
+            -   `'buffer'`: Retorna um `Buffer`.
+            -   `'stream'`: Retorna um `Stream`.
+            -   `'uploadable'`: Retorna um objeto `Uploadable`.
+        -   **`discord-message-transcript-base`**:
+            -   `'string'`: (Padrão) Retorna uma string.
+            -   `'buffer'`: Retorna um `Buffer`.
+            -   `'stream'`: Retorna um `Stream`.
+            -   `'uploadable'`: Retorna um objeto `Uploadable`.
+    -   `selfContained`: Se deve incluir todos os ativos em um único arquivo. (Padrão: `false`)
 
 ---
 

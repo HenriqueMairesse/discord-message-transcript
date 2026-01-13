@@ -4,7 +4,7 @@ import { fetchMessages } from "./core/fetchMessages.js";
 import { output } from "./core/output.js";
 import { output as outputBase } from "discord-message-transcript-base/core/output";
 import { CustomError } from "discord-message-transcript-base/core/error";
-export async function createTranscript(channel, options = {}) {
+export async function createTranscript(channel, options) {
     try {
         if (!channel.isDMBased()) {
             const permissions = channel.permissionsFor(channel.client.user);
@@ -12,8 +12,8 @@ export async function createTranscript(channel, options = {}) {
                 throw new CustomError(`Channel selected, ${channel.name} with id: ${channel.id}, can't be use to create a transcript because the bot dosen't have permission for View the Channel or Read the Message History. Add the permissions or choose another channel!`);
             }
         }
-        const artificialReturnType = options.returnType == "attachment" ? "buffer" : options.returnType ?? "buffer";
-        const { fileName = null, includeAttachments = true, includeButtons = true, includeComponents = true, includeEmpty = false, includeEmbeds = true, includePolls = true, includeReactions = true, includeV2Components = true, localDate = 'en-GB', quantity = 0, returnFormat = "HTML", saveImages = false, selfContained = false, timeZone = 'UTC' } = options;
+        const artificialReturnType = options?.returnType == "attachment" ? "buffer" : options?.returnType ?? "buffer";
+        const { fileName = null, includeAttachments = true, includeButtons = true, includeComponents = true, includeEmpty = false, includeEmbeds = true, includePolls = true, includeReactions = true, includeV2Components = true, localDate = 'en-GB', quantity = 0, returnFormat = "HTML", saveImages = false, selfContained = false, timeZone = 'UTC' } = options ?? {};
         const checkedFileName = (fileName ?? `Transcript-${channel.isDMBased() ? "DirectMessage" : channel.name}-${channel.id}`);
         const internalOptions = {
             fileName: checkedFileName,
@@ -53,7 +53,7 @@ export async function createTranscript(channel, options = {}) {
         jsonTranscript.setAuthors(Array.from(authors.values()));
         jsonTranscript.setMentions({ channels: Array.from(mentions.channels.values()), roles: Array.from(mentions.roles.values()), users: Array.from(mentions.users.values()) });
         const result = await output(await jsonTranscript.toJson());
-        if (options.returnType == "attachment") {
+        if (options?.returnType == "attachment" || !options || !options.returnType) {
             if (!(result instanceof Buffer)) {
                 throw new CustomError("Expected buffer from output when *attachment* returnType is used.");
             }

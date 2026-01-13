@@ -1,10 +1,7 @@
-import { ReturnType as ReturnTypeBase, Locale, ReturnFormat, TimeZone, JsonMessageMentionsChannels, JsonMessageMentionsRoles, JsonMessageMentionsUsers } from "discord-message-transcript-base/types/types";
+import { ReturnType as ReturnTypeBase, ReturnFormat, JsonMessageMentionsChannels, JsonMessageMentionsRoles, JsonMessageMentionsUsers } from "discord-message-transcript-base/types/types";
 
 export type ReturnType = "attachment" | ReturnTypeBase;
 
-/**
- * Options for creating a transcript.
- */
 export interface CreateTranscriptOptions {
     /**
      * The name of the file to be created.
@@ -55,7 +52,7 @@ export interface CreateTranscriptOptions {
      * The locale to use for formatting dates.
      * @default 'en-GB'
      */
-    localDate?: Locale,
+    localDate?: Intl.LocalesArgument,
     /**
      * The maximum number of messages to fetch. Set to 0 to fetch all messages.
      * @default 0
@@ -91,7 +88,7 @@ export interface CreateTranscriptOptions {
      * The timezone to use for formatting dates.
      * @default 'UTC'
      */
-    timeZone?: TimeZone,
+    timeZone?: Intl.DateTimeFormatOptions["timeZone"],
 }
 
 /**

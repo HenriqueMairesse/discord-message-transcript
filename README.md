@@ -21,6 +21,10 @@ A modular and privacy-focused library for exporting Discord messages into **JSON
   - [🖼️ Images](#️-images)
   - [🔢 Message Control \& Cleanup](#-message-control--cleanup)
   - [🧪 Usage \& API](#-usage--api)
+    - [Installation](#installation)
+    - [Functions](#functions)
+      - [`createTranscript(channel, options)`](#createtranscriptchannel-options)
+      - [`jsonToHTMLTranscript(jsonString, options)`](#jsontohtmltranscriptjsonstring-options)
   - [🔐 Permissions \& Access](#-permissions--access)
   - [⚠️ Legal Notice, Discord Policies \& User Responsibility](#️-legal-notice-discord-policies--user-responsibility)
     - [Important Notice](#important-notice)
@@ -138,13 +142,73 @@ This ensures clean and readable transcripts.
 
 ## 🧪 Usage & API
 
-> 🚧 **Documentation in progress**
+This project provides two packages: `discord-message-transcript` and `discord-message-transcript-base`.
 
-This section will contain:
-- Installation instructions
-- Usage examples
-- API references
-- Configuration options
+### Installation
+
+```bash
+# For the main package (requires discord.js)
+npm install discord-message-transcript
+yarn add discord-message-transcript
+pnpm add discord-message-transcript
+
+# For the base package (renderer-only)
+npm install discord-message-transcript-base
+yarn add discord-message-transcript-base
+pnpm add discord-message-transcript-base
+```
+
+### Functions
+
+#### `createTranscript(channel, options)`
+
+Fetches messages from a Discord channel and generates a transcript. This function is only available in the `discord-message-transcript` package.
+
+-   **`channel`**: The Discord channel to fetch messages from.
+-   **`options`**: An object with the following properties:
+    -   `fileName`: The name of the file to be generated. (Default: `Transcript-{channel-name}-{channel-id}`)
+    -   `includeAttachments`: Whether to include message attachments. (Default: `true`)
+    -   `includeButtons`: Whether to include message buttons. (Default: `true`)
+    -   `includeComponents`: Whether to include message components. (Default: `true`)
+    -   `includeEmpty`: Whether to include empty messages. (Default: `false`)
+    -   `includeEmbeds`: Whether to include message embeds. (Default: `true`)
+    -   `includePolls`: Whether to include message polls. (Default: `true`)
+    -   `includeReactions`: Whether to include message reactions. (Default: `true`)
+    -   `includeV2Components`: Whether to include V2 message components. (Default: `true`)
+    -   `localDate`: The locale to use for dates. (Default: `'en-GB'`)
+    -   `quantity`: The maximum number of messages to fetch. (Default: `0` - all messages)
+    -   `returnFormat`: The format of the transcript. (Default: `'HTML'`)
+        -   `'HTML'`: Returns an HTML transcript.
+        -   `'JSON'`: Returns a JSON transcript.
+    -   `returnType`: The format to return the transcript in.
+        -   `'attachment'`: (Default) Returns a `AttachmentBuilder` object.
+        -   `'string'`: Returns a string (HTML or JSON).
+        -   `'buffer'`: Returns a `Buffer`.
+        -   `'stream'`: Returns a `Stream`.
+        -   `'uploadable'`: Returns an `Uploadable` object.
+    -   `saveImages`: Whether to save images locally. (Default: `false`)
+    -   `selfContained`: Whether to include all assets in a single file. (Default: `false`)
+    -   `timeZone`: The timezone to use for dates. (Default: `'UTC'`)
+
+#### `jsonToHTMLTranscript(jsonString, options)`
+
+Converts a JSON transcript string to an HTML transcript. This function is available in both packages.
+
+-   **`jsonString`**: The JSON transcript string.
+-   **`options`**: An object with the following properties:
+    -   `returnType`: The format to return the transcript in.
+        -   **`discord-message-transcript`**:
+            -   `'attachment'`: (Default) Returns a `AttachmentBuilder` object.
+            -   `'string'`: Returns a string.
+            -   `'buffer'`: Returns a `Buffer`.
+            -   `'stream'`: Returns a `Stream`.
+            -   `'uploadable'`: Returns an `Uploadable` object.
+        -   **`discord-message-transcript-base`**:
+            -   `'string'`: (Default) Returns a string.
+            -   `'buffer'`: Returns a `Buffer`.
+            -   `'stream'`: Returns a `Stream`.
+            -   `'uploadable'`: Returns an `Uploadable` object.
+    -   `selfContained`: Whether to include all assets in a single file. (Default: `false`)
 
 ---
 

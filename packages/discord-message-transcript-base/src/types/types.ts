@@ -2,103 +2,10 @@ export type JsonComponentInContainer = JsonActionRow | JsonFileComponent | JsonM
 export type JsonSelectMenu = JsonSelectMenuOthers | JsonSelectMenuString
 export type JsonTopLevelComponent = JsonActionRow | JsonButtonComponent | JsonSelectMenu | JsonV2Component;
 export type JsonV2Component = JsonContainerComponent | JsonFileComponent | JsonMediaGalleryComponent | JsonSectionComponent | JsonSeparatorComponent | JsonTextDisplayComponent | JsonThumbnailComponent;
-export type Locale = CommonLocales | (string & {});
 export type ReturnFormat = "HTML" | "JSON";
 export type ReturnType = "string" | "uploadable" | "stream" | "buffer";
 export type ReturnTypeParse = "attachment" | ReturnType;
 export type StyleTimeStampKey = "t" | "T" | "d" | "D" | "f" | "F";
-export type TimeZone = CommonTimeZones | (string & {});
-
-/**
- * Options for creating a transcript.
- */
-export interface CreateTranscriptOptions {
-    /**
-     * The name of the file to be created.
-     * @default `Transcript-${channel.isDMBased() ? "DirectMessage" : channel.name}-${channel.id}`
-     */
-    fileName?: string,
-    /**
-     * Whether to include attachments in the transcript.
-     * @default true
-     */
-    includeAttachments?: boolean,
-    /**
-     * Whether to include buttons in the transcript.
-     * @default true
-     */
-    includeButtons?: boolean,
-    /**
-     * Whether to include components in the transcript.
-     * @default true
-     */
-    includeComponents?: boolean,
-    /**
-     * Whether to include empty messages in the transcript.
-     * @default false
-     */
-    includeEmpty?: boolean,
-    /**
-     * Whether to include embeds in the transcript.
-     * @default true
-     */
-    includeEmbeds?: boolean,
-    /**
-     * Whether to include polls in the transcript.
-     * @default true
-     */
-    includePolls?: boolean,
-    /**
-     * Whether to include reactions in the transcript.
-     * @default true
-     */
-    includeReactions?: boolean,
-    /**
-     * Whether to include V2 components in the transcript.
-     * @default true
-     */
-    includeV2Components?: boolean,
-    /**
-     * The locale to use for formatting dates.
-     * @default 'en-GB'
-     */
-    localDate?: Locale,
-    /**
-     * The maximum number of messages to fetch. Set to 0 to fetch all messages.
-     * @default 0
-     */
-    quantity?: number,
-    /**
-     * The format to return the transcript in.
-     * @default 'HTML'
-     */
-    returnFormat?: ReturnFormat,
-    /**
-     * The type of the returned value.
-     * - `string` - The transcript content as a string.
-     * - `buffer` - The transcript content as a `Buffer`.
-     * - `stream` - The transcript content as a `Stream`.
-     * - `uploadable` - An object with `content`, `contentType` and `fileName`.
-     * @default 'string'
-     */
-    returnType?: ReturnType,
-    /**
-     * Whether to save images locally or use remote URLs.
-     * @default false
-     */
-    saveImages?: boolean,
-    /**
-     * Whether the generated HTML should be self-contained (CSS and JS in HTML).
-     * Only matthers if returnFormat is 'HTML'
-     * @default false
-     */
-    selfContained?: boolean,
-    /**
-     * The timezone to use for formatting dates.
-     * @default 'UTC'
-     */
-    timeZone?: TimeZone,
-}
 
 export interface TranscriptOptions {
     fileName: string,
@@ -110,13 +17,13 @@ export interface TranscriptOptions {
     includePolls: boolean,
     includeReactions: boolean,
     includeV2Components: boolean,
-    localDate: Locale,
+    localDate: Intl.LocalesArgument,
     quantity: number,
     returnFormat: ReturnFormat,
     returnType: ReturnType,
     saveImages: boolean,
     selfContained: boolean,
-    timeZone: TimeZone,
+    timeZone: Intl.DateTimeFormatOptions["timeZone"],
 }
 
 export interface TranscriptOptionsParse {
@@ -129,13 +36,13 @@ export interface TranscriptOptionsParse {
     includePolls: boolean,
     includeReactions: boolean,
     includeV2Components: boolean,
-    localDate: Locale,
+    localDate: Intl.LocalesArgument,
     quantity: number,
     returnFormat: ReturnFormat,
     returnType: ReturnTypeParse,
     saveImages: boolean,
     selfContained: boolean,
-    timeZone: TimeZone,
+    timeZone: Intl.DateTimeFormatOptions["timeZone"],
 }
 
 /**
@@ -438,108 +345,3 @@ interface JsonSelectMenuString {
     placeholder: string | null,
     type: JsonComponentType.StringSelect,
 }
-
-type CommonLocales =
-    'ar-EG' |
-    'ar-SA' |
-    'bn-BD' |
-    'bn-IN' |
-    'cs-CZ' |
-    'da-DK' |
-    'de-AT' |
-    'de-CH' |
-    'de-DE' |
-    'el-GR' |
-    'en-AU' |
-    'en-CA' |
-    'en-GB' |
-    'en-IN' |
-    'en-US' |
-    'es-AR' |
-    'es-CO' |
-    'es-ES' |
-    'es-MX' |
-    'fa-IR' |
-    'fi-FI' |
-    'fr-BE' |
-    'fr-CA' |
-    'fr-FR' |
-    'he-IL' |
-    'hi-IN' |
-    'hu-HU' |
-    'id-ID' |
-    'it-IT' |
-    'ja-JP' |
-    'ko-KR' |
-    'ms-MY' |
-    'nl-BE' |
-    'nl-NL' |
-    'no-NO' |
-    'pl-PL' |
-    'pt-BR' |
-    'pt-PT' |
-    'ro-RO' |
-    'ru-RU' |
-    'sv-SE' |
-    'th-TH' |
-    'tr-TR' |
-    'uk-UA' |
-    'ur-PK' |
-    'vi-VN' |
-    'zh-CN' |
-    'zh-HK' |
-    'zh-TW';
-
-type CommonTimeZones =
-    'Africa/Cairo' |
-    'Africa/Johannesburg' |
-    'Africa/Lagos' |
-    'America/Argentina/Buenos_Aires' |
-    'America/Bogota' |
-    'America/Los_Angeles' |
-    'America/Mexico_City' |
-    'America/New_York' |
-    'America/Sao_Paulo' |
-    'America/Toronto' |
-    'America/Vancouver' |
-    'Asia/Bangkok' |
-    'Asia/Dhaka' |
-    'Asia/Dubai' |
-    'Asia/Ho_Chi_Minh' |
-    'Asia/Hong_Kong' |
-    'Asia/Istanbul' |
-    'Asia/Jakarta' |
-    'Asia/Jerusalem' |
-    'Asia/Karachi' |
-    'Asia/Kolkata' |
-    'Asia/Kuala_Lumpur' |
-    'Asia/Manila' |
-    'Asia/Riyadh' |
-    'Asia/Seoul' |
-    'Asia/Shanghai' |
-    'Asia/Taipei' |
-    'Asia/Tehran' |
-    'Asia/Tokyo' |
-    'Australia/Melbourne' |
-    'Australia/Perth' |
-    'Australia/Sydney' |
-    'Europe/Amsterdam' |
-    'Europe/Athens' |
-    'Europe/Berlin' |
-    'Europe/Brussels' |
-    'Europe/Budapest' |
-    'Europe/Copenhagen' |
-    'Europe/Helsinki' |
-    'Europe/Kyiv' |
-    'Europe/Lisbon' |
-    'Europe/London' |
-    'Europe/Madrid' |
-    'Europe/Moscow' |
-    'Europe/Oslo' |
-    'Europe/Paris' |
-    'Europe/Prague' |
-    'Europe/Rome' |
-    'Europe/Stockholm' |
-    'Europe/Warsaw' |
-    'Pacific/Auckland' |
-    'UTC';

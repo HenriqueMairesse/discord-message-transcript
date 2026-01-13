@@ -11,12 +11,11 @@ import { Uploadable } from "discord-message-transcript-base/types/types";
  * @param options Configuration options for creating the transcript. See {@link CreateTranscriptOptions} for details.
  * @returns A promise that resolves to the transcript in the specified format.
  */
-export declare function createTranscript(channel: TextBasedChannel): Promise<AttachmentBuilder>;
 export declare function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & {
     returnType: 'string';
 }): Promise<string>;
 export declare function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & {
-    returnType: "attachment";
+    returnType?: 'attachment';
 }): Promise<AttachmentBuilder>;
 export declare function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & {
     returnType: 'buffer';
@@ -27,11 +26,10 @@ export declare function createTranscript(channel: TextBasedChannel, options: Cre
 export declare function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & {
     returnType: 'uploadable';
 }): Promise<Uploadable>;
-export declare function createTranscript(channel: TextBasedChannel, options?: Omit<CreateTranscriptOptions, 'returnType'>): Promise<AttachmentBuilder>;
 /**
  * Converts a JSON transcript string into an HTML transcript.
  * Depending on the `returnType` option, this function can return an `AttachmentBuilder`,
- * a `string`, a `Buffer`, a `Stream`, or an `Uploadable` object.
+ * a `string`, a `Buffer`, a `Stream`, or an `Uploadable`  object.
  *
  * @param jsonString The JSON string representing the transcript data.
  * @param options Configuration options for converting the transcript. See {@link ConvertTranscriptOptions} for details.

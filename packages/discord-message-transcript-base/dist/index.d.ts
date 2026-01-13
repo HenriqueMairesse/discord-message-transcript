@@ -2,8 +2,7 @@ import Stream from "stream";
 import { Uploadable, ConvertTranscriptOptions } from "./types/types.js";
 /**
  * Converts a JSON transcript string into an HTML transcript.
- * Depending on the `returnType` option, this function can return an `AttachmentBuilder`,
- * a `string`, a `Buffer`, a `Stream`, or an `Uploadable` object.
+ * Depending on the `returnType` option, this function can return a `string`, a `Buffer`, a `Stream`, or an `Uploadable` object.
  *
  * @param jsonString The JSON string representing the transcript data.
  * @param options Configuration options for converting the transcript. See {@link ConvertTranscriptOptions} for details.
