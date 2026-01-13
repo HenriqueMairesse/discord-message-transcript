@@ -1,6 +1,9 @@
-import { ReturnType as ReturnTypeBase, CreateTranscriptOptions as CreateTranscriptOptionsBase, JsonMessageMentionsChannels, JsonMessageMentionsRoles, JsonMessageMentionsUsers } from "discord-message-transcript-base/types/types";
+import { ReturnType as ReturnTypeBase, ConvertTranscriptOptions as ConvertTranscriptOptionsBase, CreateTranscriptOptions as CreateTranscriptOptionsBase, JsonMessageMentionsChannels, JsonMessageMentionsRoles, JsonMessageMentionsUsers } from "discord-message-transcript-base/types/types";
 export type ReturnType = "attachment" | ReturnTypeBase;
 export interface CreateTranscriptOptions extends Omit<CreateTranscriptOptionsBase, 'returnType'> {
+    returnType?: ReturnType;
+}
+export interface ConvertTranscriptOptions extends Omit<ConvertTranscriptOptionsBase, 'returnType'> {
     returnType?: ReturnType;
 }
 export interface MapMentions {

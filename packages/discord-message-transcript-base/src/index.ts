@@ -1,15 +1,17 @@
 import { CustomError } from "./core/error.js";
 import { output } from "./core/output.js";
 import Stream from "stream";
-import { Uploadable, JsonData, ReturnType, JsonDataParse } from "./types/types.js";
+import { Uploadable, JsonData, JsonDataParse, ConvertTranscriptOptions } from "./types/types.js";
 
 export async function jsonToHTMLTranscript(jsonString: string): Promise<string>;
-export async function jsonToHTMLTranscript(jsonString: string, returnType: "string"): Promise<string>;
-export async function jsonToHTMLTranscript(jsonString: string, returnType: "buffer"): Promise<Buffer>;
-export async function jsonToHTMLTranscript(jsonString: string, returnType: "stream"): Promise<Stream>;
-export async function jsonToHTMLTranscript(jsonString: string, returnType: "uploadable"): Promise<Uploadable>;
+export async function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & { returnType: "string" }): Promise<string>;
+export async function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & { returnType: "buffer" }): Promise<Buffer>;
+export async function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & { returnType: "stream" }): Promise<Stream>;
+export async function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & { returnType: "uploadable" }): Promise<Uploadable>;
+export async function jsonToHTMLTranscript(jsonString: string, options?: Omit<ConvertTranscriptOptions, 'returnType'>): Promise<string>;
 
-export async function jsonToHTMLTranscript(jsonString: string, returnType?: ReturnType): Promise<string | Buffer | Stream | Uploadable> {
+
+export async function jsonToHTMLTranscript(jsonString: string, options?: ConvertTranscriptOptions): Promise<string | Buffer | Stream | Uploadable> {
     try {
         const jsonParse: JsonDataParse = JSON.parse(jsonString);
         const json: JsonData = {
@@ -17,7 +19,8 @@ export async function jsonToHTMLTranscript(jsonString: string, returnType?: Retu
             options: {
                 ...jsonParse.options,
                 returnFormat: "HTML",
-                returnType: returnType ?? "string"
+                returnType: options?.returnType ?? "string",
+                selfContained: options?.selfContained ?? false
             }
         }
         return await output(json);

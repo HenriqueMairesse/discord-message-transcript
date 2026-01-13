@@ -1,6 +1,6 @@
 import { CustomError } from "./core/error.js";
 import { output } from "./core/output.js";
-export async function jsonToHTMLTranscript(jsonString, returnType) {
+export async function jsonToHTMLTranscript(jsonString, options) {
     try {
         const jsonParse = JSON.parse(jsonString);
         const json = {
@@ -8,7 +8,8 @@ export async function jsonToHTMLTranscript(jsonString, returnType) {
             options: {
                 ...jsonParse.options,
                 returnFormat: "HTML",
-                returnType: returnType ?? "string"
+                returnType: options?.returnType ?? "string",
+                selfContained: options?.selfContained ?? false
             }
         };
         return await output(json);

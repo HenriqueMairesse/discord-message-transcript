@@ -5,7 +5,5 @@ In Mind:
         - Special builder to each type of embed (rich and poll_result already implemented)
     - Style: 
         - Remake the style
-    - Guild Icon:
-        - Implements that if a guild don't have a  
 
 Issues: 

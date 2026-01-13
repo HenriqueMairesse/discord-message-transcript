@@ -3,6 +3,7 @@ import { markdownToHTML } from "../../core/markdown.js";
 import { JsonAttachment, JsonButtonComponent, JsonButtonStyle, JsonComponentType, JsonData, JsonEmbed, JsonMessage, JsonPoll, JsonReaction, JsonSelectMenu, JsonTopLevelComponent } from "../../types/types.js";
 import { ACTIONROW_CSS, ATTACHMENT_CSS, BUTTON_CSS, COMPONENTS_CSS, COMPONENTSV2_CSS, DEFAULT_CSS, EMBED_CSS, MESSAGE_CSS, POLL_CSS, POLL_RESULT_EMBED_CSS, REACTIONS_CSS } from "./css.js";
 import { script } from "./js.js";
+import packageJson from "./../../../package.json" with { type: 'json' };
 
 const COUNT_UNIT = ["KB", "MB", "GB", "TB"];
 const BUTTON_COLOR = ["black", "#5865f2", "#323538", "#32c05f", "#be3638", "#323538", "#5865f2"];
@@ -83,7 +84,7 @@ export class Html {
             
             return `
 <div class="messageDiv" id="${message.id}" data-author-id="${message.authorId}">
-    ${ message.references && message.references.messageId ? 
+    ${message.references && message.references.messageId ? 
     `<div class="messageReply" data-id="${message.references.messageId}">
         <svg class="messageReplySvg"><use href="#reply-icon"></use></svg>
         <img class="messageReplyImg" src="">
@@ -113,6 +114,21 @@ export class Html {
 
     toHTML() {
         const { options } = this.data;
+        const cssContent = `
+            ${DEFAULT_CSS}
+            ${MESSAGE_CSS}
+            ${options.includePolls ? POLL_CSS + POLL_RESULT_EMBED_CSS : ""}
+            ${options.includeEmbeds ? EMBED_CSS : ""}
+            ${options.includeButtons || options.includeComponents ? ACTIONROW_CSS : ""}
+            ${options.includeAttachments || options.includeV2Components ? ATTACHMENT_CSS : ""}
+            ${options.includeButtons || options.includeV2Components ? BUTTON_CSS : ""}
+            ${options.includeComponents ? COMPONENTS_CSS : ""}
+            ${options.includeV2Components ? COMPONENTSV2_CSS : ""}
+            ${options.includeReactions ? REACTIONS_CSS : ""}
+        `;
+
+        const jsContent = script(options.includeComponents, options.includePolls);
+
         return `
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -122,18 +138,7 @@ export class Html {
     <title>${options.fileName}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/atom-one-dark.min.css">
     <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
-    <style>
-    ${DEFAULT_CSS}
-    ${MESSAGE_CSS}
-    ${options.includePolls ? POLL_CSS + POLL_RESULT_EMBED_CSS : ""}
-    ${options.includeEmbeds ? EMBED_CSS : ""}
-    ${options.includeButtons || options.includeComponents ? ACTIONROW_CSS : ""}
-    ${options.includeAttachments || options.includeV2Components ? ATTACHMENT_CSS : ""}
-    ${options.includeButtons || options.includeV2Components ? BUTTON_CSS : ""}
-    ${options.includeComponents ? COMPONENTS_CSS : ""}
-    ${options.includeV2Components ? COMPONENTSV2_CSS : ""}
-    ${options.includeReactions ? REACTIONS_CSS : ""}
-    </style>
+    ${options.selfContained ? `<style>${cssContent}</style>` : `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/discord-message-transcript-base@${packageJson.version}/dist/assets/style.css">`}
 </head>
 <body>
     ${this.svgBuilder()}
@@ -150,14 +155,12 @@ export class Html {
     <script id="authorData" type="application/json">
         ${JSON.stringify({ authors: this.data.authors })}
     </script>
-    <script>
-        ${script(options.includeComponents, options.includePolls)}
-    </script>
+    ${options.selfContained ? `<script>${jsContent}</script>` : `<script src="https://cdn.jsdelivr.net/npm/discord-message-transcript-base@${packageJson.version}/dist/assets/script.js"></script>`}
 </body>
-</html>     
+</html>
         `;
     }
-    
+
     private pollBuilder(poll: JsonPoll): string {
         const totalVotes = poll.answers.reduce((acc, answer) => acc + answer.count, 0);
 

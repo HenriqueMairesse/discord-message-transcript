@@ -23,6 +23,7 @@ export interface CreateTranscriptOptions {
     returnFormat?: ReturnFormat;
     returnType?: ReturnType;
     saveImages?: boolean;
+    selfContained?: boolean;
     timeZone?: TimeZone;
 }
 export interface TranscriptOptions {
@@ -36,11 +37,11 @@ export interface TranscriptOptions {
     includeReactions: boolean;
     includeV2Components: boolean;
     localDate: Locale;
-    offlineStyleAndJs: boolean;
     quantity: number;
     returnFormat: ReturnFormat;
     returnType: ReturnType;
     saveImages: boolean;
+    selfContained: boolean;
     timeZone: TimeZone;
 }
 export interface TranscriptOptionsParse {
@@ -54,12 +55,16 @@ export interface TranscriptOptionsParse {
     includeReactions: boolean;
     includeV2Components: boolean;
     localDate: Locale;
-    offlineStyleAndJs: boolean;
     quantity: number;
     returnFormat: ReturnFormat;
     returnType: ReturnTypeParse;
     saveImages: boolean;
+    selfContained: boolean;
     timeZone: TimeZone;
+}
+export interface ConvertTranscriptOptions {
+    returnType?: ReturnType;
+    selfContained?: boolean;
 }
 export interface ArrayMentions {
     channels: JsonMessageMentionsChannels[];

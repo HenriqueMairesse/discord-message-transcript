@@ -1,7 +1,7 @@
 import { AttachmentBuilder, TextBasedChannel } from "discord.js";
 import { Json } from "./renderers/json/json.js";
 import { fetchMessages } from "./core/fetchMessages.js";
-import { CreateTranscriptOptions, MapMentions, ReturnType } from "./types/types.js";
+import { ConvertTranscriptOptions, CreateTranscriptOptions, MapMentions, ReturnType } from "./types/types.js";
 import { output } from "./core/output.js";
 import { output as outputBase } from "discord-message-transcript-base/core/output"
 import Stream from "stream";
@@ -10,11 +10,11 @@ import { Uploadable, JsonAuthor, JsonData, TranscriptOptions, JsonMessageMention
 
 export async function createTranscript(channel: TextBasedChannel): Promise<AttachmentBuilder>;
 export async function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & { returnType: 'string' }): Promise<string>;
-export async function createTranscript(channel: TextBasedChannel, options?: CreateTranscriptOptions & { returnType: "attachment" }): Promise<AttachmentBuilder>;
+export async function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & { returnType: "attachment" }): Promise<AttachmentBuilder>;
 export async function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & { returnType: 'buffer' }): Promise<Buffer>;
 export async function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & { returnType: 'stream' }): Promise<Stream>;
 export async function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & { returnType: 'uploadable' }): Promise<Uploadable>;
-export async function createTranscript(channel: TextBasedChannel, options?: Omit<CreateTranscriptOptions, 'returnType'> | (CreateTranscriptOptions & { returnType?: 'attachment' | null })): Promise<AttachmentBuilder>;
+export async function createTranscript(channel: TextBasedChannel, options?: Omit<CreateTranscriptOptions, 'returnType'>): Promise<AttachmentBuilder>;
 
 export async function createTranscript(
     channel: TextBasedChannel, 
@@ -46,6 +46,7 @@ export async function createTranscript(
             quantity = 0,
             returnFormat = "HTML",
             saveImages = false,
+            selfContained = false,
             timeZone = 'UTC'
         } = options;
         const checkedFileName = (fileName ?? `Transcript-${channel.isDMBased() ? "DirectMessage" : channel.name}-${channel.id}`);
@@ -64,6 +65,7 @@ export async function createTranscript(
             returnFormat,
             returnType: artificialReturnType,
             saveImages,
+            selfContained,
             timeZone
         }
 
@@ -107,17 +109,19 @@ export async function createTranscript(
 }
 
 export async function jsonToHTMLTranscript(jsonString: string): Promise<AttachmentBuilder>;
-export async function jsonToHTMLTranscript(jsonString: string, returnType: "string"): Promise<string>;
-export async function jsonToHTMLTranscript(jsonString: string, returnType: "attachment"): Promise<AttachmentBuilder>;
-export async function jsonToHTMLTranscript(jsonString: string, returnType: "buffer"): Promise<Buffer>;
-export async function jsonToHTMLTranscript(jsonString: string, returnType: "stream"): Promise<Stream>;
-export async function jsonToHTMLTranscript(jsonString: string, returnType: "uploadable"): Promise<Uploadable>;
+export async function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & { returnType: "string" }): Promise<string>;
+export async function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & { returnType: "attachment" }): Promise<AttachmentBuilder>;
+export async function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & { returnType: "buffer" }): Promise<Buffer>;
+export async function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & { returnType: "stream" }): Promise<Stream>;
+export async function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & { returnType: "uploadable" }): Promise<Uploadable>;
+export async function jsonToHTMLTranscript(jsonString: string, options?: Omit<ConvertTranscriptOptions, 'returnType'>): Promise<AttachmentBuilder>;
 
-export async function jsonToHTMLTranscript(jsonString: string, returnType?: ReturnType): Promise<string | AttachmentBuilder | Buffer | Stream | Uploadable> {
+export async function jsonToHTMLTranscript(jsonString: string, options?: ConvertTranscriptOptions): Promise<string | AttachmentBuilder | Buffer | Stream | Uploadable> {
     try {
         const json: JsonData = JSON.parse(jsonString);
         json.options.returnFormat = "HTML";
-        const officialReturnType = returnType ?? "attachment";
+        json.options.selfContained = options?.selfContained ?? false;
+        const officialReturnType = options?.returnType ?? "attachment";
         if (officialReturnType == "attachment") json.options.returnType = "buffer";
         const result = await outputBase(json);
         if (officialReturnType == "attachment") {

@@ -529,7 +529,6 @@ export const COMPONENTSV2_CSS = `
     width: 100%;
     max-width: 40rem;
     aspect-ratio: 1 / 1;
-    border: 1px solid #202225
     padding: 0.35rem;
     overflow: hidden;
 }

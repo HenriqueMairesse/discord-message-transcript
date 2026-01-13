@@ -6,6 +6,7 @@ export async function output(json: JsonData,): Promise<string | Stream | Buffer 
 
     const objectHTML = new Html(json);
     const stringHTML = objectHTML.toHTML();
+    
     if (json.options.returnType == "string") {
         return stringHTML;
     }

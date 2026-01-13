@@ -13,7 +13,7 @@ export async function createTranscript(channel, options = {}) {
             }
         }
         const artificialReturnType = options.returnType == "attachment" ? "buffer" : options.returnType ?? "buffer";
-        const { fileName = null, includeAttachments = true, includeButtons = true, includeComponents = true, includeEmpty = false, includeEmbeds = true, includePolls = true, includeReactions = true, includeV2Components = true, localDate = 'en-GB', quantity = 0, returnFormat = "HTML", saveImages = false, timeZone = 'UTC' } = options;
+        const { fileName = null, includeAttachments = true, includeButtons = true, includeComponents = true, includeEmpty = false, includeEmbeds = true, includePolls = true, includeReactions = true, includeV2Components = true, localDate = 'en-GB', quantity = 0, returnFormat = "HTML", saveImages = false, selfContained = false, timeZone = 'UTC' } = options;
         const checkedFileName = (fileName ?? `Transcript-${channel.isDMBased() ? "DirectMessage" : channel.name}-${channel.id}`);
         const internalOptions = {
             fileName: checkedFileName,
@@ -30,6 +30,7 @@ export async function createTranscript(channel, options = {}) {
             returnFormat,
             returnType: artificialReturnType,
             saveImages,
+            selfContained,
             timeZone
         };
         const jsonTranscript = channel.isDMBased() ? new Json(null, channel, internalOptions) : new Json(channel.guild, channel, internalOptions);
@@ -69,11 +70,12 @@ export async function createTranscript(channel, options = {}) {
         throw new CustomError(`Unknow error: ${unknowErrorMessage}`);
     }
 }
-export async function jsonToHTMLTranscript(jsonString, returnType) {
+export async function jsonToHTMLTranscript(jsonString, options) {
     try {
         const json = JSON.parse(jsonString);
         json.options.returnFormat = "HTML";
-        const officialReturnType = returnType ?? "attachment";
+        json.options.selfContained = options?.selfContained ?? false;
+        const officialReturnType = options?.returnType ?? "attachment";
         if (officialReturnType == "attachment")
             json.options.returnType = "buffer";
         const result = await outputBase(json);
