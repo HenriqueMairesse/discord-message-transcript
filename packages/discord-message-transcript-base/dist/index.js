@@ -13,7 +13,7 @@ export * from './core/mappers.js';
  * @param options Configuration options for converting the transcript. See {@link ConvertTranscriptOptions} for details.
  * @returns A promise that resolves to the HTML transcript in the specified format.
  */
-export async function jsonToHTMLTranscript(jsonString, options = {}) {
+export async function renderHTMLFromJSON(jsonString, options = {}) {
     try {
         const jsonParse = JSON.parse(jsonString);
         const json = {
@@ -32,6 +32,6 @@ export async function jsonToHTMLTranscript(jsonString, options = {}) {
             throw new CustomError(`Error converting JSON to HTML: ${error.stack}`);
         }
         const unknowErrorMessage = String(error);
-        throw new CustomError(`Unknow error: ${unknowErrorMessage}`);
+        throw new CustomError(`Unknown error: ${unknowErrorMessage}`);
     }
 }

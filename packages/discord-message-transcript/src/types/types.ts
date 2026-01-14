@@ -1,6 +1,15 @@
-import { JsonMessageMentionsChannels, JsonMessageMentionsRoles, JsonMessageMentionsUsers, ReturnType, ReturnTypeBase, TranscriptOptions, Uploadable  } from "discord-message-transcript-base";
+import { JsonMessageMentionsChannels, JsonMessageMentionsRoles, JsonMessageMentionsUsers, LocalDate, ReturnFormat, TimeZone, Uploadable  } from "discord-message-transcript-base";
 import { AttachmentBuilder } from "discord.js";
 import Stream from 'stream';
+
+export declare enum ReturnType {
+    Attachment = "attachment",
+    Buffer = "buffer",
+    Stream = "stream",
+    String = "string",
+    Uploadable = "uploadable"
+};
+
 
 export type OutputType<T extends ReturnType> = 
     T extends ReturnType.Buffer ? Buffer 
@@ -28,6 +37,99 @@ export type ConvertTranscriptOptions<T extends ReturnType> = Partial<{
      */
     selfContained: boolean,
 }>;
+
+export interface TranscriptOptions<T extends ReturnType> {
+    /**
+     * The name of the file to be created.
+     * Default depends if is DM or Guild
+     */
+    fileName: string,
+    /**
+     * Whether to include attachments in the transcript.
+     * @default true
+     */
+    includeAttachments: boolean,
+    /**
+     * Whether to include buttons in the transcript.
+     * @default true
+     */
+    includeButtons: boolean,
+    /**
+     * Whether to include components in the transcript.
+     * @default true
+     */
+    includeComponents: boolean,
+    /**
+     * Whether to include empty messages in the transcript.
+     * @default false
+     */
+    includeEmpty: boolean,
+    /**
+     * Whether to include embeds in the transcript.
+     * @default true
+     */
+    includeEmbeds: boolean,
+    /**
+     * Whether to include polls in the transcript.
+     * @default true
+     */
+    includePolls: boolean,
+    /**
+     * Whether to include reactions in the transcript.
+     * @default true
+     */
+    includeReactions: boolean,
+    /**
+     * Whether to include V2 components in the transcript.
+     * @default true
+     */
+    includeV2Components: boolean,
+    /**
+     * The locale to use for formatting dates.
+     * Can be any BCP 47 language tag.
+     * @default 'en-GB'
+     */
+    localDate: LocalDate,
+    /**
+     * The maximum number of messages to fetch. Set to 0 to fetch all messages.
+     * @default 0
+     */
+    quantity: number,
+    /**
+     * The format of the returned transcript.
+     * - ReturnFormat.HTML - Returns the transcript as HTML
+     * - ReturnFormat.JSON - Returns the transcript as JSON
+     * @default ReturnFormat.HTML
+     */
+    returnFormat: ReturnFormat,
+    /**
+     * The type of the returned value.
+     * - ReturnType.Attachment - The transcript content as a `Attachment`
+     * - ReturnType.String - The transcript content as a string.
+     * - ReturnType.Buffer - The transcript content as a `Buffer`.
+     * - ReturnType.Stream - The transcript content as a `Stream`.
+     * - ReturnType.Uploadable` - An object with `content`, `contentType` and `fileName`.
+     * @default ReturnType.Attachment
+     */
+    returnType: T,
+    /**
+     * Whether to save images locally or use remote URLs.
+     * @default false
+     */
+    saveImages: boolean,
+    /**
+     * Whether the generated HTML should be self-contained.
+     * Only matters if `returnFormat` is `HTML`.
+     * @default false
+     */
+    selfContained: boolean,
+    /**
+     * The timezone to use for formatting dates.
+     * Can be any IANA time zone name.
+     * @default 'UTC'
+     */
+    timeZone: TimeZone,
+}
     
 export interface MapMentions {
     channels: Map<string, JsonMessageMentionsChannels>;

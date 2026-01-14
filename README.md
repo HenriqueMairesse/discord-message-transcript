@@ -3,7 +3,7 @@
 🌍 Read this document in:
 - 🇧🇷 [Português](README.pt-BR.md)
 
-A modular and privacy-focused library for exporting Discord messages into **JSON** or **HTML** transcripts, with visual fidelity and long-term archival support.
+A modular library for exporting Discord messages into **JSON** or **HTML** transcripts, with visual fidelity and long-term archival support.
 
 ---
 
@@ -54,7 +54,7 @@ This repository is a **pnpm monorepo** containing two npm packages:
   - Bots
   - Ticket systems
   - Moderation logs
-  - Channel backups
+  - Channel message backups
 
 ---
 
@@ -177,15 +177,15 @@ Fetches messages from a Discord channel and generates a transcript. This functio
     -   `includeV2Components`: Whether to include V2 message components. (Default: `true`)
     -   `localDate`: The locale to use for dates. (Default: `'en-GB'`)
     -   `quantity`: The maximum number of messages to fetch. (Default: `0` - all messages)
-    -   `returnFormat`: The format of the transcript. (Default: `'HTML'`)
-        -   `'HTML'`: Returns an HTML transcript.
-        -   `'JSON'`: Returns a JSON transcript.
+    -   `returnFormat`: The format of the transcript.
+        -   `ReturnFormat.HTML`: (Default) Returns an HTML transcript.
+        -   `ReturnFormat.JSON`: Returns a JSON transcript.
     -   `returnType`: The format to return the transcript in.
-        -   `'attachment'`: (Default) Returns a `AttachmentBuilder` object.
-        -   `'string'`: Returns a string (HTML or JSON).
-        -   `'buffer'`: Returns a `Buffer`.
-        -   `'stream'`: Returns a `Stream`.
-        -   `'uploadable'`: Returns an `Uploadable` object.
+        -   `ReturnType.Attachment`: (Default) Returns a `AttachmentBuilder` object.
+        -   `ReturnType.String`: Returns a string.
+        -   `ReturnType.Buffer`: Returns a `Buffer`.
+        -   `ReturnType.Stream`: Returns a `Stream`.
+        -   `ReturnType.Uploadable`: Returns an `Uploadable` object.
     -   `saveImages`: Whether to save images locally. (Default: `false`)
     -   `selfContained`: Whether to include all assets in a single file. (Default: `false`)
     -   `timeZone`: The timezone to use for dates. (Default: `'UTC'`)
@@ -198,16 +198,16 @@ Converts a JSON transcript string to an HTML transcript. This function is availa
 -   **`options`**: An object with the following properties:
     -   `returnType`: The format to return the transcript in.
         -   **`discord-message-transcript`**:
-            -   `'attachment'`: (Default) Returns a `AttachmentBuilder` object.
-            -   `'string'`: Returns a string.
-            -   `'buffer'`: Returns a `Buffer`.
-            -   `'stream'`: Returns a `Stream`.
-            -   `'uploadable'`: Returns an `Uploadable` object.
+            -   `ReturnType.Attachment`: (Default) Returns a `AttachmentBuilder` object.
+            -   `ReturnType.String`: Returns a string.
+            -   `ReturnType.Buffer`: Returns a `Buffer`.
+            -   `ReturnType.Stream`: Returns a `Stream`.
+            -   `ReturnType.Uploadable`: Returns an `Uploadable` object.
         -   **`discord-message-transcript-base`**:
-            -   `'string'`: (Default) Returns a string.
-            -   `'buffer'`: Returns a `Buffer`.
-            -   `'stream'`: Returns a `Stream`.
-            -   `'uploadable'`: Returns an `Uploadable` object.
+            -   `ReturnType.String`: (Default) Returns a string.
+            -   `ReturnType.Buffer`: Returns a `Buffer`.
+            -   `ReturnType.Stream`: Returns a `Stream`.
+            -   `ReturnType.Uploadable`: Returns an `Uploadable` object.
     -   `selfContained`: Whether to include all assets in a single file. (Default: `false`)
 
 ---

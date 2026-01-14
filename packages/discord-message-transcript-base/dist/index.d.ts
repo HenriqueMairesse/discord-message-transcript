@@ -11,4 +11,4 @@ export * from './core/mappers.js';
  * @param options Configuration options for converting the transcript. See {@link ConvertTranscriptOptions} for details.
  * @returns A promise that resolves to the HTML transcript in the specified format.
  */
-export declare function jsonToHTMLTranscript<T extends ReturnTypeBase = ReturnTypeBase.String>(jsonString: string, options?: ConvertTranscriptOptions<T>): Promise<OutputTypeBase<T>>;
+export declare function renderHTMLFromJSON<T extends ReturnTypeBase = ReturnTypeBase.String>(jsonString: string, options?: ConvertTranscriptOptions<T>): Promise<OutputTypeBase<T>>;

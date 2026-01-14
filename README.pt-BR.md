@@ -3,7 +3,7 @@
 🌍 Leia este documento em:
 - 🇺🇸 [English](README.md)
 
-Uma biblioteca modular e focada em privacidade para exportar mensagens do Discord em **JSON** ou **HTML**, com fidelidade visual e suporte para arquivamento de longo prazo.
+Uma biblioteca modular para exportar mensagens do Discord em **JSON** ou **HTML**, com fidelidade visual e suporte para arquivamento de longo prazo.
 
 ---
 
@@ -23,7 +23,7 @@ Uma biblioteca modular e focada em privacidade para exportar mensagens do Discor
     - [Instalação](#instalação)
     - [Funções](#funções)
       - [`createTranscript(channel, options)`](#createtranscriptchannel-options)
-      - [`jsonToHTMLTranscript(jsonString, options)`](#jsontohtmltranscriptjsonstring-options)
+      - [`renderHTMLFromJSON(jsonString, options)`](#renderhtmlfromjsonjsonstring-options)
   - [🔐 Permissões e Acesso](#-permissões-e-acesso)
   - [⚠️ Aviso Legal, Políticas do Discord e Responsabilidade do Usuário](#️-aviso-legal-políticas-do-discord-e-responsabilidade-do-usuário)
     - [Aviso Importante](#aviso-importante)
@@ -54,7 +54,7 @@ Este repositório é um **monorepo gerenciado com pnpm**, contendo dois pacotes 
   - Bots
   - Sistemas de ticket
   - Logs de moderação
-  - Backup de canais
+  - Backup de mensagem dos canais
 
 ---
 
@@ -177,20 +177,20 @@ Busca mensagens de um canal do Discord e gera um transcript. Esta função está
     -   `includeV2Components`: Se deve incluir componentes de mensagens V2. (Padrão: `true`)
     -   `localDate`: A localidade a ser usada para datas. (Padrão: `'en-GB'`)
     -   `quantity`: A quantidade máxima de mensagens a serem buscadas. (Padrão: `0` - todas as mensagens)
-    -   `returnFormat`: O formato do transcript. (Padrão: `'HTML'`)
-        -   `'HTML'`: Retorna um transcript em HTML.
-        -   `'JSON'`: Retorna um transcript em JSON.
+    -   `returnFormat`: O formato do transcript.
+        -   `ReturnFormat.HTML`: (Padrão) Retorna um transcript em HTML.
+        -   `ReturnFormat.JSON`: Retorna um transcript em JSON.
     -   `returnType`: O formato de retorno do transcript.
-        -   `'attachment'`: (Padrão) Retorna um objeto `AttachmentBuilder`.
-        -   `'string'`: Retorna uma string (HTML ou JSON).
-        -   `'buffer'`: Retorna um `Buffer`.
-        -   `'stream'`: Retorna um `Stream`.
-        -   `'uploadable'`: Retorna um objeto `Uploadable`.
+        -   `ReturnType.Attachment`: (Padrão) Retorna um objeto `AttachmentBuilder`.
+        -   `ReturnType.String`: Retorna uma string.
+        -   `ReturnType.Buffer`: Retorna um `Buffer`.
+        -   `ReturnType.Stream`: Retorna um `Stream`.
+        -   `ReturnType.Uploadable`: Retorna um objeto `Uploadable`.
     -   `saveImages`: Se deve salvar imagens localmente. (Padrão: `false`)
     -   `selfContained`: Se deve incluir todos os ativos em um único arquivo. (Padrão: `false`)
     -   `timeZone`: O fuso horário a ser usado para datas. (Padrão: `'UTC'`)
 
-#### `jsonToHTMLTranscript(jsonString, options)`
+#### `renderHTMLFromJSON(jsonString, options)`
 
 Converte uma string de transcript JSON em um transcript HTML. Esta função está disponível em ambos os pacotes.
 
@@ -198,16 +198,16 @@ Converte uma string de transcript JSON em um transcript HTML. Esta função est�
 -   **`options`**: Um objeto com as seguintes propriedades:
     -   `returnType`: O formato de retorno do transcript.
         -   **`discord-message-transcript`**:
-            -   `'attachment'`: (Padrão) Retorna um objeto `AttachmentBuilder`.
-            -   `'string'`: Retorna uma string.
-            -   `'buffer'`: Retorna um `Buffer`.
-            -   `'stream'`: Retorna um `Stream`.
-            -   `'uploadable'`: Retorna um objeto `Uploadable`.
+            -   `ReturnType.Attachment`: (Padrão) Retorna um objeto `AttachmentBuilder`.
+            -   `ReturnType.String`: Retorna uma string.
+            -   `ReturnType.Buffer`: Retorna um `Buffer`.
+            -   `ReturnType.Stream`: Retorna um `Stream`.
+            -   `ReturnType.Uploadable`: Retorna um objeto `Uploadable`.
         -   **`discord-message-transcript-base`**:
-            -   `'string'`: (Padrão) Retorna uma string.
-            -   `'buffer'`: Retorna um `Buffer`.
-            -   `'stream'`: Retorna um `Stream`.
-            -   `'uploadable'`: Retorna um objeto `Uploadable`.
+            -   `ReturnType.String`: (Padrão) Retorna uma string.
+            -   `ReturnType.Buffer`: Retorna um `Buffer`.
+            -   `ReturnType.Stream`: Retorna um `Stream`.
+            -   `ReturnType.Uploadable`: Retorna um objeto `Uploadable`.
     -   `selfContained`: Se deve incluir todos os ativos em um único arquivo. (Padrão: `false`)
 
 ---
@@ -215,7 +215,7 @@ Converte uma string de transcript JSON em um transcript HTML. Esta função est�
 ## 🔐 Permissões e Acesso
 
 - O bot precisa estar logado
-- **Nenhuma intent privilegiada de gateway é necessária**
+- Nenhuma intent privilegiada de gateway é necessária
 - Intents obrigatórias por contexto:
   - **Mensagens Diretas (DMs / DMs em grupo):**
     - `DirectMessages`

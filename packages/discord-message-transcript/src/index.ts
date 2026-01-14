@@ -1,12 +1,12 @@
-export type { CreateTranscriptOptions, ConvertTranscriptOptions } from "./types/types.js";
-export { ReturnFormat, ReturnType, TranscriptOptions, LocalDate, TimeZone } from "discord-message-transcript-base";
+export type { CreateTranscriptOptions, ConvertTranscriptOptions, TranscriptOptions, ReturnType } from "./types/types.js";
+export { ReturnFormat, LocalDate, TimeZone } from "discord-message-transcript-base";
 
 import { AttachmentBuilder, TextBasedChannel } from "discord.js";
 import { Json } from "./renderers/json/json.js";
 import { fetchMessages } from "./core/fetchMessages.js";
-import { ConvertTranscriptOptions, CreateTranscriptOptions, MapMentions, OutputType } from "./types/types.js";
+import { ConvertTranscriptOptions, CreateTranscriptOptions, MapMentions, OutputType, ReturnType } from "./types/types.js";
 import { output } from "./core/output.js";
-import { JsonAuthor, JsonData, JsonMessageMentionsChannels, JsonMessageMentionsUsers, JsonMessageMentionsRoles, ReturnType, ReturnTypeBase, TranscriptOptionsBase, ReturnFormat, outputBase, CustomError, returnTypeMapper } from "discord-message-transcript-base";
+import { JsonAuthor, JsonData, JsonMessageMentionsChannels, JsonMessageMentionsUsers, JsonMessageMentionsRoles, ReturnTypeBase, TranscriptOptionsBase, ReturnFormat, outputBase, CustomError, returnTypeMapper } from "discord-message-transcript-base";
 
 /**
  * Creates a transcript of a Discord channel's messages.
@@ -27,7 +27,7 @@ export async function createTranscript<T extends ReturnType = ReturnType.Attachm
         if (!channel.isDMBased()) {
             const permissions = channel.permissionsFor(channel.client.user);
             if (!permissions || (!permissions.has("ViewChannel") || !permissions.has('ReadMessageHistory'))) {
-                throw new CustomError(`Channel selected, ${channel.name} with id: ${channel.id}, can't be use to create a transcript because the bot dosen't have permission for View the Channel or Read the Message History. Add the permissions or choose another channel!`);
+                throw new CustomError(`Channel selected, ${channel.name} with id: ${channel.id}, can't be used to create a transcript because the bot doesn't have permission for View the Channel or Read the Message History. Add the permissions or choose another channel!`);
             } 
         }
 
@@ -105,7 +105,7 @@ export async function createTranscript<T extends ReturnType = ReturnType.Attachm
             throw new CustomError(`Error creating transcript: ${error.stack}`);
         } 
         const unknowErrorMessage = String(error);
-        throw new CustomError(`Unknow error: ${unknowErrorMessage}`);
+        throw new CustomError(`Unknown error: ${unknowErrorMessage}`);
     }
 }
 
@@ -118,7 +118,7 @@ export async function createTranscript<T extends ReturnType = ReturnType.Attachm
  * @param options Configuration options for converting the transcript. See {@link ConvertTranscriptOptions} for details.
  * @returns A promise that resolves to the HTML transcript in the specified format.
  */
-export async function jsonToHTMLTranscript<T extends ReturnType = ReturnType.Attachment>(jsonString: string, options: ConvertTranscriptOptions<T> = {}): Promise<OutputType<T>> {
+export async function renderHTMLFromJSON<T extends ReturnType = ReturnType.Attachment>(jsonString: string, options: ConvertTranscriptOptions<T> = {}): Promise<OutputType<T>> {
     try {
         const json: JsonData = JSON.parse(jsonString);
         json.options.returnFormat = ReturnFormat.HTML;
@@ -138,6 +138,6 @@ export async function jsonToHTMLTranscript<T extends ReturnType = ReturnType.Att
             throw new CustomError(`Error converting JSON to HTML: ${error.stack}`);
         } 
         const unknowErrorMessage = String(error);
-        throw new CustomError(`Unknow error: ${unknowErrorMessage}`);
+        throw new CustomError(`Unknown error: ${unknowErrorMessage}`);
     }
 }

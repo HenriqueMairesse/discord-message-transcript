@@ -1,5 +1,5 @@
-export type { CreateTranscriptOptions, ConvertTranscriptOptions } from "./types/types.js";
-export { ReturnFormat, ReturnType, TranscriptOptions, LocalDate, TimeZone } from "discord-message-transcript-base";
+export type { CreateTranscriptOptions, ConvertTranscriptOptions, TranscriptOptions } from "./types/types.js";
+export { ReturnFormat, ReturnType, LocalDate, TimeZone } from "discord-message-transcript-base";
 import { TextBasedChannel } from "discord.js";
 import { ConvertTranscriptOptions, CreateTranscriptOptions, OutputType } from "./types/types.js";
 import { ReturnType } from "discord-message-transcript-base";
