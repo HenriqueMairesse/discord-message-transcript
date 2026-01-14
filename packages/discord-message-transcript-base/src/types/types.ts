@@ -6,6 +6,12 @@ export type JsonTopLevelComponent = JsonActionRow | JsonButtonComponent | JsonSe
 export type JsonV2Component = JsonContainerComponent | JsonFileComponent | JsonMediaGalleryComponent | JsonSectionComponent | JsonSeparatorComponent | JsonTextDisplayComponent | JsonThumbnailComponent;
 export type StyleTimeStampKey = "t" | "T" | "d" | "D" | "f" | "F";
 
+export type LocalDate = 'ar-EG' | 'ar-SA' | 'bn-BD' | 'bn-IN' | 'cs-CZ' | 'da-DK' | 'de-AT' | 'de-CH' | 'de-DE' | 'el-GR' | 'en-AU' | 'en-CA' | 'en-GB' | 'en-IN' | 'en-US' | 'es-AR' | 'es-CO' | 'es-ES' | 'es-MX' | 'fa-IR' | 'fi-FI' | 'fr-BE' | 'fr-CA' | 'fr-FR' | 'he-IL' | 'hi-IN' | 'hu-HU' | 'id-ID' | 'it-IT' | 'ja-JP' | 'ko-KR' | 'ms-MY' | 'nl-BE' | 'nl-NL' | 'no-NO' | 'pl-PL' | 'pt-BR' | 'pt-PT' | 'ro-RO' | 'ru-RU' | 'sv-SE' | 'th-TH' | 'tr-TR' | 'uk-UA' | 'ur-PK' | 'vi-VN' | 'zh-CN' | 'zh-HK' | 'zh-TW'
+    | (string & {});
+
+export type TimeZone = 'Africa/Cairo' | 'Africa/Johannesburg' | 'Africa/Lagos' | 'America/Argentina/Buenos_Aires' | 'America/Bogota' | 'America/Los_Angeles' | 'America/Mexico_City' | 'America/New_York' | 'America/Sao_Paulo' | 'America/Toronto' | 'America/Vancouver' | 'Asia/Bangkok' | 'Asia/Dhaka' | 'Asia/Dubai' | 'Asia/Ho_Chi_Minh' | 'Asia/Hong_Kong' | 'Asia/Istanbul' | 'Asia/Jakarta' | 'Asia/Jerusalem' | 'Asia/Karachi' | 'Asia/Kolkata' | 'Asia/Kuala_Lumpur' | 'Asia/Manila' | 'Asia/Riyadh' | 'Asia/Seoul' | 'Asia/Shanghai' | 'Asia/Taipei' | 'Asia/Tehran' | 'Asia/Tokyo' | 'Australia/Melbourne' | 'Australia/Perth' | 'Australia/Sydney' | 'Europe/Amsterdam' | 'Europe/Athens' | 'Europe/Berlin' | 'Europe/Brussels' | 'Europe/Budapest' | 'Europe/Copenhagen' | 'Europe/Helsinki' | 'Europe/Kyiv' | 'Europe/Lisbon' | 'Europe/London' | 'Europe/Madrid' | 'Europe/Moscow' | 'Europe/Oslo' | 'Europe/Paris' | 'Europe/Prague' | 'Europe/Rome' | 'Europe/Stockholm' | 'Europe/Warsaw' | 'Pacific/Auckland' | 'UTC' 
+    | (string & {});
+
 export declare enum ReturnFormat {
     HTML = "HTML",
     JSON = "JSON"
@@ -42,13 +48,13 @@ export interface TranscriptOptionsBase {
     includePolls: boolean,
     includeReactions: boolean,
     includeV2Components: boolean,
-    localDate: Intl.LocalesArgument,
+    localDate: LocalDate,
     quantity: number,
     returnFormat: ReturnFormat,
     returnType: ReturnTypeBase,
     saveImages: boolean,
     selfContained: boolean,
-    timeZone: Intl.DateTimeFormatOptions["timeZone"],
+    timeZone: TimeZone,
 }
 
 export interface TranscriptOptions<T extends ReturnType> {
@@ -99,9 +105,10 @@ export interface TranscriptOptions<T extends ReturnType> {
     includeV2Components: boolean,
     /**
      * The locale to use for formatting dates.
+     * Can be any BCP 47 language tag.
      * @default 'en-GB'
      */
-    localDate: Intl.LocalesArgument,
+    localDate: LocalDate,
     /**
      * The maximum number of messages to fetch. Set to 0 to fetch all messages.
      * @default 0
@@ -137,9 +144,10 @@ export interface TranscriptOptions<T extends ReturnType> {
     selfContained: boolean,
     /**
      * The timezone to use for formatting dates.
+     * Can be any IANA time zone name.
      * @default 'UTC'
      */
-    timeZone: Intl.DateTimeFormatOptions["timeZone"],
+    timeZone: TimeZone,
 }
 
 export interface TranscriptOptionsParse {
@@ -152,13 +160,13 @@ export interface TranscriptOptionsParse {
     includePolls: boolean,
     includeReactions: boolean,
     includeV2Components: boolean,
-    localDate: Intl.LocalesArgument,
+    localDate: LocalDate,
     quantity: number,
     returnFormat: ReturnFormat,
     returnType: ReturnType,
     saveImages: boolean,
     selfContained: boolean,
-    timeZone: Intl.DateTimeFormatOptions["timeZone"],
+    timeZone: TimeZone,
 }
 
 /**
