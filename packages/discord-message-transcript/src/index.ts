@@ -1,12 +1,12 @@
+export type { CreateTranscriptOptions, ConvertTranscriptOptions } from "./types/types.js";
+export { ReturnFormat, ReturnType, TranscriptOptions } from "discord-message-transcript-base";
+
 import { AttachmentBuilder, TextBasedChannel } from "discord.js";
 import { Json } from "./renderers/json/json.js";
 import { fetchMessages } from "./core/fetchMessages.js";
-import { ConvertTranscriptOptions, CreateTranscriptOptions, MapMentions, ReturnType } from "./types/types.js";
+import { ConvertTranscriptOptions, CreateTranscriptOptions, MapMentions, OutputType } from "./types/types.js";
 import { output } from "./core/output.js";
-import { output as outputBase } from "discord-message-transcript-base/core/output"
-import Stream from "stream";
-import { CustomError } from "discord-message-transcript-base/core/error"
-import { Uploadable, JsonAuthor, JsonData, TranscriptOptions, JsonMessageMentionsChannels, JsonMessageMentionsUsers, JsonMessageMentionsRoles } from "discord-message-transcript-base/types/types";
+import { JsonAuthor, JsonData, JsonMessageMentionsChannels, JsonMessageMentionsUsers, JsonMessageMentionsRoles, ReturnType, ReturnTypeBase, TranscriptOptionsBase, ReturnFormat, outputBase, CustomError, returnTypeMapper } from "discord-message-transcript-base";
 
 /**
  * Creates a transcript of a Discord channel's messages.
@@ -17,18 +17,10 @@ import { Uploadable, JsonAuthor, JsonData, TranscriptOptions, JsonMessageMention
  * @param options Configuration options for creating the transcript. See {@link CreateTranscriptOptions} for details.
  * @returns A promise that resolves to the transcript in the specified format.
  */
-export async function createTranscript(channel: TextBasedChannel): Promise<AttachmentBuilder>;
-export async function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & { returnType: 'string' }): Promise<string>;
-export async function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & { returnType: "attachment" }): Promise<AttachmentBuilder>;
-export async function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & { returnType: 'buffer' }): Promise<Buffer>;
-export async function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & { returnType: 'stream' }): Promise<Stream>;
-export async function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & { returnType: 'uploadable' }): Promise<Uploadable>;
-export async function createTranscript(channel: TextBasedChannel, options?: Omit<CreateTranscriptOptions, 'returnType'>): Promise<AttachmentBuilder>;
-
-export async function createTranscript(
+export async function createTranscript<T extends ReturnType = ReturnType.Attachment>(
     channel: TextBasedChannel, 
-    options: CreateTranscriptOptions = {}
-): Promise<string | AttachmentBuilder | Buffer | Stream | Uploadable> {
+    options: CreateTranscriptOptions<T> = {}
+): Promise<OutputType<T>> {
 
     try {
 
@@ -39,7 +31,7 @@ export async function createTranscript(
             } 
         }
 
-        const artificialReturnType = options.returnType == "attachment" ? "buffer" : options.returnType ?? "buffer";
+        const artificialReturnType: ReturnTypeBase = options.returnType == ReturnType.Attachment ? ReturnTypeBase.Buffer : options.returnType ? returnTypeMapper(options.returnType) : ReturnTypeBase.Buffer;
 
         const {
             fileName = null,
@@ -53,13 +45,13 @@ export async function createTranscript(
             includeV2Components = true,
             localDate = 'en-GB',
             quantity = 0,
-            returnFormat = "HTML",
+            returnFormat = ReturnFormat.JSON,
             saveImages = false,
             selfContained = false,
             timeZone = 'UTC'
         } = options;
         const checkedFileName = (fileName ?? `Transcript-${channel.isDMBased() ? "DirectMessage" : channel.name}-${channel.id}`);
-        const internalOptions: TranscriptOptions = {
+        const internalOptions: TranscriptOptionsBase = {
             fileName: checkedFileName,
             includeAttachments,
             includeButtons,
@@ -99,14 +91,14 @@ export async function createTranscript(
         jsonTranscript.setAuthors(Array.from(authors.values()));
         jsonTranscript.setMentions({ channels: Array.from(mentions.channels.values()), roles: Array.from(mentions.roles.values()), users: Array.from(mentions.users.values()) });
         const result = await output(await jsonTranscript.toJson());
-        if (options.returnType == "attachment") {
+        if (!options.returnType || options.returnType == "attachment") {
             if (!(result instanceof Buffer)) {
                 throw new CustomError("Expected buffer from output when *attachment* returnType is used.");
             }
             const fileExtension = returnFormat == "HTML" ? ".html" : ".json";
-            return new AttachmentBuilder(result, { name: internalOptions.fileName + fileExtension});
+            return new AttachmentBuilder(result, { name: internalOptions.fileName + fileExtension}) as OutputType<T>;
         }
-        return result;
+        return result as OutputType<T>;
         
     } catch (error) {
         if (error instanceof Error) {
@@ -126,29 +118,21 @@ export async function createTranscript(
  * @param options Configuration options for converting the transcript. See {@link ConvertTranscriptOptions} for details.
  * @returns A promise that resolves to the HTML transcript in the specified format.
  */
-export async function jsonToHTMLTranscript(jsonString: string): Promise<AttachmentBuilder>;
-export async function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & { returnType: "string" }): Promise<string>;
-export async function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & { returnType: "attachment" }): Promise<AttachmentBuilder>;
-export async function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & { returnType: "buffer" }): Promise<Buffer>;
-export async function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & { returnType: "stream" }): Promise<Stream>;
-export async function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & { returnType: "uploadable" }): Promise<Uploadable>;
-export async function jsonToHTMLTranscript(jsonString: string, options?: Omit<ConvertTranscriptOptions, 'returnType'>): Promise<AttachmentBuilder>;
-
-export async function jsonToHTMLTranscript(jsonString: string, options?: ConvertTranscriptOptions): Promise<string | AttachmentBuilder | Buffer | Stream | Uploadable> {
+export async function jsonToHTMLTranscript<T extends ReturnType = ReturnType.Attachment>(jsonString: string, options: ConvertTranscriptOptions<T> = {}): Promise<OutputType<T>> {
     try {
         const json: JsonData = JSON.parse(jsonString);
-        json.options.returnFormat = "HTML";
+        json.options.returnFormat = ReturnFormat.HTML;
         json.options.selfContained = options?.selfContained ?? false;
-        const officialReturnType = options?.returnType ?? "attachment";
-        if (officialReturnType == "attachment") json.options.returnType = "buffer";
+        const officialReturnType = options?.returnType ?? ReturnType.Attachment;
+        if (officialReturnType == ReturnType.Attachment) json.options.returnType = ReturnTypeBase.Buffer;
         const result = await outputBase(json);
-        if (officialReturnType == "attachment") {
+        if (officialReturnType == ReturnType.Attachment) {
             if (!(result instanceof Buffer)) {
                 throw new CustomError("Expected buffer from outputBase when *attachment* returnType is used.");
             }
-            return new AttachmentBuilder(result, { name: json.options.fileName + ".html"});
+            return new AttachmentBuilder(result, { name: json.options.fileName + ".html"}) as OutputType<T>;
         }
-        return result;
+        return result as OutputType<T>;
     } catch (error) {
         if (error instanceof Error) {
             throw new CustomError(`Error converting JSON to HTML: ${error.stack}`);

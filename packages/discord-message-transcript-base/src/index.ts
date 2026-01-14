@@ -1,7 +1,10 @@
 import { CustomError } from "./core/error.js";
 import { output } from "./core/output.js";
-import Stream from "stream";
-import { Uploadable, JsonData, JsonDataParse, ConvertTranscriptOptions } from "./types/types.js";
+import { JsonData, JsonDataParse, ConvertTranscriptOptions, ReturnTypeBase, OutputTypeBase, ReturnFormat } from "./types/types.js";
+export * from './types/types.js';
+export { CustomError } from "./core/error.js";
+export { output as outputBase } from "./core/output.js";
+export * from './core/mappers.js'
 
 /**
  * Converts a JSON transcript string into an HTML transcript.
@@ -11,27 +14,19 @@ import { Uploadable, JsonData, JsonDataParse, ConvertTranscriptOptions } from ".
  * @param options Configuration options for converting the transcript. See {@link ConvertTranscriptOptions} for details.
  * @returns A promise that resolves to the HTML transcript in the specified format.
  */
-export async function jsonToHTMLTranscript(jsonString: string): Promise<string>;
-export async function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & { returnType: "string" }): Promise<string>;
-export async function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & { returnType: "buffer" }): Promise<Buffer>;
-export async function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & { returnType: "stream" }): Promise<Stream>;
-export async function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & { returnType: "uploadable" }): Promise<Uploadable>;
-export async function jsonToHTMLTranscript(jsonString: string, options?: Omit<ConvertTranscriptOptions, 'returnType'>): Promise<string>;
-
-
-export async function jsonToHTMLTranscript(jsonString: string, options?: ConvertTranscriptOptions): Promise<string | Buffer | Stream | Uploadable> {
+export async function jsonToHTMLTranscript<T extends ReturnTypeBase = ReturnTypeBase.String>(jsonString: string, options: ConvertTranscriptOptions<T> = {}): Promise<OutputTypeBase<T>> {
     try {
         const jsonParse: JsonDataParse = JSON.parse(jsonString);
         const json: JsonData = {
             ...jsonParse,
             options: {
                 ...jsonParse.options,
-                returnFormat: "HTML",
-                returnType: options?.returnType ?? "string",
+                returnFormat: ReturnFormat.HTML,
+                returnType: options?.returnType ?? ReturnTypeBase.String,
                 selfContained: options?.selfContained ?? false
             }
         }
-        return await output(json);
+        return await output(json) as OutputTypeBase<T>;
     } catch (error) {
         if (error instanceof Error) {
             throw new CustomError(`Error converting JSON to HTML: ${error.stack}`);

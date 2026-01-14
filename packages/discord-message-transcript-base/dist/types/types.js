@@ -1,3 +1,4 @@
+;
 export var JsonButtonStyle;
 (function (JsonButtonStyle) {
     JsonButtonStyle[JsonButtonStyle["Primary"] = 1] = "Primary";

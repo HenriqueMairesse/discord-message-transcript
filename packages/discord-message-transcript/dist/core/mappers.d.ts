@@ -1,5 +1,5 @@
 import { ButtonStyle, ComponentType, SeparatorSpacingSize } from "discord.js";
-import { JsonButtonStyle, JsonComponentType, JsonSeparatorSpacingSize } from "discord-message-transcript-base/types/types";
+import { JsonButtonStyle, JsonComponentType, JsonSeparatorSpacingSize } from "discord-message-transcript-base";
 export declare function mapButtonStyle(style: ButtonStyle): JsonButtonStyle;
 export declare function mapSeparatorSpacing(spacing: SeparatorSpacingSize): JsonSeparatorSpacingSize;
 export declare function mapComponentType(componentType: ComponentType): JsonComponentType;

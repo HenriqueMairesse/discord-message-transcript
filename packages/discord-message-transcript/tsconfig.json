@@ -10,4 +10,7 @@
     "esModuleInterop": true
   },
   "include": ["src"],
+  "references": [
+    { "path": "../discord-message-transcript-base" }
+  ]
 }

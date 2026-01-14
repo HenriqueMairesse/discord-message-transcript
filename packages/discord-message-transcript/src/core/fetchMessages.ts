@@ -1,12 +1,11 @@
 import { TextBasedChannel } from "discord.js";
 import { componentsToJson } from "./componentToJson.js";
 import { urlToBase64 } from "./imageToBase64.js";
-import { CustomError } from "discord-message-transcript-base/core/error";
-import { JsonAuthor, JsonMessage, TranscriptOptions } from "discord-message-transcript-base/types/types";
+import { CustomError, JsonAuthor, JsonMessage, TranscriptOptionsBase } from "discord-message-transcript-base";
 import { MapMentions } from "../types/types.js";
 import { getMentions } from "./getMentions.js";
 
-export async function fetchMessages(channel: TextBasedChannel, options: TranscriptOptions, authors: Map<string,JsonAuthor>, mentions: MapMentions, after?: string): Promise<{ messages: JsonMessage[], end: boolean }> {
+export async function fetchMessages(channel: TextBasedChannel, options: TranscriptOptionsBase, authors: Map<string,JsonAuthor>, mentions: MapMentions, after?: string): Promise<{ messages: JsonMessage[], end: boolean }> {
     const originalMessages = await channel.messages.fetch({ limit: 100, cache: false, after: after });
 
     const rawMessages: (JsonMessage | null)[] = await Promise.all(originalMessages.map(async (message) => {

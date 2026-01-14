@@ -1,6 +1,6 @@
 import { componentsToJson } from "./componentToJson.js";
 import { urlToBase64 } from "./imageToBase64.js";
-import { CustomError } from "discord-message-transcript-base/core/error";
+import { CustomError } from "discord-message-transcript-base";
 import { getMentions } from "./getMentions.js";
 export async function fetchMessages(channel, options, authors, mentions, after) {
     const originalMessages = await channel.messages.fetch({ limit: 100, cache: false, after: after });

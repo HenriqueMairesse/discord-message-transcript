@@ -1,7 +1,8 @@
-import { AttachmentBuilder, TextBasedChannel } from "discord.js";
-import { ConvertTranscriptOptions, CreateTranscriptOptions } from "./types/types.js";
-import Stream from "stream";
-import { Uploadable } from "discord-message-transcript-base/types/types";
+export type { CreateTranscriptOptions, ConvertTranscriptOptions } from "./types/types.js";
+export { ReturnFormat, ReturnType, TranscriptOptions } from "discord-message-transcript-base";
+import { TextBasedChannel } from "discord.js";
+import { ConvertTranscriptOptions, CreateTranscriptOptions, OutputType } from "./types/types.js";
+import { ReturnType } from "discord-message-transcript-base";
 /**
  * Creates a transcript of a Discord channel's messages.
  * Depending on the `returnType` option, this function can return an `AttachmentBuilder`,
@@ -11,21 +12,7 @@ import { Uploadable } from "discord-message-transcript-base/types/types";
  * @param options Configuration options for creating the transcript. See {@link CreateTranscriptOptions} for details.
  * @returns A promise that resolves to the transcript in the specified format.
  */
-export declare function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & {
-    returnType: 'string';
-}): Promise<string>;
-export declare function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & {
-    returnType?: 'attachment';
-}): Promise<AttachmentBuilder>;
-export declare function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & {
-    returnType: 'buffer';
-}): Promise<Buffer>;
-export declare function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & {
-    returnType: 'stream';
-}): Promise<Stream>;
-export declare function createTranscript(channel: TextBasedChannel, options: CreateTranscriptOptions & {
-    returnType: 'uploadable';
-}): Promise<Uploadable>;
+export declare function createTranscript<T extends ReturnType = ReturnType.Attachment>(channel: TextBasedChannel, options?: CreateTranscriptOptions<T>): Promise<OutputType<T>>;
 /**
  * Converts a JSON transcript string into an HTML transcript.
  * Depending on the `returnType` option, this function can return an `AttachmentBuilder`,
@@ -35,20 +22,4 @@ export declare function createTranscript(channel: TextBasedChannel, options: Cre
  * @param options Configuration options for converting the transcript. See {@link ConvertTranscriptOptions} for details.
  * @returns A promise that resolves to the HTML transcript in the specified format.
  */
-export declare function jsonToHTMLTranscript(jsonString: string): Promise<AttachmentBuilder>;
-export declare function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & {
-    returnType: "string";
-}): Promise<string>;
-export declare function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & {
-    returnType: "attachment";
-}): Promise<AttachmentBuilder>;
-export declare function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & {
-    returnType: "buffer";
-}): Promise<Buffer>;
-export declare function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & {
-    returnType: "stream";
-}): Promise<Stream>;
-export declare function jsonToHTMLTranscript(jsonString: string, options: ConvertTranscriptOptions & {
-    returnType: "uploadable";
-}): Promise<Uploadable>;
-export declare function jsonToHTMLTranscript(jsonString: string, options?: Omit<ConvertTranscriptOptions, 'returnType'>): Promise<AttachmentBuilder>;
+export declare function jsonToHTMLTranscript<T extends ReturnType = ReturnType.Attachment>(jsonString: string, options?: ConvertTranscriptOptions<T>): Promise<OutputType<T>>;

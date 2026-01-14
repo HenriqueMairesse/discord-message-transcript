@@ -1,10 +1,19 @@
+export { ReturnFormat, ReturnType } from "discord-message-transcript-base";
 import { AttachmentBuilder } from "discord.js";
 import { Json } from "./renderers/json/json.js";
 import { fetchMessages } from "./core/fetchMessages.js";
 import { output } from "./core/output.js";
-import { output as outputBase } from "discord-message-transcript-base/core/output";
-import { CustomError } from "discord-message-transcript-base/core/error";
-export async function createTranscript(channel, options) {
+import { ReturnType, ReturnTypeBase, ReturnFormat, outputBase, CustomError, returnTypeMapper } from "discord-message-transcript-base";
+/**
+ * Creates a transcript of a Discord channel's messages.
+ * Depending on the `returnType` option, this function can return an `AttachmentBuilder`,
+ * a `string` (for HTML or JSON), a `Buffer`, a `Stream`, or an `Uploadable` object.
+ *
+ * @param channel The Discord text-based channel (e.g., `TextChannel`, `DMChannel`) to create a transcript from.
+ * @param options Configuration options for creating the transcript. See {@link CreateTranscriptOptions} for details.
+ * @returns A promise that resolves to the transcript in the specified format.
+ */
+export async function createTranscript(channel, options = {}) {
     try {
         if (!channel.isDMBased()) {
             const permissions = channel.permissionsFor(channel.client.user);
@@ -12,8 +21,8 @@ export async function createTranscript(channel, options) {
                 throw new CustomError(`Channel selected, ${channel.name} with id: ${channel.id}, can't be use to create a transcript because the bot dosen't have permission for View the Channel or Read the Message History. Add the permissions or choose another channel!`);
             }
         }
-        const artificialReturnType = options?.returnType == "attachment" ? "buffer" : options?.returnType ?? "buffer";
-        const { fileName = null, includeAttachments = true, includeButtons = true, includeComponents = true, includeEmpty = false, includeEmbeds = true, includePolls = true, includeReactions = true, includeV2Components = true, localDate = 'en-GB', quantity = 0, returnFormat = "HTML", saveImages = false, selfContained = false, timeZone = 'UTC' } = options ?? {};
+        const artificialReturnType = options.returnType == ReturnType.Attachment ? ReturnTypeBase.Buffer : options.returnType ? returnTypeMapper(options.returnType) : ReturnTypeBase.Buffer;
+        const { fileName = null, includeAttachments = true, includeButtons = true, includeComponents = true, includeEmpty = false, includeEmbeds = true, includePolls = true, includeReactions = true, includeV2Components = true, localDate = 'en-GB', quantity = 0, returnFormat = ReturnFormat.JSON, saveImages = false, selfContained = false, timeZone = 'UTC' } = options;
         const checkedFileName = (fileName ?? `Transcript-${channel.isDMBased() ? "DirectMessage" : channel.name}-${channel.id}`);
         const internalOptions = {
             fileName: checkedFileName,
@@ -53,7 +62,7 @@ export async function createTranscript(channel, options) {
         jsonTranscript.setAuthors(Array.from(authors.values()));
         jsonTranscript.setMentions({ channels: Array.from(mentions.channels.values()), roles: Array.from(mentions.roles.values()), users: Array.from(mentions.users.values()) });
         const result = await output(await jsonTranscript.toJson());
-        if (options?.returnType == "attachment" || !options || !options.returnType) {
+        if (!options.returnType || options.returnType == "attachment") {
             if (!(result instanceof Buffer)) {
                 throw new CustomError("Expected buffer from output when *attachment* returnType is used.");
             }
@@ -70,16 +79,25 @@ export async function createTranscript(channel, options) {
         throw new CustomError(`Unknow error: ${unknowErrorMessage}`);
     }
 }
-export async function jsonToHTMLTranscript(jsonString, options) {
+/**
+ * Converts a JSON transcript string into an HTML transcript.
+ * Depending on the `returnType` option, this function can return an `AttachmentBuilder`,
+ * a `string`, a `Buffer`, a `Stream`, or an `Uploadable`  object.
+ *
+ * @param jsonString The JSON string representing the transcript data.
+ * @param options Configuration options for converting the transcript. See {@link ConvertTranscriptOptions} for details.
+ * @returns A promise that resolves to the HTML transcript in the specified format.
+ */
+export async function jsonToHTMLTranscript(jsonString, options = {}) {
     try {
         const json = JSON.parse(jsonString);
-        json.options.returnFormat = "HTML";
+        json.options.returnFormat = ReturnFormat.HTML;
         json.options.selfContained = options?.selfContained ?? false;
-        const officialReturnType = options?.returnType ?? "attachment";
-        if (officialReturnType == "attachment")
-            json.options.returnType = "buffer";
+        const officialReturnType = options?.returnType ?? ReturnType.Attachment;
+        if (officialReturnType == ReturnType.Attachment)
+            json.options.returnType = ReturnTypeBase.Buffer;
         const result = await outputBase(json);
-        if (officialReturnType == "attachment") {
+        if (officialReturnType == ReturnType.Attachment) {
             if (!(result instanceof Buffer)) {
                 throw new CustomError("Expected buffer from outputBase when *attachment* returnType is used.");
             }

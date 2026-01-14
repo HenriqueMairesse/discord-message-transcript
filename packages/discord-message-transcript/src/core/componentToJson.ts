@@ -1,10 +1,10 @@
 import { TopLevelComponent, ComponentType } from "discord.js";
 import { mapButtonStyle, mapSelectorType, mapSeparatorSpacing } from "./mappers.js"
-import { TranscriptOptions, JsonTopLevelComponent, JsonButtonComponent, JsonSelectMenu, JsonComponentType, JsonComponentInContainer, JsonThumbnailComponent, JsonTextDisplayComponent } from "discord-message-transcript-base/types/types";
-import { CustomError } from "discord-message-transcript-base/core/error";
+import { JsonTopLevelComponent, JsonButtonComponent, JsonSelectMenu, JsonComponentType, JsonComponentInContainer, JsonThumbnailComponent, JsonTextDisplayComponent, ReturnTypeBase, TranscriptOptionsBase } from "discord-message-transcript-base/types/types";
+import { CustomError } from "discord-message-transcript-base";
 import { urlToBase64 } from "./imageToBase64.js";
 
-export async function componentsToJson(components: TopLevelComponent[], options: TranscriptOptions): Promise<JsonTopLevelComponent[]> {
+export async function componentsToJson(components: TopLevelComponent[], options: TranscriptOptionsBase): Promise<JsonTopLevelComponent[]> {
     const processedComponents = await Promise.all(components.filter(component => !(!options.includeV2Components && component.type != ComponentType.ActionRow))
     .map<Promise<JsonTopLevelComponent | null>>(async component => {
         switch (component.type) {

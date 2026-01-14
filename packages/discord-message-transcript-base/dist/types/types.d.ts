@@ -1,12 +1,136 @@
+import Stream from "stream";
 export type JsonComponentInContainer = JsonActionRow | JsonFileComponent | JsonMediaGalleryComponent | JsonSectionComponent | JsonSeparatorComponent | JsonTextDisplayComponent;
 export type JsonSelectMenu = JsonSelectMenuOthers | JsonSelectMenuString;
 export type JsonTopLevelComponent = JsonActionRow | JsonButtonComponent | JsonSelectMenu | JsonV2Component;
 export type JsonV2Component = JsonContainerComponent | JsonFileComponent | JsonMediaGalleryComponent | JsonSectionComponent | JsonSeparatorComponent | JsonTextDisplayComponent | JsonThumbnailComponent;
-export type ReturnFormat = "HTML" | "JSON";
-export type ReturnType = "string" | "uploadable" | "stream" | "buffer";
-export type ReturnTypeParse = "attachment" | ReturnType;
 export type StyleTimeStampKey = "t" | "T" | "d" | "D" | "f" | "F";
-export interface TranscriptOptions {
+export declare enum ReturnFormat {
+    HTML = "HTML",
+    JSON = "JSON"
+}
+export type OutputTypeBase<T extends ReturnTypeBase> = T extends ReturnTypeBase.Buffer ? Buffer : T extends ReturnTypeBase.Stream ? Stream : T extends ReturnTypeBase.Uploadable ? Uploadable : string;
+export declare enum ReturnType {
+    Attachment = "attachment",
+    Buffer = "buffer",
+    Stream = "stream",
+    String = "string",
+    Uploadable = "uploadable"
+}
+export declare enum ReturnTypeBase {
+    Buffer = "buffer",
+    Stream = "stream",
+    String = "string",
+    Uploadable = "uploadable"
+}
+export interface TranscriptOptionsBase {
+    fileName: string;
+    includeAttachments: boolean;
+    includeButtons: boolean;
+    includeComponents: boolean;
+    includeEmpty: boolean;
+    includeEmbeds: boolean;
+    includePolls: boolean;
+    includeReactions: boolean;
+    includeV2Components: boolean;
+    localDate: Intl.LocalesArgument;
+    quantity: number;
+    returnFormat: ReturnFormat;
+    returnType: ReturnTypeBase;
+    saveImages: boolean;
+    selfContained: boolean;
+    timeZone: Intl.DateTimeFormatOptions["timeZone"];
+}
+export interface TranscriptOptions<T extends ReturnType> {
+    /**
+     * The name of the file to be created.
+     * Default depends if is DM or Guild
+     */
+    fileName: string;
+    /**
+     * Whether to include attachments in the transcript.
+     * @default true
+     */
+    includeAttachments: boolean;
+    /**
+     * Whether to include buttons in the transcript.
+     * @default true
+     */
+    includeButtons: boolean;
+    /**
+     * Whether to include components in the transcript.
+     * @default true
+     */
+    includeComponents: boolean;
+    /**
+     * Whether to include empty messages in the transcript.
+     * @default false
+     */
+    includeEmpty: boolean;
+    /**
+     * Whether to include embeds in the transcript.
+     * @default true
+     */
+    includeEmbeds: boolean;
+    /**
+     * Whether to include polls in the transcript.
+     * @default true
+     */
+    includePolls: boolean;
+    /**
+     * Whether to include reactions in the transcript.
+     * @default true
+     */
+    includeReactions: boolean;
+    /**
+     * Whether to include V2 components in the transcript.
+     * @default true
+     */
+    includeV2Components: boolean;
+    /**
+     * The locale to use for formatting dates.
+     * @default 'en-GB'
+     */
+    localDate: Intl.LocalesArgument;
+    /**
+     * The maximum number of messages to fetch. Set to 0 to fetch all messages.
+     * @default 0
+     */
+    quantity: number;
+    /**
+     * The format of the returned transcript.
+     * - ReturnFormat.HTML - The transcript return as HTML
+     * - ReturnFormat.JSON - The transcript return as JSON
+     * @default ReturnFormat.HTML
+     */
+    returnFormat: ReturnFormat;
+    /**
+     * The type of the returned value.
+     * - ReturnType.Attachment - The transcript content as a `Attachment`
+     * - ReturnType.String - The transcript content as a string.
+     * - ReturnType.Buffer - The transcript content as a `Buffer`.
+     * - ReturnType.Stream - The transcript content as a `Stream`.
+     * - ReturnType.Uploadable` - An object with `content`, `contentType` and `fileName`.
+     * @default ReturnType.Attachment
+     */
+    returnType: T;
+    /**
+     * Whether to save images locally or use remote URLs.
+     * @default false
+     */
+    saveImages: boolean;
+    /**
+     * Whether the generated HTML should be self-contained.
+     * Only matters if `returnFormat` is `HTML`.
+     * @default false
+     */
+    selfContained: boolean;
+    /**
+     * The timezone to use for formatting dates.
+     * @default 'UTC'
+     */
+    timeZone: Intl.DateTimeFormatOptions["timeZone"];
+}
+export interface TranscriptOptionsParse {
     fileName: string;
     includeAttachments: boolean;
     includeButtons: boolean;
@@ -24,43 +148,25 @@ export interface TranscriptOptions {
     selfContained: boolean;
     timeZone: Intl.DateTimeFormatOptions["timeZone"];
 }
-export interface TranscriptOptionsParse {
-    fileName: string;
-    includeAttachments: boolean;
-    includeButtons: boolean;
-    includeComponents: boolean;
-    includeEmpty: boolean;
-    includeEmbeds: boolean;
-    includePolls: boolean;
-    includeReactions: boolean;
-    includeV2Components: boolean;
-    localDate: Intl.LocalesArgument;
-    quantity: number;
-    returnFormat: ReturnFormat;
-    returnType: ReturnTypeParse;
-    saveImages: boolean;
-    selfContained: boolean;
-    timeZone: Intl.DateTimeFormatOptions["timeZone"];
-}
 /**
  * Options for converting a JSON transcript to HTML.
  */
-export interface ConvertTranscriptOptions {
+export type ConvertTranscriptOptions<T extends ReturnTypeBase> = Partial<{
     /**
      * The type of the returned value.
-     * - `string` - The transcript content as a string.
-     * - `buffer` - The transcript content as a `Buffer`.
-     * - `stream` - The transcript content as a `Stream`.
-     * - `uploadable` - An object with `content`, `contentType` and `fileName`.
-     * @default 'string'
+     * - ReturnType.String - The transcript content as a string.
+     * - ReturnType.Buffer - The transcript content as a `Buffer`.
+     * - ReturnType.Stream - The transcript content as a `Stream`.
+     * - ReturnType.Uploadable` - An object with `content`, `contentType` and `fileName`.
+     * @default ReturnType.String
      */
-    returnType?: ReturnType;
+    returnType: T;
     /**
      * Whether the generated HTML should be self-contained (CSS and JS in HTML).
      * @default false
      */
-    selfContained?: boolean;
-}
+    selfContained: boolean;
+}>;
 export interface ArrayMentions {
     channels: JsonMessageMentionsChannels[];
     roles: JsonMessageMentionsRoles[];
@@ -108,7 +214,7 @@ export interface JsonData {
     channel: JsonDataChannel;
     guild: JsonDataGuild | null;
     messages: JsonMessage[];
-    options: TranscriptOptions;
+    options: TranscriptOptionsBase;
     mentions: ArrayMentions;
 }
 export interface JsonDataParse {

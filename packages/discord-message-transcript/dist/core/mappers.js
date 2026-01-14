@@ -1,6 +1,5 @@
 import { ButtonStyle, ComponentType, SeparatorSpacingSize } from "discord.js";
-import { JsonButtonStyle, JsonComponentType, JsonSeparatorSpacingSize } from "discord-message-transcript-base/types/types";
-import { CustomError } from "discord-message-transcript-base/core/error";
+import { CustomError, JsonButtonStyle, JsonComponentType, JsonSeparatorSpacingSize } from "discord-message-transcript-base";
 export function mapButtonStyle(style) {
     switch (style) {
         case ButtonStyle.Primary:

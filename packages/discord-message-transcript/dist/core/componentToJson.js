@@ -1,7 +1,7 @@
 import { ComponentType } from "discord.js";
 import { mapButtonStyle, mapSelectorType, mapSeparatorSpacing } from "./mappers.js";
 import { JsonComponentType } from "discord-message-transcript-base/types/types";
-import { CustomError } from "discord-message-transcript-base/core/error";
+import { CustomError } from "discord-message-transcript-base";
 import { urlToBase64 } from "./imageToBase64.js";
 export async function componentsToJson(components, options) {
     const processedComponents = await Promise.all(components.filter(component => !(!options.includeV2Components && component.type != ComponentType.ActionRow))

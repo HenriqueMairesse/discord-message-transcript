@@ -2,7 +2,7 @@ import { JsonData, Uploadable } from "../types/types.js";
 import Stream, { Readable } from 'stream'
 import { Html } from "../renderers/html/html.js";
 
-export async function output(json: JsonData,): Promise<string | Stream | Buffer | Uploadable> {
+export async function output(json: JsonData): Promise<string | Stream | Buffer | Uploadable> {
 
     const objectHTML = new Html(json);
     const stringHTML = objectHTML.toHTML();
