@@ -1,3 +1,2 @@
 packages:
-  # All packages in subdirectories of packages/
   - 'packages/*'

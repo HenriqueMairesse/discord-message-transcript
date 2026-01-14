@@ -24,7 +24,7 @@ A modular library for exporting Discord messages into **JSON** or **HTML** trans
     - [Installation](#installation)
     - [Functions](#functions)
       - [`createTranscript(channel, options)`](#createtranscriptchannel-options)
-      - [`jsonToHTMLTranscript(jsonString, options)`](#jsontohtmltranscriptjsonstring-options)
+      - [`renderHTMLFromJSON(jsonString, options)`](#renderhtmlfromjsonjsonstring-options)
   - [🔐 Permissions \& Access](#-permissions--access)
   - [⚠️ Legal Notice, Discord Policies \& User Responsibility](#️-legal-notice-discord-policies--user-responsibility)
     - [Important Notice](#important-notice)
@@ -189,8 +189,9 @@ Fetches messages from a Discord channel and generates a transcript. This functio
     -   `saveImages`: Whether to save images locally. (Default: `false`)
     -   `selfContained`: Whether to include all assets in a single file. (Default: `false`)
     -   `timeZone`: The timezone to use for dates. (Default: `'UTC'`)
+    -   `watermark`: Include watermark. (Default: `true`)
 
-#### `jsonToHTMLTranscript(jsonString, options)`
+#### `renderHTMLFromJSON(jsonString, options)`
 
 Converts a JSON transcript string to an HTML transcript. This function is available in both packages.
 
@@ -209,6 +210,7 @@ Converts a JSON transcript string to an HTML transcript. This function is availa
             -   `ReturnType.Stream`: Returns a `Stream`.
             -   `ReturnType.Uploadable`: Returns an `Uploadable` object.
     -   `selfContained`: Whether to include all assets in a single file. (Default: `false`)
+    -   `watermark`: Include watermark. (Default: `true`)
 
 ---
 
