@@ -1,4 +1,4 @@
-import { TextBasedChannel } from "discord.js";
+import { EmbedType, TextBasedChannel } from "discord.js";
 import { componentsToJson } from "./componentToJson.js";
 import { urlToBase64 } from "./imageToBase64.js";
 import { CustomError, JsonAuthor, JsonMessage, TranscriptOptionsBase } from "discord-message-transcript-base";
@@ -8,7 +8,7 @@ import { getMentions } from "./getMentions.js";
 export async function fetchMessages(channel: TextBasedChannel, options: TranscriptOptionsBase, authors: Map<string,JsonAuthor>, mentions: MapMentions, after?: string): Promise<{ messages: JsonMessage[], end: boolean }> {
     const originalMessages = await channel.messages.fetch({ limit: 100, cache: false, after: after });
 
-    const rawMessages: (JsonMessage | null)[] = await Promise.all(originalMessages.map(async (message) => {
+    const rawMessages: JsonMessage[] = await Promise.all(originalMessages.map(async (message) => {
         let authorAvatar = message.author.displayAvatarURL();
         if (options.saveImages) {
             try {
@@ -36,7 +36,9 @@ export async function fetchMessages(channel: TextBasedChannel, options: Transcri
             };
         }));
 
-        const embeds = await Promise.all(message.embeds.map(async (embed) => {
+        // This only works because embeds with the type poll_result that are send when a poll end are marked as a message send by the system  
+        const embeds = message.system && message.embeds.length == 1 && message.embeds[0].data.type == EmbedType.PollResult && !options.includePolls ? []
+        : await Promise.all(message.embeds.map(async (embed) => {
             let authorIcon = embed.author?.iconURL ?? null;
             let thumbnailUrl = embed.thumbnail?.url ?? null;
             let imageUrl = embed.image?.url ?? null;
@@ -105,18 +107,16 @@ export async function fetchMessages(channel: TextBasedChannel, options: Transcri
 
         getMentions(message, mentions);
 
-        if (!options.includeEmpty && attachments.length == 0 && components.length == 0 && message.content == "" && message.embeds.length == 0 && !message.poll) return null;
-
         return {
             attachments: options.includeAttachments ? attachments : [],
             authorId: message.author.id,
             components: components,
             content: message.content,
             createdTimestamp: message.createdTimestamp,
-            embeds: options.includeEmbeds ? embeds : [],
+            embeds: options.includeEmbeds || options.includePolls ? embeds : [],
             id: message.id,
             mentions: message.mentions.everyone,
-            poll: message.poll ? {
+            poll: options.includePolls && message.poll ? {
                 answers: Array.from(message.poll.answers.values()).map(answer => ({
                     count: answer.voteCount,
                     emoji: answer.emoji ? {
@@ -131,19 +131,19 @@ export async function fetchMessages(channel: TextBasedChannel, options: Transcri
                 isFinalized: message.poll.resultsFinalized,
                 question: message.poll.question.text ?? "",
             } : null,
-            reactions: message.reactions.cache.map(reaction => {
+            reactions: options.includeReactions ? message.reactions.cache.map(reaction => {
                 if (reaction.emoji.name == null) return null;
                 return {
                     count: reaction.count,
                     emoji: reaction.emoji.name,
                 };
-            }).filter(r => r != null),
+            }).filter(r => r != null) : [],
             references: message.reference ? { messageId: message.reference.messageId ?? null } : null,
             system: message.system,
         };
     }));
 
-    const messages = rawMessages.filter(m => m != null);
+    const messages = rawMessages.filter(m => !(!options.includeEmpty && m.attachments.length == 0 && m.components.length == 0 && m.content == "" && m.embeds.length == 0 && !m.poll));
     const end = originalMessages.size !== 100;
     return { messages, end };
 }

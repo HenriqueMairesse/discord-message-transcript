@@ -1,8 +1,7 @@
-export type { CreateTranscriptOptions, ConvertTranscriptOptions, TranscriptOptions } from "./types/types.js";
-export { ReturnFormat, ReturnType, LocalDate, TimeZone } from "discord-message-transcript-base";
+export { CreateTranscriptOptions, ConvertTranscriptOptions, TranscriptOptions, ReturnType } from "./types/types.js";
+export { ReturnFormat, LocalDate, TimeZone } from "discord-message-transcript-base";
 import { TextBasedChannel } from "discord.js";
-import { ConvertTranscriptOptions, CreateTranscriptOptions, OutputType } from "./types/types.js";
-import { ReturnType } from "discord-message-transcript-base";
+import { ConvertTranscriptOptions, CreateTranscriptOptions, OutputType, ReturnType } from "./types/types.js";
 /**
  * Creates a transcript of a Discord channel's messages.
  * Depending on the `returnType` option, this function can return an `AttachmentBuilder`,
@@ -12,7 +11,7 @@ import { ReturnType } from "discord-message-transcript-base";
  * @param options Configuration options for creating the transcript. See {@link CreateTranscriptOptions} for details.
  * @returns A promise that resolves to the transcript in the specified format.
  */
-export declare function createTranscript<T extends ReturnType = ReturnType.Attachment>(channel: TextBasedChannel, options?: CreateTranscriptOptions<T>): Promise<OutputType<T>>;
+export declare function createTranscript<T extends ReturnType = typeof ReturnType.Attachment>(channel: TextBasedChannel, options?: CreateTranscriptOptions<T>): Promise<OutputType<T>>;
 /**
  * Converts a JSON transcript string into an HTML transcript.
  * Depending on the `returnType` option, this function can return an `AttachmentBuilder`,
@@ -22,4 +21,4 @@ export declare function createTranscript<T extends ReturnType = ReturnType.Attac
  * @param options Configuration options for converting the transcript. See {@link ConvertTranscriptOptions} for details.
  * @returns A promise that resolves to the HTML transcript in the specified format.
  */
-export declare function jsonToHTMLTranscript<T extends ReturnType = ReturnType.Attachment>(jsonString: string, options?: ConvertTranscriptOptions<T>): Promise<OutputType<T>>;
+export declare function renderHTMLFromJSON<T extends ReturnType = typeof ReturnType.Attachment>(jsonString: string, options?: ConvertTranscriptOptions<T>): Promise<OutputType<T>>;

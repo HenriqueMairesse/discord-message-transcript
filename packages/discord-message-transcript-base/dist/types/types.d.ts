@@ -6,17 +6,14 @@ export type JsonV2Component = JsonContainerComponent | JsonFileComponent | JsonM
 export type StyleTimeStampKey = "t" | "T" | "d" | "D" | "f" | "F";
 export type LocalDate = 'ar-EG' | 'ar-SA' | 'bn-BD' | 'bn-IN' | 'cs-CZ' | 'da-DK' | 'de-AT' | 'de-CH' | 'de-DE' | 'el-GR' | 'en-AU' | 'en-CA' | 'en-GB' | 'en-IN' | 'en-US' | 'es-AR' | 'es-CO' | 'es-ES' | 'es-MX' | 'fa-IR' | 'fi-FI' | 'fr-BE' | 'fr-CA' | 'fr-FR' | 'he-IL' | 'hi-IN' | 'hu-HU' | 'id-ID' | 'it-IT' | 'ja-JP' | 'ko-KR' | 'ms-MY' | 'nl-BE' | 'nl-NL' | 'no-NO' | 'pl-PL' | 'pt-BR' | 'pt-PT' | 'ro-RO' | 'ru-RU' | 'sv-SE' | 'th-TH' | 'tr-TR' | 'uk-UA' | 'ur-PK' | 'vi-VN' | 'zh-CN' | 'zh-HK' | 'zh-TW' | (string & {});
 export type TimeZone = 'Africa/Cairo' | 'Africa/Johannesburg' | 'Africa/Lagos' | 'America/Argentina/Buenos_Aires' | 'America/Bogota' | 'America/Los_Angeles' | 'America/Mexico_City' | 'America/New_York' | 'America/Sao_Paulo' | 'America/Toronto' | 'America/Vancouver' | 'Asia/Bangkok' | 'Asia/Dhaka' | 'Asia/Dubai' | 'Asia/Ho_Chi_Minh' | 'Asia/Hong_Kong' | 'Asia/Istanbul' | 'Asia/Jakarta' | 'Asia/Jerusalem' | 'Asia/Karachi' | 'Asia/Kolkata' | 'Asia/Kuala_Lumpur' | 'Asia/Manila' | 'Asia/Riyadh' | 'Asia/Seoul' | 'Asia/Shanghai' | 'Asia/Taipei' | 'Asia/Tehran' | 'Asia/Tokyo' | 'Australia/Melbourne' | 'Australia/Perth' | 'Australia/Sydney' | 'Europe/Amsterdam' | 'Europe/Athens' | 'Europe/Berlin' | 'Europe/Brussels' | 'Europe/Budapest' | 'Europe/Copenhagen' | 'Europe/Helsinki' | 'Europe/Kyiv' | 'Europe/Lisbon' | 'Europe/London' | 'Europe/Madrid' | 'Europe/Moscow' | 'Europe/Oslo' | 'Europe/Paris' | 'Europe/Prague' | 'Europe/Rome' | 'Europe/Stockholm' | 'Europe/Warsaw' | 'Pacific/Auckland' | 'UTC' | (string & {});
-export declare enum ReturnFormat {
-    HTML = "HTML",
-    JSON = "JSON"
-}
-export type OutputTypeBase<T extends ReturnTypeBase> = T extends ReturnTypeBase.Buffer ? Buffer : T extends ReturnTypeBase.Stream ? Stream : T extends ReturnTypeBase.Uploadable ? Uploadable : string;
-export declare enum ReturnTypeBase {
-    Buffer = "buffer",
-    Stream = "stream",
-    String = "string",
-    Uploadable = "uploadable"
-}
+export type OutputTypeBase<T extends ReturnTypeBase> = T extends typeof ReturnTypeBase.Buffer ? Buffer : T extends typeof ReturnTypeBase.Stream ? Stream : T extends typeof ReturnTypeBase.Uploadable ? Uploadable : string;
+export declare const ReturnTypeBase: {
+    readonly Buffer: "buffer";
+    readonly Stream: "stream";
+    readonly String: "string";
+    readonly Uploadable: "uploadable";
+};
+export type ReturnTypeBase = typeof ReturnTypeBase[keyof typeof ReturnTypeBase];
 export declare enum ReturnTypeParse {
     Attachment = "attachment",
     Buffer = "buffer",
@@ -24,6 +21,11 @@ export declare enum ReturnTypeParse {
     String = "string",
     Uploadable = "uploadable"
 }
+export declare const ReturnFormat: {
+    readonly JSON: "JSON";
+    readonly HTML: "HTML";
+};
+export type ReturnFormat = typeof ReturnFormat[keyof typeof ReturnFormat];
 export interface TranscriptOptionsBase {
     fileName: string;
     includeAttachments: boolean;
@@ -41,6 +43,7 @@ export interface TranscriptOptionsBase {
     saveImages: boolean;
     selfContained: boolean;
     timeZone: TimeZone;
+    watermark: boolean;
 }
 export interface TranscriptOptionsParse {
     fileName: string;
@@ -59,6 +62,7 @@ export interface TranscriptOptionsParse {
     saveImages: boolean;
     selfContained: boolean;
     timeZone: TimeZone;
+    watermark: boolean;
 }
 /**
  * Options for converting a JSON transcript to HTML.
@@ -78,6 +82,11 @@ export type ConvertTranscriptOptions<T extends ReturnTypeBase> = Partial<{
      * @default false
      */
     selfContained: boolean;
+    /**
+     * If you want to include the watermark.
+     * @default true
+     */
+    watermark: boolean;
 }>;
 export interface ArrayMentions {
     channels: JsonMessageMentionsChannels[];

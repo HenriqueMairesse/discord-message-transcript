@@ -4,7 +4,6 @@ import { ReturnTypeBase, ReturnFormat } from "./types/types.js";
 export * from './types/types.js';
 export { CustomError } from "./core/error.js";
 export { output as outputBase } from "./core/output.js";
-export * from './core/mappers.js';
 /**
  * Converts a JSON transcript string into an HTML transcript.
  * Depending on the `returnType` option, this function can return a `string`, a `Buffer`, a `Stream`, or an `Uploadable` object.
@@ -22,7 +21,8 @@ export async function renderHTMLFromJSON(jsonString, options = {}) {
                 ...jsonParse.options,
                 returnFormat: ReturnFormat.HTML,
                 returnType: options?.returnType ?? ReturnTypeBase.String,
-                selfContained: options?.selfContained ?? false
+                selfContained: options?.selfContained ?? false,
+                watermark: options.watermark ?? jsonParse.options.watermark
             }
         };
         return await output(json);

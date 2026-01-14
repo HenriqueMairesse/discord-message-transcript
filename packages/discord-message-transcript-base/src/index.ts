@@ -4,7 +4,6 @@ import { JsonData, JsonDataParse, ConvertTranscriptOptions, ReturnTypeBase, Outp
 export * from './types/types.js';
 export { CustomError } from "./core/error.js";
 export { output as outputBase } from "./core/output.js";
-export * from './core/mappers.js'
 
 /**
  * Converts a JSON transcript string into an HTML transcript.
@@ -14,7 +13,7 @@ export * from './core/mappers.js'
  * @param options Configuration options for converting the transcript. See {@link ConvertTranscriptOptions} for details.
  * @returns A promise that resolves to the HTML transcript in the specified format.
  */
-export async function renderHTMLFromJSON<T extends ReturnTypeBase = ReturnTypeBase.String>(jsonString: string, options: ConvertTranscriptOptions<T> = {}): Promise<OutputTypeBase<T>> {
+export async function renderHTMLFromJSON<T extends ReturnTypeBase = typeof ReturnTypeBase.String>(jsonString: string, options: ConvertTranscriptOptions<T> = {}): Promise<OutputTypeBase<T>> {
     try {
         const jsonParse: JsonDataParse = JSON.parse(jsonString);
         const json: JsonData = {
@@ -23,7 +22,8 @@ export async function renderHTMLFromJSON<T extends ReturnTypeBase = ReturnTypeBa
                 ...jsonParse.options,
                 returnFormat: ReturnFormat.HTML,
                 returnType: options?.returnType ?? ReturnTypeBase.String,
-                selfContained: options?.selfContained ?? false
+                selfContained: options?.selfContained ?? false,
+                watermark: options.watermark ?? jsonParse.options.watermark
             }
         }
         return await output(json) as OutputTypeBase<T>;

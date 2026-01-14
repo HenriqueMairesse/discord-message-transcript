@@ -1,4 +1,22 @@
+export const ReturnTypeBase = {
+    Buffer: "buffer",
+    Stream: "stream",
+    String: "string",
+    Uploadable: "uploadable"
+};
+export var ReturnTypeParse;
+(function (ReturnTypeParse) {
+    ReturnTypeParse["Attachment"] = "attachment";
+    ReturnTypeParse["Buffer"] = "buffer";
+    ReturnTypeParse["Stream"] = "stream";
+    ReturnTypeParse["String"] = "string";
+    ReturnTypeParse["Uploadable"] = "uploadable";
+})(ReturnTypeParse || (ReturnTypeParse = {}));
 ;
+export const ReturnFormat = {
+    JSON: "JSON",
+    HTML: "HTML"
+};
 export var JsonButtonStyle;
 (function (JsonButtonStyle) {
     JsonButtonStyle[JsonButtonStyle["Primary"] = 1] = "Primary";

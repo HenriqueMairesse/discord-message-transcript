@@ -1,5 +1,6 @@
 import { ButtonStyle, ComponentType, SeparatorSpacingSize } from "discord.js";
-import { CustomError, JsonButtonStyle, JsonComponentType, JsonSeparatorSpacingSize } from "discord-message-transcript-base";
+import { CustomError, JsonButtonStyle, JsonComponentType, JsonSeparatorSpacingSize, ReturnTypeBase } from "discord-message-transcript-base";
+import { ReturnType } from "../types/types.js";
 export function mapButtonStyle(style) {
     switch (style) {
         case ButtonStyle.Primary:
@@ -82,5 +83,19 @@ export function mapSelectorType(selectorType) {
             return JsonComponentType.ChannelSelect;
         default:
             throw new CustomError(`Unknow SelectorComponentType: ${selectorType}`);
+    }
+}
+export function returnTypeMapper(type) {
+    switch (type) {
+        case ReturnType.Buffer:
+            return ReturnTypeBase.Buffer;
+        case ReturnType.Stream:
+            return ReturnTypeBase.Stream;
+        case ReturnType.String:
+            return ReturnTypeBase.String;
+        case ReturnType.Uploadable:
+            return ReturnTypeBase.Uploadable;
+        default:
+            throw new CustomError(`Can't convert ReturnType.Attachment to ReturnTypeBase!`);
     }
 }

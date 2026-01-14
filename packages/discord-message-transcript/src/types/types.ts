@@ -1,21 +1,23 @@
-import { JsonMessageMentionsChannels, JsonMessageMentionsRoles, JsonMessageMentionsUsers, LocalDate, ReturnFormat, TimeZone, Uploadable  } from "discord-message-transcript-base";
+import { JsonMessageMentionsChannels, JsonMessageMentionsRoles, JsonMessageMentionsUsers, LocalDate, TimeZone, Uploadable, ReturnFormat } from "discord-message-transcript-base";
 import { AttachmentBuilder } from "discord.js";
 import Stream from 'stream';
 
-export declare enum ReturnType {
-    Attachment = "attachment",
-    Buffer = "buffer",
-    Stream = "stream",
-    String = "string",
-    Uploadable = "uploadable"
-};
+export const ReturnType = {
+    Attachment: "attachment",
+    Buffer: "buffer",
+    Stream: "stream",
+    String: "string",
+    Uploadable: "uploadable"
+} as const;
+
+export type ReturnType = typeof ReturnType[keyof typeof ReturnType];
 
 
 export type OutputType<T extends ReturnType> = 
-    T extends ReturnType.Buffer ? Buffer 
-    : T extends ReturnType.Stream ? Stream
-    : T extends ReturnType.String ? string
-    : T extends ReturnType.Uploadable ? Uploadable
+    T extends typeof ReturnType.Buffer ? Buffer 
+    : T extends typeof ReturnType.Stream ? Stream
+    : T extends typeof ReturnType.String ? string
+    : T extends typeof ReturnType.Uploadable ? Uploadable
     : AttachmentBuilder
 
 export type CreateTranscriptOptions<T extends ReturnType> = Partial<TranscriptOptions<T>>
@@ -36,6 +38,11 @@ export type ConvertTranscriptOptions<T extends ReturnType> = Partial<{
      * @default false
      */
     selfContained: boolean,
+    /**
+     * If you want to include the watermark.
+     * @default true
+     */
+    watermark: boolean
 }>;
 
 export interface TranscriptOptions<T extends ReturnType> {
@@ -129,6 +136,11 @@ export interface TranscriptOptions<T extends ReturnType> {
      * @default 'UTC'
      */
     timeZone: TimeZone,
+    /**
+     * If you want to include the watermark.
+     * @default true
+     */
+    watermark: boolean
 }
     
 export interface MapMentions {

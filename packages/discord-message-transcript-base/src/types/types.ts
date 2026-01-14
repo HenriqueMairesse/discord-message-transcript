@@ -12,25 +12,22 @@ export type LocalDate = 'ar-EG' | 'ar-SA' | 'bn-BD' | 'bn-IN' | 'cs-CZ' | 'da-DK
 export type TimeZone = 'Africa/Cairo' | 'Africa/Johannesburg' | 'Africa/Lagos' | 'America/Argentina/Buenos_Aires' | 'America/Bogota' | 'America/Los_Angeles' | 'America/Mexico_City' | 'America/New_York' | 'America/Sao_Paulo' | 'America/Toronto' | 'America/Vancouver' | 'Asia/Bangkok' | 'Asia/Dhaka' | 'Asia/Dubai' | 'Asia/Ho_Chi_Minh' | 'Asia/Hong_Kong' | 'Asia/Istanbul' | 'Asia/Jakarta' | 'Asia/Jerusalem' | 'Asia/Karachi' | 'Asia/Kolkata' | 'Asia/Kuala_Lumpur' | 'Asia/Manila' | 'Asia/Riyadh' | 'Asia/Seoul' | 'Asia/Shanghai' | 'Asia/Taipei' | 'Asia/Tehran' | 'Asia/Tokyo' | 'Australia/Melbourne' | 'Australia/Perth' | 'Australia/Sydney' | 'Europe/Amsterdam' | 'Europe/Athens' | 'Europe/Berlin' | 'Europe/Brussels' | 'Europe/Budapest' | 'Europe/Copenhagen' | 'Europe/Helsinki' | 'Europe/Kyiv' | 'Europe/Lisbon' | 'Europe/London' | 'Europe/Madrid' | 'Europe/Moscow' | 'Europe/Oslo' | 'Europe/Paris' | 'Europe/Prague' | 'Europe/Rome' | 'Europe/Stockholm' | 'Europe/Warsaw' | 'Pacific/Auckland' | 'UTC' 
     | (string & {});
 
-export declare enum ReturnFormat {
-    HTML = "HTML",
-    JSON = "JSON"
-}
-
 export type OutputTypeBase<T extends ReturnTypeBase> = 
-    T extends ReturnTypeBase.Buffer ? Buffer 
-    : T extends ReturnTypeBase.Stream ? Stream 
-    : T extends ReturnTypeBase.Uploadable ? Uploadable
+    T extends typeof ReturnTypeBase.Buffer ? Buffer 
+    : T extends typeof ReturnTypeBase.Stream ? Stream 
+    : T extends typeof ReturnTypeBase.Uploadable ? Uploadable
     : string;
 
-export declare enum ReturnTypeBase {
-    Buffer = "buffer",
-    Stream = "stream",
-    String = "string",
-    Uploadable = "uploadable"
-}
+export const ReturnTypeBase = {
+    Buffer: "buffer",
+    Stream: "stream",
+    String: "string",
+    Uploadable: "uploadable"
+} as const;
 
-export declare enum ReturnTypeParse {
+export type ReturnTypeBase = typeof ReturnTypeBase[keyof typeof ReturnTypeBase];
+
+export enum ReturnTypeParse {
     Attachment = "attachment",
     Buffer = "buffer",
     Stream = "stream",
@@ -38,6 +35,12 @@ export declare enum ReturnTypeParse {
     Uploadable = "uploadable"
 };
 
+export const ReturnFormat = {
+  JSON: "JSON",
+  HTML: "HTML"
+} as const;
+
+export type ReturnFormat = typeof ReturnFormat[keyof typeof ReturnFormat];
 
 export interface TranscriptOptionsBase {
     fileName: string,
@@ -56,6 +59,7 @@ export interface TranscriptOptionsBase {
     saveImages: boolean,
     selfContained: boolean,
     timeZone: TimeZone,
+    watermark: boolean
 }
 
 export interface TranscriptOptionsParse {
@@ -75,6 +79,7 @@ export interface TranscriptOptionsParse {
     saveImages: boolean,
     selfContained: boolean,
     timeZone: TimeZone,
+    watermark: boolean
 }
 
 /**
@@ -95,6 +100,11 @@ export type ConvertTranscriptOptions<T extends ReturnTypeBase> = Partial<{
      * @default false
      */
     selfContained: boolean,
+    /**
+     * If you want to include the watermark.
+     * @default true
+     */
+    watermark: boolean
 }>;
 
 

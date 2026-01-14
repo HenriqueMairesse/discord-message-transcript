@@ -1,9 +1,12 @@
-export { ReturnFormat, ReturnType } from "discord-message-transcript-base";
+export { ReturnType } from "./types/types.js";
+export { ReturnFormat } from "discord-message-transcript-base";
 import { AttachmentBuilder } from "discord.js";
 import { Json } from "./renderers/json/json.js";
 import { fetchMessages } from "./core/fetchMessages.js";
+import { ReturnType } from "./types/types.js";
 import { output } from "./core/output.js";
-import { ReturnType, ReturnTypeBase, ReturnFormat, outputBase, CustomError, returnTypeMapper } from "discord-message-transcript-base";
+import { ReturnTypeBase, ReturnFormat, outputBase, CustomError } from "discord-message-transcript-base";
+import { returnTypeMapper } from "./core/mappers.js";
 /**
  * Creates a transcript of a Discord channel's messages.
  * Depending on the `returnType` option, this function can return an `AttachmentBuilder`,
@@ -18,11 +21,11 @@ export async function createTranscript(channel, options = {}) {
         if (!channel.isDMBased()) {
             const permissions = channel.permissionsFor(channel.client.user);
             if (!permissions || (!permissions.has("ViewChannel") || !permissions.has('ReadMessageHistory'))) {
-                throw new CustomError(`Channel selected, ${channel.name} with id: ${channel.id}, can't be use to create a transcript because the bot dosen't have permission for View the Channel or Read the Message History. Add the permissions or choose another channel!`);
+                throw new CustomError(`Channel selected, ${channel.name} with id: ${channel.id}, can't be used to create a transcript because the bot doesn't have permission for View the Channel or Read the Message History. Add the permissions or choose another channel!`);
             }
         }
         const artificialReturnType = options.returnType == ReturnType.Attachment ? ReturnTypeBase.Buffer : options.returnType ? returnTypeMapper(options.returnType) : ReturnTypeBase.Buffer;
-        const { fileName = null, includeAttachments = true, includeButtons = true, includeComponents = true, includeEmpty = false, includeEmbeds = true, includePolls = true, includeReactions = true, includeV2Components = true, localDate = 'en-GB', quantity = 0, returnFormat = ReturnFormat.JSON, saveImages = false, selfContained = false, timeZone = 'UTC' } = options;
+        const { fileName = null, includeAttachments = true, includeButtons = true, includeComponents = true, includeEmpty = false, includeEmbeds = true, includePolls = true, includeReactions = true, includeV2Components = true, localDate = 'en-GB', quantity = 0, returnFormat = ReturnFormat.JSON, saveImages = false, selfContained = false, timeZone = 'UTC', watermark = true, } = options;
         const checkedFileName = (fileName ?? `Transcript-${channel.isDMBased() ? "DirectMessage" : channel.name}-${channel.id}`);
         const internalOptions = {
             fileName: checkedFileName,
@@ -40,7 +43,8 @@ export async function createTranscript(channel, options = {}) {
             returnType: artificialReturnType,
             saveImages,
             selfContained,
-            timeZone
+            timeZone,
+            watermark
         };
         const jsonTranscript = channel.isDMBased() ? new Json(null, channel, internalOptions) : new Json(channel.guild, channel, internalOptions);
         let lastMessageID;
@@ -76,7 +80,7 @@ export async function createTranscript(channel, options = {}) {
             throw new CustomError(`Error creating transcript: ${error.stack}`);
         }
         const unknowErrorMessage = String(error);
-        throw new CustomError(`Unknow error: ${unknowErrorMessage}`);
+        throw new CustomError(`Unknown error: ${unknowErrorMessage}`);
     }
 }
 /**
@@ -88,11 +92,12 @@ export async function createTranscript(channel, options = {}) {
  * @param options Configuration options for converting the transcript. See {@link ConvertTranscriptOptions} for details.
  * @returns A promise that resolves to the HTML transcript in the specified format.
  */
-export async function jsonToHTMLTranscript(jsonString, options = {}) {
+export async function renderHTMLFromJSON(jsonString, options = {}) {
     try {
         const json = JSON.parse(jsonString);
         json.options.returnFormat = ReturnFormat.HTML;
         json.options.selfContained = options?.selfContained ?? false;
+        json.options.watermark = options.watermark ?? json.options.watermark;
         const officialReturnType = options?.returnType ?? ReturnType.Attachment;
         if (officialReturnType == ReturnType.Attachment)
             json.options.returnType = ReturnTypeBase.Buffer;
@@ -110,6 +115,6 @@ export async function jsonToHTMLTranscript(jsonString, options = {}) {
             throw new CustomError(`Error converting JSON to HTML: ${error.stack}`);
         }
         const unknowErrorMessage = String(error);
-        throw new CustomError(`Unknow error: ${unknowErrorMessage}`);
+        throw new CustomError(`Unknown error: ${unknowErrorMessage}`);
     }
 }

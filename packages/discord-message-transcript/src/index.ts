@@ -1,4 +1,4 @@
-export type { CreateTranscriptOptions, ConvertTranscriptOptions, TranscriptOptions, ReturnType } from "./types/types.js";
+export { CreateTranscriptOptions, ConvertTranscriptOptions, TranscriptOptions, ReturnType } from "./types/types.js";
 export { ReturnFormat, LocalDate, TimeZone } from "discord-message-transcript-base";
 
 import { AttachmentBuilder, TextBasedChannel } from "discord.js";
@@ -6,7 +6,8 @@ import { Json } from "./renderers/json/json.js";
 import { fetchMessages } from "./core/fetchMessages.js";
 import { ConvertTranscriptOptions, CreateTranscriptOptions, MapMentions, OutputType, ReturnType } from "./types/types.js";
 import { output } from "./core/output.js";
-import { JsonAuthor, JsonData, JsonMessageMentionsChannels, JsonMessageMentionsUsers, JsonMessageMentionsRoles, ReturnTypeBase, TranscriptOptionsBase, ReturnFormat, outputBase, CustomError, returnTypeMapper } from "discord-message-transcript-base";
+import { JsonAuthor, JsonData, JsonMessageMentionsChannels, JsonMessageMentionsUsers, JsonMessageMentionsRoles, ReturnTypeBase, TranscriptOptionsBase, ReturnFormat, outputBase, CustomError } from "discord-message-transcript-base";
+import { returnTypeMapper } from "./core/mappers.js";
 
 /**
  * Creates a transcript of a Discord channel's messages.
@@ -17,7 +18,7 @@ import { JsonAuthor, JsonData, JsonMessageMentionsChannels, JsonMessageMentionsU
  * @param options Configuration options for creating the transcript. See {@link CreateTranscriptOptions} for details.
  * @returns A promise that resolves to the transcript in the specified format.
  */
-export async function createTranscript<T extends ReturnType = ReturnType.Attachment>(
+export async function createTranscript<T extends ReturnType = typeof ReturnType.Attachment>(
     channel: TextBasedChannel, 
     options: CreateTranscriptOptions<T> = {}
 ): Promise<OutputType<T>> {
@@ -48,7 +49,8 @@ export async function createTranscript<T extends ReturnType = ReturnType.Attachm
             returnFormat = ReturnFormat.JSON,
             saveImages = false,
             selfContained = false,
-            timeZone = 'UTC'
+            timeZone = 'UTC',
+            watermark = true,
         } = options;
         const checkedFileName = (fileName ?? `Transcript-${channel.isDMBased() ? "DirectMessage" : channel.name}-${channel.id}`);
         const internalOptions: TranscriptOptionsBase = {
@@ -67,7 +69,8 @@ export async function createTranscript<T extends ReturnType = ReturnType.Attachm
             returnType: artificialReturnType,
             saveImages,
             selfContained,
-            timeZone
+            timeZone,
+            watermark
         }
 
         const jsonTranscript = channel.isDMBased() ? new Json(null, channel, internalOptions) : new Json(channel.guild, channel, internalOptions); 
@@ -118,11 +121,12 @@ export async function createTranscript<T extends ReturnType = ReturnType.Attachm
  * @param options Configuration options for converting the transcript. See {@link ConvertTranscriptOptions} for details.
  * @returns A promise that resolves to the HTML transcript in the specified format.
  */
-export async function renderHTMLFromJSON<T extends ReturnType = ReturnType.Attachment>(jsonString: string, options: ConvertTranscriptOptions<T> = {}): Promise<OutputType<T>> {
+export async function renderHTMLFromJSON<T extends ReturnType = typeof ReturnType.Attachment>(jsonString: string, options: ConvertTranscriptOptions<T> = {}): Promise<OutputType<T>> {
     try {
         const json: JsonData = JSON.parse(jsonString);
         json.options.returnFormat = ReturnFormat.HTML;
         json.options.selfContained = options?.selfContained ?? false;
+        json.options.watermark = options.watermark ?? json.options.watermark;
         const officialReturnType = options?.returnType ?? ReturnType.Attachment;
         if (officialReturnType == ReturnType.Attachment) json.options.returnType = ReturnTypeBase.Buffer;
         const result = await outputBase(json);
