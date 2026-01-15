@@ -4,6 +4,7 @@ import { JsonButtonStyle, JsonComponentType } from "../../types/types.js";
 import { ACTIONROW_CSS, ATTACHMENT_CSS, BUTTON_CSS, COMPONENTS_CSS, COMPONENTSV2_CSS, DEFAULT_CSS, EMBED_CSS, MESSAGE_CSS, POLL_CSS, POLL_RESULT_EMBED_CSS, REACTIONS_CSS } from "./css.js";
 import { script } from "./js.js";
 import packageJson from "./../../../package.json" with { type: 'json' };
+import { sanitize } from "../../core/sanitizer.js";
 const COUNT_UNIT = ["KB", "MB", "GB", "TB"];
 const BUTTON_COLOR = ["black", "#5865f2", "#323538", "#32c05f", "#be3638", "#323538", "#5865f2"];
 export class Html {
@@ -162,7 +163,7 @@ export class Html {
         }
         return `
         <div class="pollDiv">
-            <div class="pollQuestion">${poll.question}</div>
+            <div class="pollQuestion">${sanitize(poll.question)}</div>
             <div class="pollAnswers">
                 ${poll.answers.map(answer => {
             const voteCount = answer.count;
@@ -172,8 +173,8 @@ export class Html {
                         <div class="pollAnswerBar" style="width: ${percentage}%;"></div>
                         <div class="pollAnswerContent">
                             <div class="pollAnswerDetails">
-                                ${answer.emoji ? `<div class="pollAnswerEmoji">${answer.emoji.name}</div>` : ''}
-                                <div class="pollAnswerText">${answer.text}</div>
+                                ${answer.emoji ? `<div class="pollAnswerEmoji">${answer.emoji.name ? sanitize(answer.emoji.name) : ""}</div>` : ''}
+                                <div class="pollAnswerText">${sanitize(answer.text)}</div>
                             </div>
                             <div class="pollAnswerVotes">${voteCount}</div>
                         </div>
@@ -181,7 +182,7 @@ export class Html {
                     `;
         }).join('')}
             </div>
-            <div class="pollFooter">${footerText}</div>
+            <div class="pollFooter">${sanitize(footerText)}</div>
         </div>
         `;
     }
@@ -198,8 +199,8 @@ export class Html {
         <div class="pollResultEmbed">
             <div>
                 <div class="pollResultEmbedWinner">
-                    ${emojiText ? emojiText : ""}
-                    ${winnerText ?? "There was no winner"}
+                    ${emojiText ? sanitize(emojiText) : ""}
+                    ${winnerText ? sanitize(winnerText) : "There was no winner"}
                     ${winnerVotes != 0 ? `<span class="pollResultEmbedCheckmark">✔</span>` : ""}
                 </div>
                 <div class="pollResultEmbedSubtitle">${totalVotes} votes (${winnerPercentage.toFixed(1)}%)</div>
@@ -216,8 +217,8 @@ export class Html {
                 return this.pollResultEmbedBuilder(embed, message);
             if (!this.data.options.includeEmbeds)
                 return "";
-            const embedAuthor = embed.author ? (embed.author.url ? `<a class="embedHeaderLefttAuthorName" href="${embed.author.url}" target="_blank">${embed.author.name}</a>` : `<p class="embedHeaderLeftAuthorName">${embed.author.name}</p>`) : "";
-            const embedTitle = embed.title ? (embed.url ? `<a class="embedHeaderLeftTitle" href="${embed.url}" target="_blank">${embed.title}</a>` : `<p class="embedHeaderLeftTitle">${embed.title}</p>`) : "";
+            const embedAuthor = embed.author ? (embed.author.url ? `<a class="embedHeaderLefttAuthorName" href="${sanitize(embed.author.url)}" target="_blank">${sanitize(embed.author.name)}</a>` : `<p class="embedHeaderLeftAuthorName">${sanitize(embed.author.name)}</p>`) : "";
+            const embedTitle = embed.title ? (embed.url ? `<a class="embedHeaderLeftTitle" href="${sanitize(embed.url)}" target="_blank">${sanitize(embed.title)}</a>` : `<p class="embedHeaderLeftTitle">${sanitize(embed.title)}</p>`) : "";
             return `
                 <div class="embed" style="${embed.hexColor ? `border-left-color: ${embed.hexColor}` : ''}">
                     ${embed.author || embed.title || embed.thumbnail || embed.description ? `
@@ -225,30 +226,30 @@ export class Html {
                         <div class="embedHeaderLeft">
                             ${embed.author ? `
                             <div class="embedHeaderLeftAuthor">
-                                ${embed.author.iconURL ? `<img class="embedHeaderLeftAuthorImg" src="${embed.author.iconURL}">` : ""}
+                                ${embed.author.iconURL ? `<img class="embedHeaderLeftAuthorImg" src="${sanitize(embed.author.iconURL)}">` : ""}
                                 ${embedAuthor}
                             </div>` : ""}
                             ${embedTitle}
                             ${embed.description ? `<div class="embedDescription">${markdownToHTML(embed.description, this.data.mentions, message.mentions, this.dateFormat)}</div>` : ""}
                         </div>
-                        ${embed.thumbnail ? `<img class="embedHeaderThumbnail" src="${embed.thumbnail.url}">` : ""}
+                        ${embed.thumbnail ? `<img class="embedHeaderThumbnail" src="${sanitize(embed.thumbnail.url)}">` : ""}
                     </div>` : ""}
                     ${embed.fields && embed.fields.length > 0 ? `
                     <div class="embedFields">
                         ${embed.fields.map(field => `
                         <div class="embedFieldsField" style="${field.inline ? 'display: inline-block;' : ''}">
-                            <p class="embedFieldsFieldTitle">${field.name}</p>
+                            <p class="embedFieldsFieldTitle">${sanitize(field.name)}</p>
                             <p class="embedFieldsFieldValue">${markdownToHTML(field.value, this.data.mentions, message.mentions, this.dateFormat)}</p>
                         </div>`).join("")}
                     </div>` : ""}
                     ${embed.image ? `
                     <div class="embedImage">
-                        <img src="${embed.image.url}">
+                        <img src="${sanitize(embed.image.url)}">
                     </div>` : ""}
                     ${embed.footer || embed.timestamp ? `
                     <div class="embedFooter">
-                        ${embed.footer?.iconURL ? `<img class="embedFooterImg" src="${embed.footer.iconURL}">` : ""}
-                        ${embed.footer?.text || embed.timestamp ? `<p class="embedFooterText">${embed.footer?.text ?? ''}${embed.footer?.text && embed.timestamp ? ' | ' : ''}${embed.timestamp ? this.dateFormat.format(new Date(embed.timestamp)) : ''}</p>` : ""}
+                        ${embed.footer?.iconURL ? `<img class="embedFooterImg" src="${sanitize(embed.footer.iconURL)}">` : ""}
+                        ${embed.footer?.text || embed.timestamp ? `<p class="embedFooterText">${embed.footer?.text ? sanitize(embed.footer.text) : ''}${embed.footer?.text && embed.timestamp ? ' | ' : ''}${embed.timestamp ? this.dateFormat.format(new Date(embed.timestamp)) : ''}</p>` : ""}
                     </div>` : ""}
                 </div>
             `;
@@ -258,13 +259,13 @@ export class Html {
         return attachments.map(attachment => {
             let html = "";
             if (attachment.contentType?.startsWith('image/')) {
-                html = `<img class="attachmentImage" src="${attachment.url}">`;
+                html = `<img class="attachmentImage" src="${sanitize(attachment.url)}">`;
             }
             else if (attachment.contentType?.startsWith('video/')) {
-                html = `<video class="attachmentVideo" controls src="${attachment.url}"></video>`;
+                html = `<video class="attachmentVideo" controls src="${sanitize(attachment.url)}"></video>`;
             }
             else if (attachment.contentType?.startsWith('audio/')) {
-                html = `<audio class="attachmentAudio" controls src="${attachment.url}"></audio>`;
+                html = `<audio class="attachmentAudio" controls src="${sanitize(attachment.url)}"></audio>`;
             }
             else {
                 let fileSize = attachment.size / 1024;
@@ -276,10 +277,10 @@ export class Html {
                 html = `
                     <div class="attachmentFile">
                         <div class="attachmentFileInfo">
-                            <p class="attachmentFileName">${attachment.name ?? 'attachment'}</p>
+                            <p class="attachmentFileName">${attachment.name ? sanitize(attachment.name) : 'attachment'}</p>
                             <div class="attachmentFileSize">${fileSize.toFixed(2)} ${COUNT_UNIT[count]}</div>
                         </div>
-                        <a class="attachmentDownload" href="${attachment.url}" target="_blank">
+                        <a class="attachmentDownload" href="${sanitize(attachment.url)}" target="_blank">
                             <svg class="attachmentDownloadIcon"><use href="#download-icon"></use></svg>
                         </a>
                     </div>
@@ -320,10 +321,10 @@ export class Html {
                     const html = `
                         <div class="attachmentFile">
                             <div class="attachmentFileInfo">
-                                <p class="attachmentFileName">${component.fileName ?? 'file'}</p>
+                                <p class="attachmentFileName">${component.fileName ? sanitize(component.fileName) : 'file'}</p>
                                 <div class="attachmentFileSize">${fileSize.toFixed(2)} ${COUNT_UNIT[count]}</div>
                             </div>
-                            <a class="attachmentDownload" href="${component.url ?? ''}" target="_blank">
+                            <a class="attachmentDownload" href="${component.url ? sanitize(component.url) : ''}" target="_blank">
                                 <svg class="attachmentDownloadIcon"><use href="#download-icon"></use></svg>
                             </a>
                         </div>
@@ -336,7 +337,7 @@ export class Html {
                         ${component.items.map(image => {
                         return `
                             <div class="mediaGalleryItem"> 
-                                ${this.spoilerAttachmentBuilder(image.spoiler, `<img class="mediaGalleryImg" src="${image.media.url}">`)}
+                                ${this.spoilerAttachmentBuilder(image.spoiler, `<img class="mediaGalleryImg" src="${sanitize(image.media.url)}">`)}
                             </div>
                             `;
                     }).join("")}
@@ -352,7 +353,7 @@ export class Html {
                         <div class="sectionRight">
                             ${component.accessory.type == JsonComponentType.Button ? this.buttonBuilder(component.accessory)
                         : component.accessory.type == JsonComponentType.Thumbnail ? this.spoilerAttachmentBuilder(component.accessory.spoiler, `
-                            <img class="sectionThumbnail" src="${component.accessory.media.url}">
+                            <img class="sectionThumbnail" src="${sanitize(component.accessory.media.url)}">
                             `) : ""}
                         </div>
                     </div> 
@@ -373,13 +374,13 @@ export class Html {
         return `
         <div class="button" style="background-color: ${BUTTON_COLOR[button.style]}">
             ${button.style == JsonButtonStyle.Link && button.url ? `
-            <a class="buttonLink" href="${button.url}" target="_blank">
-                ${button.emoji ? `<p class="buttonEmoji">${button.emoji}</p>` : ""}
-                ${button.label ? `<p class="buttonLabel">${button.label}</p>` : ""}
+            <a class="buttonLink" href="${sanitize(button.url)}" target="_blank">
+                ${button.emoji ? `<p class="buttonEmoji">${sanitize(button.emoji)}</p>` : ""}
+                ${button.label ? `<p class="buttonLabel">${sanitize(button.label)}</p>` : ""}
                 <svg class="buttonLinkIcon"><use href="#link-icon"></use></svg>
             </a>` : `
-                ${button.emoji ? `<p class="buttonEmoji">${button.emoji}</p>` : ""}
-                ${button.label ? `<p class="buttonLabel">${button.label}</p>` : ""}
+                ${button.emoji ? `<p class="buttonEmoji">${sanitize(button.emoji)}</p>` : ""}
+                ${button.label ? `<p class="buttonLabel">${sanitize(button.label)}</p>` : ""}
             `}
         </div>
         `;
@@ -388,16 +389,16 @@ export class Html {
         return `
         <div class="selector">
             <div class="selectorInput">
-                <p class="selectorInputText">${selector.placeholder}</p>
+                <p class="selectorInputText">${selector.placeholder ? sanitize(selector.placeholder) : ""}</p>
             </div>
             <div class="selectorOptionMenu">
                 ${selector.type == JsonComponentType.StringSelect ? selector.options.map(option => {
             return `
                     <div class="selectorOption">
-                        ${option.emoji ? `<p class="selectorOptionEmoji">${option.emoji}</p>` : ""}
+                        ${option.emoji ? `<p class="selectorOptionEmoji">${option.emoji.name ? sanitize(option.emoji.name) : ""}</p>` : ""}
                         <div class="selectorOptionRight">
-                            <p class="selectorOptionTitle">${option.label}</p>
-                            ${option.description ? `<p class="selectorOptionDesc">${option.description}</p>` : ""}
+                            <p class="selectorOptionTitle">${sanitize(option.label)}</p>
+                            ${option.description ? `<p class="selectorOptionDesc">${sanitize(option.description)}</p>` : ""}
                         </div>
                     </div>
                     `;
@@ -410,7 +411,7 @@ export class Html {
         return `
             <div class="reactionsDiv">
                 ${reactions.map(reaction => `
-                    <div class="reaction"><p>${reaction.count} ${reaction.emoji}</p></div>
+                    <div class="reaction"><p>${reaction.count} ${sanitize(reaction.emoji)}</p></div>
                 `).join('')}
             </div>
         `;

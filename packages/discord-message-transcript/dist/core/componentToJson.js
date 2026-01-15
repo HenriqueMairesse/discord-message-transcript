@@ -1,6 +1,6 @@
 import { ComponentType } from "discord.js";
 import { mapButtonStyle, mapSelectorType, mapSeparatorSpacing } from "./mappers.js";
-import { JsonComponentType } from "discord-message-transcript-base/types/types";
+import { JsonComponentType } from "discord-message-transcript-base";
 import { CustomError } from "discord-message-transcript-base";
 import { urlToBase64 } from "./imageToBase64.js";
 export async function componentsToJson(components, options) {

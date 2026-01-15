@@ -1,3 +1,8 @@
+import { sanitize } from "./sanitizer.js";
+const BLOCK_TOKEN = "\0CB\0";
+const LINE_TOKEN = "\0CL\0";
+const BLOCK_REGEX = /\0CB\0(\d+)\0CB\0/g;
+const LINE_REGEX = /\0CL\0(\d+)\0CL\0/g;
 export function markdownToHTML(text, mentions, everyone, dateFormat) {
     const codeBlock = [];
     const codeLine = [];
@@ -6,18 +11,19 @@ export function markdownToHTML(text, mentions, everyone, dateFormat) {
         const rawLang = lang?.toLowerCase();
         const normalizedLang = rawLang ? (LANGUAGE_ALIAS[rawLang] ?? rawLang) : null;
         const language = normalizedLang && SUPPORTED_LANGUAGES.has(rawLang) ? normalizedLang : 'plaintext';
-        codeBlock.push(`<pre><code class="language-${language}">${code.trimEnd()}</code></pre>`);
-        return `%$%CODE!BLOCK!${codeBlock.length - 1}%$%`;
+        codeBlock.push(`<pre><code ${normalizedLang ? `class="language-${language}"` : ""}>${sanitize(code).trimEnd()}</code></pre>`);
+        return `${BLOCK_TOKEN}${codeBlock.length}${BLOCK_TOKEN}`;
     });
     // Code line (`)
-    text = text.replace(/`([^`]+)`/g, (_m, code) => {
-        codeLine.push(`<code>${code}</code>`);
-        return `%$%CODE!LINE!${codeLine.length - 1}%$%`;
+    text = text.replace(/`([^`\n]+?)`/g, (_m, code) => {
+        codeLine.push(`<code>${sanitize(code)}</code>`);
+        return `${LINE_TOKEN}${codeLine.length}${LINE_TOKEN}`;
     });
+    text = sanitize(text);
     // Citation (> | >>>)
-    text = text.replace(/(^> ?.*(?:(?:\n^> ?.*)+)?)/gm, (match) => {
+    text = text.replace(/(^&gt; ?.*(?:(?:\n^&gt; ?.*)+)?)/gm, (match) => {
         const cleanContent = match.split('\n').map(line => {
-            return line.replace(/^>+ ?/, '');
+            return line.replace(/^&gt;+ ?/, '');
         }).join('\n');
         return `<blockquote class="quote-multi">${cleanContent}</blockquote>`;
     });
@@ -47,26 +53,26 @@ export function markdownToHTML(text, mentions, everyone, dateFormat) {
     // Strikethrough (~~)
     text = text.replace(/~~(.*?)~~/gs, `<s>$1</s>`);
     // Links ([]() && https)
-    text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/g, (_m, text, link) => `<a href="${link}" target="_blank">${text}</a>`);
-    text = text.replace(/(?<!href=")(https?:\/\/[^\s]+)/g, (_m, link) => `<a href="${link}" target="_blank">${link}</a>`);
+    text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/g, (_m, text, link) => `<a href="${link}" target="_blank" rel="noopener noreferrer">${text}</a>`);
+    text = text.replace(/(?<!href=")(https?:\/\/[^\s]+)/g, (_m, link) => `<a href="${link}" target="_blank" rel="noopener noreferrer">${link}</a>`);
     // Mentions (@)
     if (mentions.users.length != 0) {
         const users = new Map(mentions.users.map(user => [user.id, user]));
-        text = text.replace(/<@!?(\d+)>/g, (_m, id) => {
+        text = text.replace(/&lt;@!?(\d+)&gt;/g, (_m, id) => {
             let user = users.get(id);
             return user ? `<span class="mention" style="color: ${user.color ?? "#dbdee1"}">@${user.name}</span> ` : `<span class="mention"><@${id}></span> `;
         });
     }
     if (mentions.roles.length != 0) {
         const roles = new Map(mentions.roles.map(role => [role.id, role]));
-        text = text.replace(/<@&(\d+)>/g, (_m, id) => {
+        text = text.replace(/&lt;@&amp;(\d+)&gt;/g, (_m, id) => {
             const role = roles.get(id);
             return role ? `<span class="mention" style="color: ${role.color}">@${role.name}</span> ` : `<span class="mention"><@&${id}></span> `;
         });
     }
     if (mentions.channels.length != 0) {
         const channels = new Map(mentions.channels.map(channel => [channel.id, channel]));
-        text = text.replace(/<#(\d+)>/g, (_m, id) => {
+        text = text.replace(/&lt;#(\d+)&gt;/g, (_m, id) => {
             const channel = channels.get(id);
             return channel && channel.name ? `<span class="mention">#${channel.name}</span> ` : `<span class="mention"><#${id}></span> `;
         });
@@ -77,7 +83,7 @@ export function markdownToHTML(text, mentions, everyone, dateFormat) {
     }
     // Timestamp  
     const { locale, timeZone } = dateFormat.resolvedOptions();
-    text = text.replace(/<t:(\d+)(?::([tTdDfFR]))?>/g, (_m, timestamp, format) => {
+    text = text.replace(/&lt;t:(\d+)(?::([tTdDfFR]))?&gt;/g, (_m, timestamp, format) => {
         const date = new Date(parseInt(timestamp, 10) * 1000);
         const style = format || 'f';
         const isoString = date.toISOString();
@@ -121,11 +127,11 @@ export function markdownToHTML(text, mentions, everyone, dateFormat) {
     // Clear Unecessary Break Line
     text = text.replace(/(<\/(?:p|h[1-3]|blockquote)>)\s*<br>/g, '$1');
     // Remove Placeholders
-    text = text.replace(/%\$%CODE!BLOCK!(\d+)%\$%/g, (_m, number) => {
-        return codeBlock[number];
+    text = text.replace(BLOCK_REGEX, (_m, number) => {
+        return codeBlock[Number(number) - 1] ?? "";
     });
-    text = text.replace(/%\$%CODE!LINE!(\d+)%\$%/g, (_m, number) => {
-        return codeLine[number];
+    text = text.replace(LINE_REGEX, (_m, number) => {
+        return codeLine[Number(number) - 1] ?? "";
     });
     return text;
 }

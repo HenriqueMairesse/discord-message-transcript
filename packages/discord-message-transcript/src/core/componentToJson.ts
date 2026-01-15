@@ -1,6 +1,6 @@
 import { TopLevelComponent, ComponentType } from "discord.js";
 import { mapButtonStyle, mapSelectorType, mapSeparatorSpacing } from "./mappers.js"
-import { JsonTopLevelComponent, JsonButtonComponent, JsonSelectMenu, JsonComponentType, JsonComponentInContainer, JsonThumbnailComponent, JsonTextDisplayComponent, ReturnTypeBase, TranscriptOptionsBase } from "discord-message-transcript-base/types/types";
+import { JsonTopLevelComponent, JsonButtonComponent, JsonSelectMenu, JsonComponentType, JsonComponentInContainer, JsonThumbnailComponent, JsonTextDisplayComponent, TranscriptOptionsBase } from "discord-message-transcript-base";
 import { CustomError } from "discord-message-transcript-base";
 import { urlToBase64 } from "./imageToBase64.js";
 
