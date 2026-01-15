@@ -24,7 +24,7 @@
     "type": "git",
     "url": "git+https://github.com/HenriqueMairesse/discord-message-transcript.git"
   },
-  "keywords": [],
+  "keywords": ["discord", "discord-transcript", "discord-channel-transcript", "channel-transcript", "message-transcript", "message-logger", "discord-logs", "discord-backup", "discord-export", "json-transcript", "html-transcript", "markdown-rendering", "modular-library", "discord-bot", "message-archive"],
   "author": "",
   "license": "Apache-2.0",
   "type": "module",
