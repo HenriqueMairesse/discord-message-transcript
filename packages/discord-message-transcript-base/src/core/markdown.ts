@@ -29,7 +29,7 @@ export function markdownToHTML(text: string, mentions: ArrayMentions, everyone: 
     text = sanitize(text);
 
     // Citation (> | >>>)
-    text = text.replace(/(^[ \t]*> ?.*(?:\n[ \t]*> ?.*)*)/gm, (match) => {
+    text = text.replace(/(^[ \t]*&gt; ?.*(?:\n[ \t]*&gt; ?.*)*)/gm, (match) => {
         const cleanContent = match.split('\n').map(line => {
             return line.replace(/^&gt;+ ?/, '');
         }).join('\n');
