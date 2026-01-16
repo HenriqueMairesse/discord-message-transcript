@@ -1,11 +1,16 @@
 export const DEFAULT_CSS = `
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
 body {
     background-color: #3a3c43;
     color: #dbdee1;
     font-family: "Whitney", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    margin: 0;
+    display: flex;
+    flex-direction: column;
     padding: 0;
-    width: 100%;
 }
 header {
     height: fit-content;

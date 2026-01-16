@@ -28,10 +28,10 @@ export function markdownToHTML(text: string, mentions: ArrayMentions, everyone: 
 
     text = sanitize(text);
 
-    // Citation (> | >>>)
+    // Citation (>)
     text = text.replace(/(^[ \t]*&gt; ?.*(?:\n[ \t]*&gt; ?.*)*)/gm, (match) => {
         const cleanContent = match.split('\n').map(line => {
-            return line.replace(/^&gt;+ ?/, '');
+            return line.replace(/^[ \t]*&gt;+ ?/, '');
         }).join('\n');
 
         return `<blockquote class="quote-multi">${cleanContent}</blockquote>`; 

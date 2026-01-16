@@ -146,7 +146,7 @@ export class Html {
     <header>
         ${this.headerBuilder()}
     </header>
-    <main style="display: flex; flex-direction: column; padding: 2.25%;">
+    <main style="display: flex; flex-direction: column; padding: 2.25%; flex: 1;">
        ${this.messagesBuilder()}
     </main>
     ${options.watermark ? `<footer>
