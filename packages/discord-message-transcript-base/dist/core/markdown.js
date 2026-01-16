@@ -21,7 +21,7 @@ export function markdownToHTML(text, mentions, everyone, dateFormat) {
     });
     text = sanitize(text);
     // Citation (> | >>>)
-    text = text.replace(/(^&gt; ?.*(?:(?:\n^&gt; ?.*)+)?)/gm, (match) => {
+    text = text.replace(/(^[ \t]*> ?.*(?:\n[ \t]*> ?.*)*)/gm, (match) => {
         const cleanContent = match.split('\n').map(line => {
             return line.replace(/^&gt;+ ?/, '');
         }).join('\n');
