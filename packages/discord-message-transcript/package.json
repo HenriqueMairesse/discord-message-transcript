@@ -56,5 +56,8 @@
   },
   "peerDependencies": {
     "discord.js": ">=14.19.0 <15"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
