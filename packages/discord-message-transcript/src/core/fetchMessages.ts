@@ -105,7 +105,7 @@ export async function fetchMessages(channel: TextBasedChannel, options: Transcri
 
         const components = await componentsToJson(message.components, options);
 
-        getMentions(message, mentions);
+        await getMentions(message, mentions);
 
         return {
             attachments: options.includeAttachments ? attachments : [],
