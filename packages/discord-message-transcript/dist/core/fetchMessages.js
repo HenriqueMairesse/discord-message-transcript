@@ -109,7 +109,7 @@ export async function fetchMessages(channel, options, authors, mentions, after) 
             });
         }
         const components = await componentsToJson(message.components, options);
-        getMentions(message, mentions);
+        await getMentions(message, mentions);
         return {
             attachments: options.includeAttachments ? attachments : [],
             authorId: message.author.id,
