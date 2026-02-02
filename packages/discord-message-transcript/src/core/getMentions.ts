@@ -10,7 +10,7 @@ export function getMentions(message: Message, mentions: MapMentions) {
             })
         }
     })
-    
+
     message.mentions.roles.forEach(role => {
         if (!mentions.roles.has(role.id)) {
             mentions.roles.set(role.id, {
@@ -20,13 +20,13 @@ export function getMentions(message: Message, mentions: MapMentions) {
             })
         }
     })
-    
+
     if (message.guild) {
-        
+
     }
-    
+
     if (message.mentions.members) {
-        message.mentions.members.forEach(member => { 
+        message.mentions.members.forEach(member => {
             if (!mentions.users.has(member.id)) {
                 mentions.users.set(member.id, {
                     id: member.id,
@@ -63,7 +63,7 @@ function fetchRoleMention(message: Message, mentions: MapMentions) {
         }
     }
 
-    roleIds.forEach(async id =>  {
+    roleIds.forEach(async id => {
         const role = await message.guild?.roles.fetch(id);
         if (!role) return;
         mentions.roles.set(role.id, { id: role.id, color: role.hexColor, name: role.name })
@@ -76,20 +76,43 @@ function fetchUserMention(message: Message, mentions: MapMentions) {
 
     for (const match of message.content.matchAll(/<@(\d+)>/g)) {
         const userId = match[1];
-        if (userId && !usersId.includes(userId) && !mentions.roles.has(userId)) {
+        if (userId && !usersId.includes(userId) && !mentions.users.has(userId)) {
             usersId.push(userId);
         }
     }
 
-    usersId.forEach(async id =>  {
+    usersId.forEach(async id => {
+        let userSet = false;
+
         if (message.guild) {
-            const user = await message.guild.members.fetch(id);
-            if (!user) return;
-            mentions.users.set(user.id, { id: user.id, color: user.displayHexColor, name: user.displayName })
-        } 
-        const user = await message.client.users.fetch(id);
-        if (!user) return;
-        mentions.users.set(user.id, { id: user.id, color: user.hexAccentColor ?? null, name: user.displayName })
+            try {
+                const member = await message.guild.members.fetch(id);
+                if (member) {
+                    mentions.users.set(member.id, {
+                        id: member.id,
+                        color: member.displayHexColor,
+                        name: member.displayName
+                    })
+                    userSet = true;
+                }
+            } catch {
+                // Unknown Member (404) ou falta de permissão — faz fallback abaixo
+            }
+        }
+
+        if (!userSet) {
+            try {
+                const user = await message.client.users.fetch(id);
+                if (!user) return;
+                mentions.users.set(user.id, {
+                    id: user.id,
+                    color: user.hexAccentColor ?? null,
+                    name: user.displayName
+                })
+            } catch {
+                // Ignora erro ao buscar usuário global
+            }
+        }
     })
 
 }
@@ -104,7 +127,7 @@ function fetchChannelMention(message: Message, mentions: MapMentions) {
         }
     }
 
-    channelIds.forEach(async id =>  {
+    channelIds.forEach(async id => {
         const channel = await message.guild?.channels.fetch(id);
         if (!channel) return;
         mentions.channels.set(channel.id, { id: channel.id, name: channel.name })

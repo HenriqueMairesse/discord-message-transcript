@@ -1,6 +1,6 @@
 {
   "name": "discord-message-transcript",
-  "version": "1.1.4",
+  "version": "1.1.4-fix",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,7 +24,23 @@
     "type": "git",
     "url": "git+https://github.com/HenriqueMairesse/discord-message-transcript.git"
   },
-  "keywords": ["discord", "discord-transcript", "discord-channel-transcript", "channel-transcript", "message-transcript", "message-logger", "discord-logs", "discord-backup", "discord-export", "json-transcript", "html-transcript", "markdown-rendering", "modular-library", "discord-bot", "message-archive"],
+  "keywords": [
+    "discord",
+    "discord-transcript",
+    "discord-channel-transcript",
+    "channel-transcript",
+    "message-transcript",
+    "message-logger",
+    "discord-logs",
+    "discord-backup",
+    "discord-export",
+    "json-transcript",
+    "html-transcript",
+    "markdown-rendering",
+    "modular-library",
+    "discord-bot",
+    "message-archive"
+  ],
   "author": "",
   "license": "Apache-2.0",
   "type": "module",
@@ -42,4 +58,3 @@
     "discord.js": ">=14.19.0 <15"
   }
 }
-
