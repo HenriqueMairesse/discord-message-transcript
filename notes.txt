@@ -5,3 +5,5 @@ In Mind:
         - Remake the style
 
 Issues: 
+    - Other type isn't being infered by ts
+    - Every url is going to imageToBase64

@@ -2,9 +2,10 @@ import { TopLevelComponent, ComponentType } from "discord.js";
 import { mapButtonStyle, mapSelectorType, mapSeparatorSpacing } from "./mappers.js"
 import { JsonTopLevelComponent, JsonButtonComponent, JsonSelectMenu, JsonComponentType, JsonComponentInContainer, JsonThumbnailComponent, JsonTextDisplayComponent, TranscriptOptionsBase } from "discord-message-transcript-base";
 import { CustomError } from "discord-message-transcript-base";
-import { urlToBase64 } from "./imageToBase64.js";
+import { urlResolver } from "./urlResolver.js";
+import { CDNOptions } from "../types/types.js";
 
-export async function componentsToJson(components: TopLevelComponent[], options: TranscriptOptionsBase): Promise<JsonTopLevelComponent[]> {
+export async function componentsToJson(components: TopLevelComponent[], options: TranscriptOptionsBase, cdnOptions: CDNOptions<unknown> | null): Promise<JsonTopLevelComponent[]> {
     const processedComponents = await Promise.all(components.filter(component => !(!options.includeV2Components && component.type != ComponentType.ActionRow))
     .map<Promise<JsonTopLevelComponent | null>>(async component => {
         switch (component.type) {
@@ -51,7 +52,7 @@ export async function componentsToJson(components: TopLevelComponent[], options:
             }
             case ComponentType.Container: {
                 const newOptions = {...options, includeComponents: true, includeButtons: true};
-                const componentsJson = await componentsToJson(component.components, newOptions);
+                const componentsJson = await componentsToJson(component.components, newOptions, cdnOptions);
                 return {
                     type: JsonComponentType.Container,
                     components: componentsJson.filter(isJsonComponentInContainer), // Input components that are container-safe must always produce container-safe output.
@@ -60,34 +61,18 @@ export async function componentsToJson(components: TopLevelComponent[], options:
                 };
             }
             case ComponentType.File: {
-                let fileUrl = component.file.url;
-                if (options.saveImages) {
-                    try {
-                        fileUrl = await urlToBase64(fileUrl);
-                    } catch (err) {
-                        if (err instanceof CustomError) console.error(err);
-                    }
-                }
                 return {
                     type: JsonComponentType.File,
                     fileName: component.data.name ?? null,
                     size: component.data.size ?? 0,
-                    url: fileUrl,
+                    url: await urlResolver(component.file.url, options, cdnOptions),
                     spoiler: component.spoiler,
                 };
             }
             case ComponentType.MediaGallery: {
                 const mediaItems = await Promise.all(component.items.map(async item => {
-                    let mediaUrl = item.media.url;
-                    if (options.saveImages) {
-                        try {
-                            mediaUrl = await urlToBase64(mediaUrl);
-                        } catch (err) {
-                            if (err instanceof CustomError) console.error(err);
-                        }
-                    }
                     return {
-                        media: { url: mediaUrl },
+                        media: { url: await urlResolver(item.media.url, options, cdnOptions) },
                         spoiler: item.spoiler,
                     };
                 }));
@@ -108,18 +93,10 @@ export async function componentsToJson(components: TopLevelComponent[], options:
                         disabled: component.accessory.disabled,
                     };
                 } else {
-                    let thumbnailUrl = component.accessory.media.url;
-                    if (options.saveImages) {
-                        try {
-                            thumbnailUrl = await urlToBase64(thumbnailUrl);
-                        } catch (err) {
-                            if (err instanceof CustomError) console.error(err);
-                        }
-                    }
                     accessoryJson = {
                         type: JsonComponentType.Thumbnail,
                         media: {
-                            url: thumbnailUrl,
+                            url: await urlResolver(component.accessory.media.url, options, cdnOptions),
                         },
                         spoiler: component.accessory.spoiler,
                     };

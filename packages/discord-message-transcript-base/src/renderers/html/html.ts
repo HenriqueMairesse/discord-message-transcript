@@ -1,4 +1,4 @@
-import { CustomError } from "../../core/error.js";
+import { CustomError } from "../../core/customMessages.js";
 import { markdownToHTML } from "../../core/markdown.js";
 import { JsonAttachment, JsonButtonComponent, JsonButtonStyle, JsonComponentType, JsonData, JsonEmbed, JsonMessage, JsonPoll, JsonReaction, JsonSelectMenu, JsonTopLevelComponent } from "../../types/types.js";
 import { ACTIONROW_CSS, ATTACHMENT_CSS, BUTTON_CSS, COMPONENTS_CSS, COMPONENTSV2_CSS, DEFAULT_CSS, EMBED_CSS, MESSAGE_CSS, POLL_CSS, POLL_RESULT_EMBED_CSS, REACTIONS_CSS } from "./css.js";

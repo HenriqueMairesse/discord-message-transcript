@@ -1,7 +1,7 @@
 import https from 'https';
 import { CustomError } from 'discord-message-transcript-base';
 
-export async function urlToBase64(url: string): Promise<string> {
+export async function imageToBase64(url: string): Promise<string> {
     return new Promise((resolve, reject) => {
         const request = https.get(url, (response) => {
             if (response.statusCode !== 200) {

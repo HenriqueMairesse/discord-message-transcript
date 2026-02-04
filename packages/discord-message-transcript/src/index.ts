@@ -83,7 +83,7 @@ export async function createTranscript<T extends ReturnType = typeof ReturnType.
         }
 
         while (true) {
-            const { messages, end } = await fetchMessages(channel, internalOptions, authors, mentions, lastMessageID);
+            const { messages, end } = await fetchMessages(channel, internalOptions, options.cdnOptions ?? null, authors, mentions, lastMessageID);
             jsonTranscript.addMessages(messages);
             lastMessageID = messages[messages.length - 1]?.id;
             if (end || (jsonTranscript.messages.length >= quantity && quantity != 0)) {
