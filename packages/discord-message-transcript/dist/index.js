@@ -1,4 +1,4 @@
-export { ReturnType } from "./types/types.js";
+export { ReturnType, CDNType } from "./types/types.js";
 export { ReturnFormat } from "discord-message-transcript-base";
 import { AttachmentBuilder } from "discord.js";
 import { Json } from "./renderers/json/json.js";

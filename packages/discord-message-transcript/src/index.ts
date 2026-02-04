@@ -1,4 +1,4 @@
-export { CreateTranscriptOptions, ConvertTranscriptOptions, TranscriptOptions, ReturnType } from "./types/types.js";
+export { CreateTranscriptOptions, ConvertTranscriptOptions, TranscriptOptions, ReturnType, CDNOptions, CDNType, MimeType } from "./types/types.js";
 export { ReturnFormat, LocalDate, TimeZone } from "discord-message-transcript-base";
 
 import { AttachmentBuilder, TextBasedChannel } from "discord.js";

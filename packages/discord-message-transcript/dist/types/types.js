@@ -5,3 +5,7 @@ export const ReturnType = {
     String: "string",
     Uploadable: "uploadable"
 };
+export const CDNType = {
+    CUSTOM: "CUSTOM",
+    CLOUDFLARE: "CLOUDFLARE",
+};

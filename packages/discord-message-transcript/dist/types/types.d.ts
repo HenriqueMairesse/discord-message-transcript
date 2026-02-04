@@ -33,7 +33,11 @@ export type ConvertTranscriptOptions<T extends ReturnType> = Partial<{
      */
     watermark: boolean;
 }>;
-export interface TranscriptOptions<T extends ReturnType> {
+export interface TranscriptOptions<T extends ReturnType, Other = unknown> {
+    /**
+     * CDN Options
+     */
+    cdnOptions: CDNOptions<Other>;
     /**
      * The name of the file to be created.
      * Default depends if is DM or Guild
@@ -135,3 +139,21 @@ export interface MapMentions {
     roles: Map<string, JsonMessageMentionsRoles>;
     users: Map<string, JsonMessageMentionsUsers>;
 }
+export declare const CDNType: {
+    readonly CUSTOM: "CUSTOM";
+    readonly CLOUDFLARE: "CLOUDFLARE";
+};
+export type CDNType = typeof CDNType[keyof typeof CDNType];
+export type MimeType = `${string}/${string}`;
+export type CDNOptions<Other> = (Partial<{
+    includeAudio: boolean;
+    includeImage: boolean;
+    includeVideo: boolean;
+    includeDownloads: boolean;
+}>) & ({
+    type: Exclude<CDNType, "CUSTOM">;
+} | {
+    type: "CUSTOM";
+    customCdnResolver: (url: string, contentType: MimeType | null, other: Other) => Promise<string> | string;
+    other: Other;
+});
