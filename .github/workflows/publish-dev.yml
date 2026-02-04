@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - '1.*'
   workflow_dispatch:
 
 jobs:
@@ -47,6 +48,16 @@ jobs:
       - name: Build packages
         run: pnpm -r build
 
+      # dev ou dev-next
+      - name: Define npm tag
+        id: npm_tag
+        run: |
+          if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
+            echo "tag=dev" >> $GITHUB_OUTPUT
+          else
+            echo "tag=dev-next" >> $GITHUB_OUTPUT
+          fi
+
       # 1️⃣ Bump versão DEV do BASE
       - name: Bump dev version (base)
         working-directory: packages/discord-message-transcript-base
@@ -78,13 +89,13 @@ jobs:
       # 5️⃣ Publica BASE
       - name: Publish base (dev)
         working-directory: packages/discord-message-transcript-base
-        run: pnpm publish --tag dev --no-git-checks
+        run: pnpm publish --tag ${{ steps.npm_tag.outputs.tag }} --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       # 6️⃣ Publica MAIN
       - name: Publish main (dev)
         working-directory: packages/discord-message-transcript
-        run: pnpm publish --tag dev --no-git-checks
+        run: pnpm publish --tag ${{ steps.npm_tag.outputs.tag }} --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
