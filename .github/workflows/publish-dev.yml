@@ -67,7 +67,13 @@ jobs:
       - name: Sync base dependency version
         working-directory: packages/discord-message-transcript
         run: |
-          pnpm add discord-message-transcript-base@${{ steps.base_version.outputs.version }} --save-exact
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
+            pkg.dependencies = pkg.dependencies || {};
+            pkg.dependencies['discord-message-transcript-base'] = '${{ steps.base_version.outputs.version }}';
+            fs.writeFileSync('./package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
 
       # 5️⃣ Publica BASE
       - name: Publish base (dev)
