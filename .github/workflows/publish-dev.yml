@@ -66,8 +66,53 @@ jobs:
       - name: Bump dev version (base)
         if: steps.changes.outputs.publish == 'true'
         working-directory: packages/discord-message-transcript-base
-        run: pnpm version prerelease --preid=dev.${GITHUB_REF_NAME}.${GITHUB_RUN_NUMBER} --no-git-tag-version
-
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          PKG_NAME=$(node -p "require('./package.json').name")
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          BASE_VERSION=$(echo "$CURRENT_VERSION" | cut -d- -f1)
+      
+          RUN=${GITHUB_RUN_NUMBER}
+      
+          if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
+            PREID=dev
+            # próxima patch
+            BASE_VERSION=$(node -e "
+              const [a,b,c] = '$BASE_VERSION'.split('.').map(Number);
+              console.log([a,b,c+1].join('.'));
+            ")
+          else
+            PREID=dev-next
+          fi
+      
+          # pega a última versão publicada com esse preid
+          LAST_VERSION=$(npm view "$PKG_NAME" versions --json 2>/dev/null \
+            | node -e "
+              const versions = JSON.parse(require('fs').readFileSync(0, 'utf8'));
+              const base = '$BASE_VERSION';
+              const preid = '$PREID';
+      
+              const matches = versions
+                .filter(v => v.startsWith(base + '-' + preid + '.'))
+                .map(v => {
+                  const m = v.match(new RegExp(base + '-' + preid + '\\.(\\d+)'));
+                  return m ? Number(m[1]) : null;
+                })
+                .filter(v => v !== null);
+      
+              if (matches.length === 0) {
+                console.log('-1');
+              } else {
+                console.log(Math.max(...matches));
+              }
+            ")
+      
+          NEXT_N=$((LAST_VERSION + 1))
+          NEW_VERSION="${BASE_VERSION}-${PREID}.${NEXT_N}.${RUN}"
+      
+          echo "📦 Publishing version: $NEW_VERSION"
+          pnpm version "$NEW_VERSION" --no-git-tag-version
       # 2️⃣ Lê a versão gerada
       - name: Read base version
         if: steps.changes.outputs.publish == 'true'
