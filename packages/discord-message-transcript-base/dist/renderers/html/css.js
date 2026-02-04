@@ -286,6 +286,7 @@ export const EMBED_CSS = `
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
+    row-gap: 1rem;
     width: 100%;
 }
 .embedFieldsField {

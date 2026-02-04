@@ -20,13 +20,24 @@ export function markdownToHTML(text, mentions, everyone, dateFormat) {
         return `${LINE_TOKEN}${codeLine.length}${LINE_TOKEN}`;
     });
     text = sanitize(text);
-    // Citation (>)
-    text = text.replace(/(^[ \t]*&gt; ?.*(?:\n[ \t]*&gt; ?.*)*)/gm, (match) => {
-        const cleanContent = match.split('\n').map(line => {
-            return line.replace(/^[ \t]*&gt;+ ?/, '');
-        }).join('\n');
-        return `<blockquote class="quote-multi">${cleanContent}</blockquote>`;
-    });
+    // Citation (> | >>>)
+    const tripleCitationIndex = text.search(/^[ \t]*&gt;&gt;&gt;/m);
+    if (tripleCitationIndex !== -1) {
+        const lineStartIndex = text.lastIndexOf('\n', tripleCitationIndex) + 1;
+        let beforePart = text.substring(0, lineStartIndex);
+        let afterPart = text.substring(lineStartIndex);
+        beforePart = beforePart.replace(/(^[ \t]*&gt; ?.*(?:\n[ \t]*&gt; ?.*)*)/gm, (match) => {
+            return singleCitation(match);
+        });
+        afterPart = afterPart.replace(/^[ \t]*&gt;&gt;&gt; ?/, '');
+        const afterHtml = `<blockquote class="quote-multi">${afterPart}</blockquote>`;
+        text = beforePart + afterHtml;
+    }
+    else {
+        text = text.replace(/(^[ \t]*&gt; ?.*(?:\n[ \t]*&gt; ?.*)*)/gm, (match) => {
+            return singleCitation(match);
+        });
+    }
     // Headers (#)
     text = text.replace(/^### (.*)(?=\n|$)/gm, `<h3>$1</h3>`);
     text = text.replace(/^## (.*)(?=\n|$)/gm, `<h2>$1</h2>`);
@@ -134,6 +145,29 @@ export function markdownToHTML(text, mentions, everyone, dateFormat) {
         return codeLine[Number(number) - 1] ?? "";
     });
     return text;
+}
+function singleCitation(match) {
+    const lines = match.split('\n');
+    const result = [];
+    let currentBlock = [];
+    for (const line of lines) {
+        const prefixMatch = line.match(/^[ \t]*((?:&gt;)+)/);
+        const len = prefixMatch ? prefixMatch[1].length : 0;
+        if (len === 4) { // Is a single '>'
+            currentBlock.push(line.replace(/^[ \t]*&gt; ?/, ''));
+        }
+        else { // Is '>>' or something else
+            if (currentBlock.length > 0) {
+                result.push(`<blockquote class="quote-multi">${currentBlock.join('\n')}</blockquote>`);
+                currentBlock = [];
+            }
+            result.push(line);
+        }
+    }
+    if (currentBlock.length > 0) {
+        result.push(`<blockquote class="quote-multi">${currentBlock.join('\n')}</blockquote>`);
+    }
+    return result.join('\n');
 }
 // Check if styleKey is valid
 const styleOptions = {
