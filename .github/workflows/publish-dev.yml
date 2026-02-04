@@ -1,0 +1,84 @@
+name: Publish dev packages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  publish-dev:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # 🔍 Detecta mudanças relevantes
+      - name: Detect relevant changes
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            publish:
+              - 'packages/**'
+              - '.npmrc'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+
+      # ⏭️ Skip se não houve mudança relevante
+      - name: Skip if no relevant changes
+        if: steps.changes.outputs.publish != 'true'
+        run: |
+          echo "No relevant changes detected. Skipping dev publish."
+          exit 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org/
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm -r build
+
+      # 1️⃣ Bump versão DEV do BASE
+      - name: Bump dev version (base)
+        working-directory: packages/discord-message-transcript-base
+        run: pnpm version prerelease --preid=dev --no-git-tag-version
+
+      # 2️⃣ Lê a versão gerada
+      - name: Read base version
+        id: base_version
+        run: |
+          echo "version=$(node -p "require('./packages/discord-message-transcript-base/package.json').version")" >> $GITHUB_OUTPUT
+
+      # 3️⃣ Aplica a MESMA versão no MAIN
+      - name: Sync main version
+        working-directory: packages/discord-message-transcript
+        run: pnpm version ${{ steps.base_version.outputs.version }} --no-git-tag-version
+
+      # 4️⃣ Crava dependência do MAIN → BASE@versão exata
+      - name: Sync base dependency version
+        working-directory: packages/discord-message-transcript
+        run: |
+          pnpm add discord-message-transcript-base@${{ steps.base_version.outputs.version }} --save-exact
+
+      # 5️⃣ Publica BASE
+      - name: Publish base (dev)
+        working-directory: packages/discord-message-transcript-base
+        run: pnpm publish --tag dev --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # 6️⃣ Publica MAIN
+      - name: Publish main (dev)
+        working-directory: packages/discord-message-transcript
+        run: pnpm publish --tag dev --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
