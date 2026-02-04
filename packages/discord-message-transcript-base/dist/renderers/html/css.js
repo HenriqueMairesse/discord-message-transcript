@@ -227,7 +227,7 @@ export const EMBED_CSS = `
     flex-direction: column;
     gap: 0.5rem;
     max-width: 40rem;
-    min-width: 30rem;
+    width: fit-content;
 }
 .embed a {
     color: #00aff4;
@@ -283,13 +283,17 @@ export const EMBED_CSS = `
     color: #dcddde;
 }
 .embedFields {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
+    width: 100%;
 }
 .embedFieldsField {
-    flex: 1;
-    min-width: 150px;
+    grid-column: 1 / -1;
+    min-width: 0;
+}
+.embedFieldsFieldInline {
+    min-width: 0;
 }
 .embedFieldsFieldTitle {
     font-size: 0.75rem;

@@ -207,14 +207,12 @@ export class Html {
         const totalVotes = parseInt(getField("total_votes") ?? "0");
         const winnerPercentage = totalVotes > 0 ? (winnerVotes / totalVotes) * 100 : 0;
 
-        if (!winnerText && winnerVotes != 0) return '';
-
         return `
         <div class="pollResultEmbed">
             <div>
                 <div class="pollResultEmbedWinner">
                     ${emojiText ? sanitize(emojiText) : ""}
-                    ${winnerText ? sanitize(winnerText) : "There was no winner"}
+                    ${winnerText ? sanitize(winnerText) : winnerVotes > 0 ? "The result was a draw" : "There was no winner"}
                     ${winnerVotes != 0 ? `<span class="pollResultEmbedCheckmark">✔</span>` : ""}
                 </div>
                 <div class="pollResultEmbedSubtitle">${totalVotes} votes (${winnerPercentage.toFixed(1)}%)</div>
@@ -235,7 +233,7 @@ export class Html {
             const embedTitle = embed.title ? (embed.url ? `<a class="embedHeaderLeftTitle" href="${sanitize(embed.url)}" target="_blank">${sanitize(embed.title)}</a>` : `<p class="embedHeaderLeftTitle">${sanitize(embed.title)}</p>`) : "";
 
             return `
-                <div class="embed" style="${embed.hexColor ? `border-left-color: ${embed.hexColor}` : ''}">
+                <div class="embed" style="border-left-color:${embed.hexColor ? `${embed.hexColor}` : '#4f545c'}">
                     ${embed.author || embed.title || embed.thumbnail || embed.description ? `
                     <div class="embedHeader">
                         <div class="embedHeaderLeft">
@@ -252,7 +250,7 @@ export class Html {
                     ${embed.fields && embed.fields.length > 0 ? `
                     <div class="embedFields">
                         ${embed.fields.map(field => `
-                        <div class="embedFieldsField" style="${field.inline ? 'display: inline-block;' : ''}">
+                        <div class="${field.inline ? "embedFieldsFieldInline" : "embedFieldsField"}">
                             <p class="embedFieldsFieldTitle">${sanitize(field.name)}</p>
                             <p class="embedFieldsFieldValue">${markdownToHTML(field.value, this.data.mentions, message.mentions, this.dateFormat)}</p>
                         </div>`).join("")}
