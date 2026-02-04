@@ -31,25 +31,29 @@ jobs:
         if: steps.changes.outputs.publish != 'true'
         run: |
           echo "No relevant changes detected. Skipping dev publish."
-          exit 0
 
       - uses: actions/setup-node@v4
+        if: steps.changes.outputs.publish == 'true'
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org/
 
       - uses: pnpm/action-setup@v4
+        if: steps.changes.outputs.publish == 'true'
         with:
           version: 9
 
       - name: Install dependencies
+        if: steps.changes.outputs.publish == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Build packages
+        if: steps.changes.outputs.publish == 'true'
         run: pnpm -r build
 
       # dev ou dev-next
       - name: Define npm tag
+        if: steps.changes.outputs.publish == 'true'
         id: npm_tag
         run: |
           if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
@@ -60,22 +64,26 @@ jobs:
 
       # 1️⃣ Bump versão DEV do BASE
       - name: Bump dev version (base)
+        if: steps.changes.outputs.publish == 'true'
         working-directory: packages/discord-message-transcript-base
-        run: pnpm version prerelease --preid=dev --no-git-tag-version
+        run: pnpm version prerelease --preid=dev.${GITHUB_REF_NAME}.${GITHUB_RUN_NUMBER} --no-git-tag-version
 
       # 2️⃣ Lê a versão gerada
       - name: Read base version
+        if: steps.changes.outputs.publish == 'true'
         id: base_version
         run: |
           echo "version=$(node -p "require('./packages/discord-message-transcript-base/package.json').version")" >> $GITHUB_OUTPUT
 
       # 3️⃣ Aplica a MESMA versão no MAIN
       - name: Sync main version
+        if: steps.changes.outputs.publish == 'true'
         working-directory: packages/discord-message-transcript
         run: pnpm version ${{ steps.base_version.outputs.version }} --no-git-tag-version
 
       # 4️⃣ Crava dependência do MAIN → BASE@versão exata
       - name: Sync base dependency version
+        if: steps.changes.outputs.publish == 'true'
         working-directory: packages/discord-message-transcript
         run: |
           node -e "
@@ -88,6 +96,7 @@ jobs:
 
       # 5️⃣ Publica BASE
       - name: Publish base (dev)
+        if: steps.changes.outputs.publish == 'true'
         working-directory: packages/discord-message-transcript-base
         run: pnpm publish --tag ${{ steps.npm_tag.outputs.tag }} --no-git-checks
         env:
@@ -95,6 +104,7 @@ jobs:
 
       # 6️⃣ Publica MAIN
       - name: Publish main (dev)
+        if: steps.changes.outputs.publish == 'true'
         working-directory: packages/discord-message-transcript
         run: pnpm publish --tag ${{ steps.npm_tag.outputs.tag }} --no-git-checks
         env:
