@@ -1,63 +1,69 @@
 import https from 'https';
 import http from 'http';
 import { CustomWarn } from 'discord-message-transcript-base';
+import { getBase64Limiter } from './limiter.js';
 
 export async function imageToBase64(url: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const client = url.startsWith('https') ? https : http;
-        const request = client.get(url, { headers: { "User-Agent": "discord-message-transcript" } }, (response) => {
-            if (response.statusCode !== 200) {
-                response.destroy();
-                CustomWarn(
+
+    const limit = getBase64Limiter();
+
+    return limit(async () => {
+        return new Promise((resolve, reject) => {
+            const client = url.startsWith('https') ? https : http;
+            const request = client.get(url, { headers: { "User-Agent": "discord-message-transcript" } }, (response) => {
+                if (response.statusCode !== 200) {
+                    response.destroy();
+                    CustomWarn(
 `This is not an issue with the package. Using the original URL as fallback instead of converting to base64.
 Failed to fetch image with status code: ${response.statusCode} from ${url}.`);
-                return resolve(url);
-            }
+                    return resolve(url);
+                }
 
-            const contentType = response.headers['content-type'];
-            if (!contentType || !contentType.startsWith('image/') || contentType === 'image/gif') {
-                response.destroy();
-                return resolve(url);
-            }
+                const contentType = response.headers['content-type'];
+                if (!contentType || !contentType.startsWith('image/') || contentType === 'image/gif') {
+                    response.destroy();
+                    return resolve(url);
+                }
 
-            const chunks: Buffer[] = [];
-            response.on('data', (chunk) => {
-                chunks.push(chunk);
-            });
+                const chunks: Buffer[] = [];
+                response.on('data', (chunk) => {
+                    chunks.push(chunk);
+                });
 
-            response.on('end', () => {
-                const buffer = Buffer.concat(chunks);
-                const base64 = buffer.toString('base64');
-                resolve(`data:${contentType};base64,${base64}`);
-            });
+                response.on('end', () => {
+                    const buffer = Buffer.concat(chunks);
+                    const base64 = buffer.toString('base64');
+                    resolve(`data:${contentType};base64,${base64}`);
+                });
 
-            response.on('error', (err) => {
-                CustomWarn(
+                response.on('error', (err) => {
+                    CustomWarn(
 `This is not an issue with the package. Using the original URL as fallback instead of converting to base64.
 Stream error while fetching from ${url}.
 Error: ${err.message}`);
-                resolve(url);
+                    resolve(url);
+                });
             });
-        });
 
-        request.on('error', (err) => {
-            CustomWarn(
+            request.on('error', (err) => {
+                CustomWarn(
 `This is not an issue with the package. Using the original URL as fallback instead of converting to base64.
 Error fetching image from ${url}
 Error: ${err.message}`
-            );
-            return resolve(url);
-        });
+                );
+                return resolve(url);
+            });
 
-        request.setTimeout(15000, () => {
-            request.destroy();
-            CustomWarn(
+            request.setTimeout(15000, () => {
+                request.destroy();
+                CustomWarn(
 `This is not an issue with the package. Using the original URL as fallback instead of converting to base64.
 Request timeout for ${url}.`
-            );
-            resolve(url);
-        });
+                );
+                resolve(url);
+            });
 
-        request.end();
-    });
+            request.end();
+        })
+    })
 }

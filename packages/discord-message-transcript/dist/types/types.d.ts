@@ -154,6 +154,9 @@ export type CDNOptionsCustom<T = unknown> = {
 };
 export type CDNOptionsCloudinary = {
     provider: "CLOUDINARY";
+    cloudName: string;
+    apiKey: string;
+    apiSecret: string;
 };
 export type CDNOptionsUploadcare = {
     provider: "UPLOADCARE";

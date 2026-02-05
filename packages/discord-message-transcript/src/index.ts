@@ -1,5 +1,6 @@
 export { CreateTranscriptOptions, ConvertTranscriptOptions, TranscriptOptions, ReturnType, CDNOptions, MimeType } from "./types/types.js";
 export { ReturnFormat, LocalDate, TimeZone } from "discord-message-transcript-base";
+export { setBase64Concurrency, setCDNConcurrency } from './core/limiter.js'
 
 import { AttachmentBuilder, TextBasedChannel } from "discord.js";
 import { Json } from "./renderers/json/json.js";
@@ -83,9 +84,9 @@ export async function createTranscript<T extends ReturnType = typeof ReturnType.
         }
 
         while (true) {
-            const { messages, end } = await fetchMessages(channel, internalOptions, options.cdnOptions ?? null, authors, mentions, lastMessageID);
+            const { messages, end, lastMessageId } = await fetchMessages(channel, internalOptions, options.cdnOptions ?? null, authors, mentions, lastMessageID);
             jsonTranscript.addMessages(messages);
-            lastMessageID = messages[messages.length - 1]?.id;
+            lastMessageID = lastMessageId;
             if (end || (jsonTranscript.messages.length >= quantity && quantity != 0)) {
                 break;
             }

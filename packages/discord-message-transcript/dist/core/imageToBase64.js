@@ -7,7 +7,8 @@ export async function imageToBase64(url) {
         const request = client.get(url, { headers: { "User-Agent": "discord-message-transcript" } }, (response) => {
             if (response.statusCode !== 200) {
                 response.destroy();
-                CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of converting to base64.\nFailed to fetch image with status code: ${response.statusCode} from ${url}.`);
+                CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of converting to base64.
+Failed to fetch image with status code: ${response.statusCode} from ${url}.`);
                 return resolve(url);
             }
             const contentType = response.headers['content-type'];
@@ -25,17 +26,22 @@ export async function imageToBase64(url) {
                 resolve(`data:${contentType};base64,${base64}`);
             });
             response.on('error', (err) => {
-                CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of converting to base64.\nStream error while fetching from ${url}.\nError message: ${err.message}`);
+                CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of converting to base64.
+Stream error while fetching from ${url}.
+Error: ${err.message}`);
                 resolve(url);
             });
         });
         request.on('error', (err) => {
-            CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of converting to base64.\nError fetching image from ${url}\nError message: ${err.message}`);
+            CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of converting to base64.
+Error fetching image from ${url}
+Error: ${err.message}`);
             return resolve(url);
         });
         request.setTimeout(15000, () => {
             request.destroy();
-            CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of converting to base64.\nRequest timeout for ${url}.`);
+            CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of converting to base64.
+Request timeout for ${url}.`);
             resolve(url);
         });
         request.end();

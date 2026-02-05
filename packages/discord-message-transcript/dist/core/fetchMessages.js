@@ -3,7 +3,7 @@ import { componentsToJson } from "./componentToJson.js";
 import { urlResolver } from "./urlResolver.js";
 import { getMentions } from "./getMentions.js";
 export async function fetchMessages(channel, options, cdnOptions, authors, mentions, after) {
-    const originalMessages = await channel.messages.fetch({ limit: 100, cache: false, after: after });
+    const originalMessages = await channel.messages.fetch({ limit: 100, cache: false, before: after });
     const rawMessages = await Promise.all(originalMessages.map(async (message) => {
         const attachments = await Promise.all(message.attachments.map(async (attachment) => {
             return {

@@ -5,8 +5,8 @@ import { JsonAuthor, JsonMessage, TranscriptOptionsBase } from "discord-message-
 import { CDNOptions, MapMentions } from "../types/types.js";
 import { getMentions } from "./getMentions.js";
 
-export async function fetchMessages(channel: TextBasedChannel, options: TranscriptOptionsBase, cdnOptions: CDNOptions | null, authors: Map<string,JsonAuthor>, mentions: MapMentions, after?: string): Promise<{ messages: JsonMessage[], end: boolean }> {
-    const originalMessages = await channel.messages.fetch({ limit: 100, cache: false, after: after });
+export async function fetchMessages(channel: TextBasedChannel, options: TranscriptOptionsBase, cdnOptions: CDNOptions | null, authors: Map<string,JsonAuthor>, mentions: MapMentions, before?: string): Promise<{ messages: JsonMessage[], end: boolean, lastMessageId?: string }> {
+    const originalMessages = await channel.messages.fetch({ limit: 100, cache: false, before: before });
 
     const rawMessages: JsonMessage[] = await Promise.all(originalMessages.map(async (message) => {
         const attachments = await Promise.all(message.attachments.map(async (attachment) => {
@@ -98,9 +98,10 @@ export async function fetchMessages(channel: TextBasedChannel, options: Transcri
         };
     }));
 
+    const lastMessageId = originalMessages.last()?.id;
     const messages = rawMessages.filter(m => !(!options.includeEmpty && m.attachments.length == 0 && m.components.length == 0 && m.content == "" && m.embeds.length == 0 && !m.poll));
     const end = originalMessages.size !== 100;
-    return { messages, end };
+    return { messages, end, lastMessageId };
 }
 
 
