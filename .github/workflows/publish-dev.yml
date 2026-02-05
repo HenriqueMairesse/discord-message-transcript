@@ -26,11 +26,9 @@ jobs:
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
 
-      # ⏭️ Skip se não houve mudança relevante
       - name: Skip if no relevant changes
         if: steps.changes.outputs.publish != 'true'
-        run: |
-          echo "No relevant changes detected. Skipping dev publish."
+        run: echo "No relevant changes detected. Skipping dev publish."
 
       - uses: actions/setup-node@v4
         if: steps.changes.outputs.publish == 'true'
@@ -51,7 +49,7 @@ jobs:
         if: steps.changes.outputs.publish == 'true'
         run: pnpm -r build
 
-      # dev ou dev-next
+      # 🏷️ Define tag npm
       - name: Define npm tag
         if: steps.changes.outputs.publish == 'true'
         id: npm_tag
@@ -62,7 +60,7 @@ jobs:
             echo "tag=dev-next" >> $GITHUB_OUTPUT
           fi
 
-      # 1️⃣ Bump versão DEV do BASE
+      # 📦 VERSIONAMENTO BASE
       - name: Bump dev version (base)
         if: steps.changes.outputs.publish == 'true'
         working-directory: packages/discord-message-transcript-base
@@ -71,75 +69,76 @@ jobs:
         run: |
           PKG_NAME=$(node -p "require('./package.json').name")
           CURRENT_VERSION=$(node -p "require('./package.json').version")
+
           BASE_VERSION=$(echo "$CURRENT_VERSION" | cut -d- -f1)
-      
           RUN=${GITHUB_RUN_NUMBER}
-      
+
           if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
-            PREID=dev
-            # próxima patch
+            PREID="dev"
             BASE_VERSION=$(node -e "
               const [a,b,c] = '$BASE_VERSION'.split('.').map(Number);
               console.log([a,b,c+1].join('.'));
             ")
           else
-            PREID=dev-next
+            PREID="dev-next"
           fi
-      
-          # pega a última versão publicada com esse preid
-          LAST_VERSION=$(npm view "$PKG_NAME" versions --json 2>/dev/null \
-            | node -e "
-              const versions = JSON.parse(require('fs').readFileSync(0, 'utf8'));
-              const base = '$BASE_VERSION';
-              const preid = '$PREID';
-      
-              const matches = versions
-                .filter(v => v.startsWith(base + '-' + preid + '.'))
-                .map(v => {
-                  const m = v.match(new RegExp(base + '-' + preid + '\\.(\\d+)'));
-                  return m ? Number(m[1]) : null;
-                })
-                .filter(v => v !== null);
-      
-              if (matches.length === 0) {
-                console.log('-1');
-              } else {
-                console.log(Math.max(...matches));
-              }
-            ")
-      
-          NEXT_N=$((LAST_VERSION + 1))
+
+          echo "Base version: $BASE_VERSION"
+          echo "Preid: $PREID"
+
+          # pega versões publicadas
+          VERSIONS=$(npm view "$PKG_NAME" versions --json 2>/dev/null || echo "[]")
+
+          LAST_N=$(echo "$VERSIONS" | node -e "
+            const versions = JSON.parse(require('fs').readFileSync(0,'utf8'));
+            const base = '$BASE_VERSION';
+            const preid = '$PREID';
+
+            const matches = versions
+              .filter(v => v.startsWith(base + '-' + preid + '.'))
+              .map(v => {
+                const m = v.match(new RegExp(base + '-' + preid + '\\.(\\d+)'));
+                return m ? Number(m[1]) : null;
+              })
+              .filter(v => v !== null);
+
+            if (!matches.length) console.log(-1);
+            else console.log(Math.max(...matches));
+          ")
+
+          NEXT_N=$((LAST_N + 1))
           NEW_VERSION="${BASE_VERSION}-${PREID}.${NEXT_N}.${RUN}"
-      
+
           echo "📦 Publishing version: $NEW_VERSION"
           pnpm version "$NEW_VERSION" --no-git-tag-version
-      # 2️⃣ Lê a versão gerada
+
+      # 🔢 lê versão base
       - name: Read base version
         if: steps.changes.outputs.publish == 'true'
         id: base_version
         run: |
           echo "version=$(node -p "require('./packages/discord-message-transcript-base/package.json').version")" >> $GITHUB_OUTPUT
 
-      # 3️⃣ Aplica a MESMA versão no MAIN
+      # 🔁 sync main version
       - name: Sync main version
         if: steps.changes.outputs.publish == 'true'
         working-directory: packages/discord-message-transcript
         run: pnpm version ${{ steps.base_version.outputs.version }} --no-git-tag-version
 
-      # 4️⃣ Crava dependência do MAIN → BASE@versão exata
+      # 🔗 sync dependency
       - name: Sync base dependency version
         if: steps.changes.outputs.publish == 'true'
         working-directory: packages/discord-message-transcript
         run: |
           node -e "
             const fs = require('fs');
-            const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
+            const pkg = JSON.parse(fs.readFileSync('./package.json','utf8'));
             pkg.dependencies = pkg.dependencies || {};
             pkg.dependencies['discord-message-transcript-base'] = '${{ steps.base_version.outputs.version }}';
-            fs.writeFileSync('./package.json', JSON.stringify(pkg, null, 2) + '\n');
+            fs.writeFileSync('./package.json', JSON.stringify(pkg,null,2)+'\n');
           "
 
-      # 5️⃣ Publica BASE
+      # 🚀 publish base
       - name: Publish base (dev)
         if: steps.changes.outputs.publish == 'true'
         working-directory: packages/discord-message-transcript-base
@@ -147,7 +146,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # 6️⃣ Publica MAIN
+      # 🚀 publish main
       - name: Publish main (dev)
         if: steps.changes.outputs.publish == 'true'
         working-directory: packages/discord-message-transcript
