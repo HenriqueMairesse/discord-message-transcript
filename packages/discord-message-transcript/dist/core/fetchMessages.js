@@ -3,8 +3,8 @@ import { componentsToJson } from "./componentToJson.js";
 import { urlToBase64 } from "./imageToBase64.js";
 import { CustomError } from "discord-message-transcript-base";
 import { getMentions } from "./getMentions.js";
-export async function fetchMessages(channel, options, authors, mentions, after) {
-    const originalMessages = await channel.messages.fetch({ limit: 100, cache: false, after: after });
+export async function fetchMessages(channel, options, authors, mentions, before) {
+    const originalMessages = await channel.messages.fetch({ limit: 100, cache: false, before: before });
     const rawMessages = await Promise.all(originalMessages.map(async (message) => {
         let authorAvatar = message.author.displayAvatarURL();
         if (options.saveImages) {
@@ -146,9 +146,10 @@ export async function fetchMessages(channel, options, authors, mentions, after) 
             system: message.system,
         };
     }));
+    const lastMessageId = originalMessages.last()?.id;
     const messages = rawMessages.filter(m => !(!options.includeEmpty && m.attachments.length == 0 && m.components.length == 0 && m.content == "" && m.embeds.length == 0 && !m.poll));
     const end = originalMessages.size !== 100;
-    return { messages, end };
+    return { messages, end, lastMessageId };
 }
 function formatTimeLeftPoll(timestamp) {
     const now = new Date();
