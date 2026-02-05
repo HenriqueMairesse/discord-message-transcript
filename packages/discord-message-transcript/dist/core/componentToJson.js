@@ -95,7 +95,7 @@ export async function componentsToJson(components, options, cdnOptions) {
                         disabled: component.accessory.disabled,
                     };
                 }
-                else {
+                else if (component.accessory.type === ComponentType.Thumbnail) {
                     accessoryJson = {
                         type: JsonComponentType.Thumbnail,
                         media: {
@@ -104,6 +104,8 @@ export async function componentsToJson(components, options, cdnOptions) {
                         spoiler: component.accessory.spoiler,
                     };
                 }
+                else
+                    return null;
                 const sectionComponents = component.components.map(c => ({
                     type: JsonComponentType.TextDisplay,
                     content: c.content,

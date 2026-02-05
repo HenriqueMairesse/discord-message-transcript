@@ -54,12 +54,12 @@ async function cdnRedirectType(url: string, contentType: MimeType, cdnOptions: C
             return await cdnOptions.customCdnResolver(url, contentType, cdnOptions.other);
         }
 
-        case "CLOUDFLARE": {
-            return await cdnCloudflare();
+        case "CLOUDFLARE_R2": {
+            return await cdnCloudflareR2();
         }
     }
 }
 
-async function cdnCloudflare(): Promise<string> {
-    return ''; // TODO: Implement cloudflare cdn
+async function cdnCloudflareR2(): Promise<string> {
+    return ''; // TODO: Implement cloudflareR2 cdn
 }

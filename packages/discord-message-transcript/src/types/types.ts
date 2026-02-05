@@ -153,13 +153,6 @@ export interface MapMentions {
     users: Map<string, JsonMessageMentionsUsers>;
 }
 
-export const CDNType = {
-    CUSTOM: "CUSTOM",
-    CLOUDFLARE: "CLOUDFLARE",
-} as const;
-
-export type CDNType = typeof CDNType[keyof typeof CDNType];
-
 export type MimeType = `${string}/${string}`;
 
 export type CDNOptions<Other> = (Partial<{
@@ -168,8 +161,6 @@ export type CDNOptions<Other> = (Partial<{
     includeVideo: boolean;
     includeOthers: boolean;
 }>) & ({
-    type: Exclude<CDNType, "CUSTOM">
- } | {
     type: "CUSTOM",
     customCdnResolver: (
         url: string,
@@ -177,4 +168,11 @@ export type CDNOptions<Other> = (Partial<{
         other: Other
         ) => Promise<string> | string,
     other: Other,
+} | {
+    type: "CLOUDFLARE_R2"
+    accountId: string
+    accessKey: string
+    secretKey: string
+    bucket: string
+    publicUrl: string
 });

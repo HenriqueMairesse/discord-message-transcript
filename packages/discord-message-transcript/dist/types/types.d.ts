@@ -139,11 +139,6 @@ export interface MapMentions {
     roles: Map<string, JsonMessageMentionsRoles>;
     users: Map<string, JsonMessageMentionsUsers>;
 }
-export declare const CDNType: {
-    readonly CUSTOM: "CUSTOM";
-    readonly CLOUDFLARE: "CLOUDFLARE";
-};
-export type CDNType = typeof CDNType[keyof typeof CDNType];
 export type MimeType = `${string}/${string}`;
 export type CDNOptions<Other> = (Partial<{
     includeAudio: boolean;
@@ -151,7 +146,12 @@ export type CDNOptions<Other> = (Partial<{
     includeVideo: boolean;
     includeOthers: boolean;
 }>) & ({
-    type: Exclude<CDNType, "CUSTOM">;
+    type: "CLOUDFLARE_R2";
+    accountId: string;
+    accessKey: string;
+    secretKey: string;
+    bucket: string;
+    publicUrl: string;
 } | {
     type: "CUSTOM";
     customCdnResolver: (url: string, contentType: MimeType | null, other: Other) => Promise<string> | string;

@@ -7,3 +7,7 @@ In Mind:
 Issues: 
     - Other type isn't being infered by ts
     - Fix github actions dev-next 
+
+Notes: 
+    - Include a map to the links (only upload one time to cdn and use if appear more than one time)
+    - Optimize to use more paralell process

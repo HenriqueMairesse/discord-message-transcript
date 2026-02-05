@@ -18,9 +18,9 @@ export async function cdnResolver(url, cdnOptions) {
                 return resolve(url);
             }
             response.destroy();
-            const isImage = contentType.startsWith('image/');
+            const isImage = contentType.startsWith('image/') && contentType !== 'image/gif';
             const isAudio = contentType.startsWith('audio/');
-            const isVideo = contentType.startsWith('video/');
+            const isVideo = contentType.startsWith('video/') || contentType === 'image/gif';
             if ((cdnOptions.includeImage && isImage) ||
                 (cdnOptions.includeAudio && isAudio) ||
                 (cdnOptions.includeVideo && isVideo) ||
@@ -46,7 +46,7 @@ async function cdnRedirectType(url, contentType, cdnOptions) {
         case "CUSTOM": {
             return await cdnOptions.customCdnResolver(url, contentType, cdnOptions.other);
         }
-        case "CLOUDFLARE": {
+        case "CLOUDFLARE_R2": {
             return await cdnCloudflare();
         }
     }

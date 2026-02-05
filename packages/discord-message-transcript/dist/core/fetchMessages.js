@@ -11,17 +11,17 @@ export async function fetchMessages(channel, options, cdnOptions, authors, menti
                 name: attachment.name,
                 size: attachment.size,
                 spoiler: attachment.spoiler,
-                url: await urlResolver(attachment.url, options, cdnOptions, attachment.contentType?.startsWith('image/') ?? false),
+                url: await urlResolver(attachment.url, options, cdnOptions),
             };
         }));
         // This only works because embeds with the type poll_result that are send when a poll end are marked as a message send by the system  
         const embeds = message.system && message.embeds.length == 1 && message.embeds[0].data.type == EmbedType.PollResult && !options.includePolls ? []
             : await Promise.all(message.embeds.map(async (embed) => {
                 const [authorIcon, thumbnailUrl, imageUrl, footerIcon] = await Promise.all([
-                    embed.author?.iconURL ? urlResolver(embed.author.iconURL, options, cdnOptions, true) : Promise.resolve(null),
-                    embed.thumbnail?.url ? urlResolver(embed.thumbnail.url, options, cdnOptions, true) : Promise.resolve(null),
-                    embed.image?.url ? urlResolver(embed.image.url, options, cdnOptions, true) : Promise.resolve(null),
-                    embed.footer?.iconURL ? urlResolver(embed.footer.iconURL, options, cdnOptions, true) : Promise.resolve(null),
+                    embed.author?.iconURL ? urlResolver(embed.author.iconURL, options, cdnOptions) : Promise.resolve(null),
+                    embed.thumbnail?.url ? urlResolver(embed.thumbnail.url, options, cdnOptions) : Promise.resolve(null),
+                    embed.image?.url ? urlResolver(embed.image.url, options, cdnOptions) : Promise.resolve(null),
+                    embed.footer?.iconURL ? urlResolver(embed.footer.iconURL, options, cdnOptions) : Promise.resolve(null),
                 ]);
                 return {
                     author: embed.author ? { name: embed.author.name, url: embed.author.url ?? null, iconURL: authorIcon } : null,
@@ -39,7 +39,7 @@ export async function fetchMessages(channel, options, cdnOptions, authors, menti
             }));
         if (!authors.has(message.author.id)) {
             authors.set(message.author.id, {
-                avatarURL: await urlResolver(message.author.displayAvatarURL(), options, cdnOptions, true),
+                avatarURL: await urlResolver(message.author.displayAvatarURL(), options, cdnOptions),
                 bot: message.author.bot,
                 displayName: message.author.displayName,
                 guildTag: message.author.primaryGuild?.tag ?? null,
