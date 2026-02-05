@@ -9,5 +9,5 @@ Issues:
     - Fix github actions dev-next 
 
 Notes: 
-    - Include a map to the links (only upload one time to cdn and use if appear more than one time)
     - Optimize to use more paralell process
+    - Author todo cdn upload

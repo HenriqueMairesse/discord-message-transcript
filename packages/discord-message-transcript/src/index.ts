@@ -7,8 +7,9 @@ import { Json } from "./renderers/json/json.js";
 import { fetchMessages, FetchMessagesContext } from "./core/fetchMessages.js";
 import { ConvertTranscriptOptions, CreateTranscriptOptions, MapMentions, OutputType, ReturnType } from "./types/types.js";
 import { output } from "./core/output.js";
-import { JsonAuthor, JsonData, JsonMessageMentionsChannels, JsonMessageMentionsUsers, JsonMessageMentionsRoles, ReturnTypeBase, TranscriptOptionsBase, ReturnFormat, outputBase, CustomError } from "discord-message-transcript-base";
+import { JsonAuthor, JsonData, JsonMessageMentionsChannels, JsonMessageMentionsUsers, JsonMessageMentionsRoles, ReturnTypeBase, TranscriptOptionsBase, ReturnFormat, outputBase, CustomError, CustomWarn } from "discord-message-transcript-base";
 import { returnTypeMapper } from "./core/mappers.js";
+import { authorUrlResolver, messagesUrlResolver } from "./core/urlResolver.js";
 
 /**
  * Creates a transcript of a Discord channel's messages.
@@ -55,6 +56,12 @@ export async function createTranscript<T extends ReturnType = typeof ReturnType.
         } = options;
 
         const checkedFileName = (fileName ?? `Transcript-${channel.isDMBased() ? "DirectMessage" : channel.name}-${channel.id}`);
+        let validQuantity = true;
+        if (quantity < 0) {
+            CustomWarn("Quantity can't be a negative number, please use 0 for unlimited messages.\nUsing 0 as fallback!");
+            validQuantity = false;
+        }
+        
         const internalOptions: TranscriptOptionsBase = {
             fileName: checkedFileName,
             includeAttachments,
@@ -66,7 +73,7 @@ export async function createTranscript<T extends ReturnType = typeof ReturnType.
             includeReactions,
             includeV2Components,
             localDate,
-            quantity,
+            quantity: validQuantity ? quantity : 0,
             returnFormat,
             returnType: artificialReturnType,
             saveImages,
@@ -75,15 +82,14 @@ export async function createTranscript<T extends ReturnType = typeof ReturnType.
             watermark
         }
 
-        const jsonTranscript = channel.isDMBased() ? new Json(null, channel, internalOptions) : new Json(channel.guild, channel, internalOptions); 
-        
+        const urlCache = new Map<string, Promise<string>>();
         const authors = new Map<string, JsonAuthor>();
         const mentions: MapMentions = {
             channels: new Map<string, JsonMessageMentionsChannels>(),
             roles: new Map<string, JsonMessageMentionsRoles>(),
             users: new Map<string, JsonMessageMentionsUsers>(),
         }
-        const urlCache = new Map<string, Promise<string>>();
+
         const fetchMessageParameter: FetchMessagesContext = {
             channel: channel,
             options: internalOptions,
@@ -96,30 +102,41 @@ export async function createTranscript<T extends ReturnType = typeof ReturnType.
             lastMessageId: undefined
         }
 
+        const jsonTranscript = channel.isDMBased() ? new Json(null, channel, internalOptions, options.cdnOptions ?? null, urlCache) : new Json(channel.guild, channel, internalOptions, options.cdnOptions ?? null, urlCache); 
+
         while (true) {
             const { messages, end, newLastMessageId } = await fetchMessages(fetchMessageParameter);
             jsonTranscript.addMessages(messages);
             fetchMessageParameter.lastMessageId = newLastMessageId;
-            if (end || (jsonTranscript.messages.length >= quantity && quantity != 0)) {
+            if (end || (jsonTranscript.getMessages().length >= quantity && quantity != 0)) {
                 break;
             }
         }
 
-        urlCache.clear(); // Clean cache
-
-        if (quantity > 0 && jsonTranscript.messages.length > quantity ) {
+        if (quantity > 0 && jsonTranscript.getMessages().length > quantity ) {
            jsonTranscript.sliceMessages(quantity); 
         }
 
-        jsonTranscript.setAuthors(Array.from(authors.values()));
-        authors.clear(); // Clean cache
+        await Promise.all([
+            (async () => {
+                jsonTranscript.setAuthors(await authorUrlResolver(authors, internalOptions, options.cdnOptions ?? null, urlCache));
+                authors.clear(); 
+            })(),
+            (() => {
+                jsonTranscript.setMentions({ channels: Array.from(mentions.channels.values()), roles: Array.from(mentions.roles.values()), users: Array.from(mentions.users.values()) });
+                mentions.channels.clear();
+                mentions.roles.clear(); 
+                mentions.users.clear(); 
+            })(),
+            (async () => {
+                jsonTranscript.setMessages(await messagesUrlResolver(jsonTranscript.getMessages(), internalOptions, options.cdnOptions ?? null, urlCache));
+            })()
+        ])
 
-        jsonTranscript.setMentions({ channels: Array.from(mentions.channels.values()), roles: Array.from(mentions.roles.values()), users: Array.from(mentions.users.values()) });
-        mentions.channels.clear(); // Clean cache
-        mentions.roles.clear(); // Clean cache
-        mentions.users.clear(); // Clean cache
+        const outputJson = await jsonTranscript.toJson();
+        urlCache.clear();
 
-        const result = await output(await jsonTranscript.toJson());
+        const result = await output(outputJson);
         if (!options.returnType || options.returnType == "attachment") {
             if (!(result instanceof Buffer)) {
                 throw new CustomError("Expected buffer from output when *attachment* returnType is used.");

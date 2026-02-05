@@ -1,10 +1,8 @@
 import { TopLevelComponent, ComponentType } from "discord.js";
 import { mapButtonStyle, mapSelectorType, mapSeparatorSpacing } from "./mappers.js"
 import { JsonTopLevelComponent, JsonButtonComponent, JsonSelectMenu, JsonComponentType, JsonComponentInContainer, JsonThumbnailComponent, JsonTextDisplayComponent, TranscriptOptionsBase } from "discord-message-transcript-base";
-import { urlResolver } from "./urlResolver.js";
-import { CDNOptions } from "../types/types.js";
 
-export async function componentsToJson(components: TopLevelComponent[], options: TranscriptOptionsBase, cdnOptions: CDNOptions | null, urlCache: Map<string, Promise<string>>): Promise<JsonTopLevelComponent[]> {
+export async function componentsToJson(components: TopLevelComponent[], options: TranscriptOptionsBase): Promise<JsonTopLevelComponent[]> {
     const processedComponents = await Promise.all(components.filter(component => !(!options.includeV2Components && component.type != ComponentType.ActionRow))
     .map<Promise<JsonTopLevelComponent | null>>(async component => {
         switch (component.type) {
@@ -51,7 +49,7 @@ export async function componentsToJson(components: TopLevelComponent[], options:
             }
             case ComponentType.Container: {
                 const newOptions = {...options, includeComponents: true, includeButtons: true};
-                const componentsJson = await componentsToJson(component.components, newOptions, cdnOptions, urlCache);
+                const componentsJson = await componentsToJson(component.components, newOptions);
                 return {
                     type: JsonComponentType.Container,
                     components: componentsJson.filter(isJsonComponentInContainer), // Input components that are container-safe must always produce container-safe output.
@@ -64,17 +62,17 @@ export async function componentsToJson(components: TopLevelComponent[], options:
                     type: JsonComponentType.File,
                     fileName: component.data.name ?? null,
                     size: component.data.size ?? 0,
-                    url: await urlResolver(component.file.url, options, cdnOptions, urlCache),
+                    url: component.file.url,
                     spoiler: component.spoiler,
                 };
             }
             case ComponentType.MediaGallery: {
-                const mediaItems = await Promise.all(component.items.map(async item => {
+                const mediaItems = component.items.map(item => {
                     return {
-                        media: { url: await urlResolver(item.media.url, options, cdnOptions, urlCache) },
+                        media: { url: item.media.url },
                         spoiler: item.spoiler,
                     };
-                }));
+                });
                 return {
                     type: JsonComponentType.MediaGallery,
                     items: mediaItems,
@@ -95,7 +93,7 @@ export async function componentsToJson(components: TopLevelComponent[], options:
                     accessoryJson = {
                         type: JsonComponentType.Thumbnail,
                         media: {
-                            url: await urlResolver(component.accessory.media.url, options, cdnOptions, urlCache),
+                            url: component.accessory.media.url,
                         },
                         spoiler: component.accessory.spoiler,
                     };
@@ -130,7 +128,7 @@ export async function componentsToJson(components: TopLevelComponent[], options:
     return processedComponents.filter(c => c != null);
 }
 
-function isJsonComponentInContainer(
+export function isJsonComponentInContainer(
   component: JsonTopLevelComponent
 ): component is JsonComponentInContainer {
   return (
