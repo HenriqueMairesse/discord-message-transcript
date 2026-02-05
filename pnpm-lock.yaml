@@ -9,7 +9,7 @@ importers:
   packages/discord-message-transcript:
     dependencies:
       discord-message-transcript-base:
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../discord-message-transcript-base
       discord.js:
         specifier: '>=14.19.0 <15'
