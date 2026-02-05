@@ -155,19 +155,20 @@ export interface MapMentions {
 
 export type MimeType = `${string}/${string}`;
 
-export type CDNOptions = (Partial<{
-    includeAudio: boolean;
-    includeImage: boolean;
-    includeVideo: boolean;
-    includeOthers: boolean;
-}>) & (
-    CDNOptionsCustom<any> | 
-    CDNOptionsCloudinary  |
-    CDNOptionsUploadcare
-);
+export type CDNBase = Partial<{
+  includeAudio: boolean;
+  includeImage: boolean;
+  includeVideo: boolean;
+  includeOthers: boolean;
+}>;
+
+export type CDNOptions = 
+    (CDNBase & CDNOptionsCustom<any>)
+  | (CDNBase & CDNOptionsCloudinary)
+  | (CDNBase & CDNOptionsUploadcare);
 
 export type CDNOptionsCustom<T = unknown> = {
-    type: "CUSTOM",
+    provider: "CUSTOM",
     resolver: (
         url: string,
         contentType: MimeType | null,
@@ -177,10 +178,13 @@ export type CDNOptionsCustom<T = unknown> = {
 }
 
 export type CDNOptionsCloudinary = {
-    type: "CLOUDINARY",
+    provider: "CLOUDINARY",
+    cloudName: string;
+    apiKey: string;
+    apiSecret: string;
 }
 
 export type CDNOptionsUploadcare = {
-    type: "UPLOADCARE",
+    provider: "UPLOADCARE",
     publicKey: string
 }

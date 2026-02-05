@@ -140,22 +140,22 @@ export interface MapMentions {
     users: Map<string, JsonMessageMentionsUsers>;
 }
 export type MimeType = `${string}/${string}`;
-export type CDNOptions = (Partial<{
+export type CDNBase = Partial<{
     includeAudio: boolean;
     includeImage: boolean;
     includeVideo: boolean;
     includeOthers: boolean;
-}>) & (CDNOptionsCustom<any> | CDNOptionsCloudflareR2);
+}>;
+export type CDNOptions = (CDNBase & CDNOptionsCustom<any>) | (CDNBase & CDNOptionsCloudinary) | (CDNBase & CDNOptionsUploadcare);
 export type CDNOptionsCustom<T = unknown> = {
-    type: "CUSTOM";
+    provider: "CUSTOM";
     resolver: (url: string, contentType: MimeType | null, customData: T) => Promise<string> | string;
     customData: T;
 };
-export type CDNOptionsCloudflareR2 = {
-    type: "CLOUDFLARE_R2";
-    accountId: string;
-    accessKey: string;
-    secretKey: string;
-    bucket: string;
-    publicUrl: string;
+export type CDNOptionsCloudinary = {
+    provider: "CLOUDINARY";
+};
+export type CDNOptionsUploadcare = {
+    provider: "UPLOADCARE";
+    publicKey: string;
 };
