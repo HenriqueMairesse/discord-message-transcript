@@ -32,7 +32,7 @@ export class Json {
         if (size > this.messages.length || size == 0) {
             return;
         }
-        this.messages = this.messages.slice(0, size - 1);
+        this.messages = this.messages.slice(0, size);
     }
 
     setMessages(messages: JsonMessage[]): void {

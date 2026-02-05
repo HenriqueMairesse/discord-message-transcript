@@ -1,8 +1,7 @@
 import { ComponentType } from "discord.js";
 import { mapButtonStyle, mapSelectorType, mapSeparatorSpacing } from "./mappers.js";
 import { JsonComponentType } from "discord-message-transcript-base";
-import { urlResolver } from "./urlResolver.js";
-export async function componentsToJson(components, options, cdnOptions) {
+export async function componentsToJson(components, options) {
     const processedComponents = await Promise.all(components.filter(component => !(!options.includeV2Components && component.type != ComponentType.ActionRow))
         .map(async (component) => {
         switch (component.type) {
@@ -54,7 +53,7 @@ export async function componentsToJson(components, options, cdnOptions) {
             }
             case ComponentType.Container: {
                 const newOptions = { ...options, includeComponents: true, includeButtons: true };
-                const componentsJson = await componentsToJson(component.components, newOptions, cdnOptions);
+                const componentsJson = await componentsToJson(component.components, newOptions);
                 return {
                     type: JsonComponentType.Container,
                     components: componentsJson.filter(isJsonComponentInContainer), // Input components that are container-safe must always produce container-safe output.
@@ -67,17 +66,17 @@ export async function componentsToJson(components, options, cdnOptions) {
                     type: JsonComponentType.File,
                     fileName: component.data.name ?? null,
                     size: component.data.size ?? 0,
-                    url: await urlResolver(component.file.url, options, cdnOptions),
+                    url: component.file.url,
                     spoiler: component.spoiler,
                 };
             }
             case ComponentType.MediaGallery: {
-                const mediaItems = await Promise.all(component.items.map(async (item) => {
+                const mediaItems = component.items.map(item => {
                     return {
-                        media: { url: await urlResolver(item.media.url, options, cdnOptions) },
+                        media: { url: item.media.url },
                         spoiler: item.spoiler,
                     };
-                }));
+                });
                 return {
                     type: JsonComponentType.MediaGallery,
                     items: mediaItems,
@@ -99,7 +98,7 @@ export async function componentsToJson(components, options, cdnOptions) {
                     accessoryJson = {
                         type: JsonComponentType.Thumbnail,
                         media: {
-                            url: await urlResolver(component.accessory.media.url, options, cdnOptions),
+                            url: component.accessory.media.url,
                         },
                         spoiler: component.accessory.spoiler,
                     };
@@ -135,7 +134,7 @@ export async function componentsToJson(components, options, cdnOptions) {
     }));
     return processedComponents.filter(c => c != null);
 }
-function isJsonComponentInContainer(component) {
+export function isJsonComponentInContainer(component) {
     return (component.type == JsonComponentType.ActionRow ||
         component.type == JsonComponentType.File ||
         component.type == JsonComponentType.MediaGallery ||

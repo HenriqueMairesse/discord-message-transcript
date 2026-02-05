@@ -1,5 +1,6 @@
 export { CreateTranscriptOptions, ConvertTranscriptOptions, TranscriptOptions, ReturnType, CDNOptions, MimeType } from "./types/types.js";
 export { ReturnFormat, LocalDate, TimeZone } from "discord-message-transcript-base";
+export { setBase64Concurrency, setCDNConcurrency } from './core/limiter.js';
 import { TextBasedChannel } from "discord.js";
 import { ConvertTranscriptOptions, CreateTranscriptOptions, OutputType, ReturnType } from "./types/types.js";
 /**

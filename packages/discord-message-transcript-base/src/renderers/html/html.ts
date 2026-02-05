@@ -78,8 +78,8 @@ export class Html {
         `;
     }
 
-    private messagesBuilder() {
-        return this.data.messages.map(message => {
+    private async messagesBuilder() {
+        return Promise.all(this.data.messages.map(async message => {
             const date = new Date(message.createdTimestamp);
             
             return `
@@ -109,10 +109,10 @@ export class Html {
     </div>
 </div>
         `;
-        }).join("");
+        }).join(""));
     }
 
-    toHTML() {
+    async toHTML() {
         const { options } = this.data;
         const cssContent = `
             ${DEFAULT_CSS}
@@ -146,7 +146,7 @@ export class Html {
         ${this.headerBuilder()}
     </header>
     <main style="display: flex; flex-direction: column; padding: 2.25%; flex: 1;">
-       ${this.messagesBuilder()}
+       ${await this.messagesBuilder()}
     </main>
     ${options.watermark ? `<footer>
         <br>

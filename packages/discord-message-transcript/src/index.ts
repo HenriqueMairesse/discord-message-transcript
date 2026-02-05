@@ -93,11 +93,9 @@ export async function createTranscript<T extends ReturnType = typeof ReturnType.
         const fetchMessageParameter: FetchMessagesContext = {
             channel: channel,
             options: internalOptions,
-            cdnOptions: options.cdnOptions ?? null,
             transcriptState: {
                 authors: authors,
                 mentions: mentions,
-                urlCache: urlCache
             },
             lastMessageId: undefined
         }
@@ -117,21 +115,23 @@ export async function createTranscript<T extends ReturnType = typeof ReturnType.
            jsonTranscript.sliceMessages(quantity); 
         }
 
-        await Promise.all([
-            (async () => {
-                jsonTranscript.setAuthors(await authorUrlResolver(authors, internalOptions, options.cdnOptions ?? null, urlCache));
-                authors.clear(); 
-            })(),
-            (() => {
-                jsonTranscript.setMentions({ channels: Array.from(mentions.channels.values()), roles: Array.from(mentions.roles.values()), users: Array.from(mentions.users.values()) });
-                mentions.channels.clear();
-                mentions.roles.clear(); 
-                mentions.users.clear(); 
-            })(),
-            (async () => {
-                jsonTranscript.setMessages(await messagesUrlResolver(jsonTranscript.getMessages(), internalOptions, options.cdnOptions ?? null, urlCache));
-            })()
-        ])
+        if (options.cdnOptions || options.saveImages) {
+            await Promise.all([
+                (async () => {
+                    jsonTranscript.setAuthors(await authorUrlResolver(authors, internalOptions, options.cdnOptions ?? null, urlCache));
+                    authors.clear(); 
+                })(),
+                (() => {
+                    jsonTranscript.setMentions({ channels: Array.from(mentions.channels.values()), roles: Array.from(mentions.roles.values()), users: Array.from(mentions.users.values()) });
+                    mentions.channels.clear();
+                    mentions.roles.clear(); 
+                    mentions.users.clear(); 
+                })(),
+                (async () => {
+                    jsonTranscript.setMessages(await messagesUrlResolver(jsonTranscript.getMessages(), internalOptions, options.cdnOptions ?? null, urlCache));
+                })()
+            ])
+        }
 
         const outputJson = await jsonTranscript.toJson();
         urlCache.clear();

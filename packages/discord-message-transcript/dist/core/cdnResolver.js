@@ -2,48 +2,55 @@ import https from 'https';
 import http from 'http';
 import { CustomWarn } from "discord-message-transcript-base";
 import crypto from 'crypto';
+import { getCDNLimiter } from "./limiter.js";
 export async function cdnResolver(url, cdnOptions) {
-    return new Promise((resolve, reject) => {
-        const client = url.startsWith('https') ? https : http;
-        const request = client.get(url, { headers: { "User-Agent": "discord-message-transcript" } }, async (response) => {
-            if (response.statusCode !== 200) {
-                response.destroy();
-                CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of uploading to CDN.
+    const limit = getCDNLimiter();
+    return limit(async () => {
+        return new Promise((resolve, reject) => {
+            const client = url.startsWith('https') ? https : http;
+            const request = client.request(url, {
+                method: 'HEAD',
+                headers: { "User-Agent": "discord-message-transcript" }
+            }, async (response) => {
+                if (response.statusCode !== 200) {
+                    response.destroy();
+                    CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of uploading to CDN.
 Failed to fetch attachment with status code: ${response.statusCode} from ${url}.`);
-                return resolve(url);
-            }
-            const contentType = response.headers["content-type"];
-            const splitContentType = contentType ? contentType?.split('/') : [];
-            if (!contentType || splitContentType.length != 2 || splitContentType[0].length == 0 || splitContentType[1].length == 0) {
-                response.destroy();
-                CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of uploading to CDN.
+                    return resolve(url);
+                }
+                const contentType = response.headers["content-type"];
+                const splitContentType = contentType ? contentType?.split('/') : [];
+                if (!contentType || splitContentType.length != 2 || splitContentType[0].length == 0 || splitContentType[1].length == 0) {
+                    response.destroy();
+                    CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of uploading to CDN.
 Failed to receive a valid content-type from ${url}.`);
+                    return resolve(url);
+                }
+                response.destroy();
+                const isImage = contentType.startsWith('image/') && contentType !== 'image/gif';
+                const isAudio = contentType.startsWith('audio/');
+                const isVideo = contentType.startsWith('video/') || contentType === 'image/gif';
+                if ((cdnOptions.includeImage && isImage) ||
+                    (cdnOptions.includeAudio && isAudio) ||
+                    (cdnOptions.includeVideo && isVideo) ||
+                    (cdnOptions.includeOthers && !isAudio && !isImage && !isVideo)) {
+                    return resolve(await cdnRedirectType(url, contentType, cdnOptions));
+                }
                 return resolve(url);
-            }
-            response.destroy();
-            const isImage = contentType.startsWith('image/') && contentType !== 'image/gif';
-            const isAudio = contentType.startsWith('audio/');
-            const isVideo = contentType.startsWith('video/') || contentType === 'image/gif';
-            if ((cdnOptions.includeImage && isImage) ||
-                (cdnOptions.includeAudio && isAudio) ||
-                (cdnOptions.includeVideo && isVideo) ||
-                (cdnOptions.includeOthers && !isAudio && !isImage && !isVideo)) {
-                return resolve(await cdnRedirectType(url, contentType, cdnOptions));
-            }
-            return resolve(url);
-        });
-        request.on('error', (err) => {
-            CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of uploading to CDN.
+            });
+            request.on('error', (err) => {
+                CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of uploading to CDN.
 Error: ${err.message}`);
-            return resolve(url);
-        });
-        request.setTimeout(15000, () => {
-            request.destroy();
-            CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of uploading to CDN.
+                return resolve(url);
+            });
+            request.setTimeout(15000, () => {
+                request.destroy();
+                CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of uploading to CDN.
 Request timeout for ${url}.`);
-            resolve(url);
+                resolve(url);
+            });
+            request.end();
         });
-        request.end();
     });
 }
 async function cdnRedirectType(url, contentType, cdnOptions) {
@@ -61,7 +68,8 @@ Error: ${error?.message ?? error}`);
             }
         }
         case "CLOUDINARY": {
-            return '';
+            return await cloudinaryResolver(url, cdnOptions.cloudName, cdnOptions.apiKey, cdnOptions.apiSecret);
+            ;
         }
         case "UPLOADCARE": {
             return await uploadCareResolver(url, cdnOptions.publicKey);
@@ -102,9 +110,12 @@ export async function uploadCareResolver(url, publicKey) {
         if (json.uuid) {
             return `https://ucarecdn.com/${json.uuid}/`;
         }
+        let delay = 200;
+        let maxDelay = 2000;
         if (json.token) {
             for (let i = 0; i < 10; i++) {
-                await sleep(500);
+                await sleep(delay);
+                delay = Math.min(delay * 2, maxDelay);
                 const resToken = await fetch(`https://upload.uploadcare.com/from_url/status/?token=${json.token}&pub_key=${publicKey}`, { headers: { "User-Agent": "discord-message-transcript" } });
                 if (!resToken.ok)
                     throw new Error(`Uploadcare status failed with status code ${resToken.status}`);

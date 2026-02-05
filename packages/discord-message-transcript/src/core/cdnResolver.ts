@@ -135,9 +135,12 @@ export async function uploadCareResolver(url: string, publicKey: string): Promis
             return `https://ucarecdn.com/${json.uuid}/`;
         }
 
+        let delay = 200;
+        let maxDelay = 2000;
         if (json.token) {
             for (let i = 0; i < 10; i++) {
-                await sleep(500);
+                await sleep(delay); 
+                delay = Math.min(delay * 2, maxDelay);
 
                 const resToken = await fetch(
                     `https://upload.uploadcare.com/from_url/status/?token=${json.token}&pub_key=${publicKey}`,

@@ -5,8 +5,8 @@ import { CDNOptions, MapMentions } from "../types/types.js";
 import { getMentions } from "./getMentions.js";
 
 export async function fetchMessages(ctx: FetchMessagesContext): Promise<{ messages: JsonMessage[], end: boolean, newLastMessageId: string | undefined }> {
-    const {channel, options, cdnOptions, transcriptState, lastMessageId} = ctx;
-    const {authors, mentions, urlCache} = transcriptState;
+    const {channel, options, transcriptState, lastMessageId} = ctx;
+    const {authors, mentions} = transcriptState;
     
     const originalMessages = await channel.messages.fetch({ limit: 100, cache: false, before: lastMessageId});
 
@@ -55,7 +55,7 @@ export async function fetchMessages(ctx: FetchMessagesContext): Promise<{ messag
             });
         }
 
-        const components = await componentsToJson(message.components, options, cdnOptions, urlCache);
+        const components = await componentsToJson(message.components, options);
 
         await getMentions(message, mentions);
 
@@ -125,7 +125,6 @@ function formatTimeLeftPoll(timestamp: number): string {
 export type FetchMessagesContext = {
     channel: TextBasedChannel,
     options: TranscriptOptionsBase,
-    cdnOptions: CDNOptions | null,
     transcriptState: TranscriptState,
     lastMessageId: string | undefined,
 };
@@ -133,5 +132,4 @@ export type FetchMessagesContext = {
 type TranscriptState = {
     authors: Map<string, JsonAuthor>,
     mentions: MapMentions,
-    urlCache: Map<string, Promise<string>>,
 }

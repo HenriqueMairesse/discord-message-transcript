@@ -2,7 +2,7 @@ import { Readable } from 'stream';
 import { Html } from "../renderers/html/html.js";
 export async function output(json) {
     const objectHTML = new Html(json);
-    const stringHTML = objectHTML.toHTML();
+    const stringHTML = await objectHTML.toHTML();
     if (json.options.returnType == "string") {
         return stringHTML;
     }
