@@ -4,7 +4,7 @@ export { setBase64Concurrency, setCDNConcurrency } from './core/limiter.js'
 
 import { AttachmentBuilder, TextBasedChannel } from "discord.js";
 import { Json } from "./renderers/json/json.js";
-import { fetchMessages } from "./core/fetchMessages.js";
+import { fetchMessages, FetchMessagesContext } from "./core/fetchMessages.js";
 import { ConvertTranscriptOptions, CreateTranscriptOptions, MapMentions, OutputType, ReturnType } from "./types/types.js";
 import { output } from "./core/output.js";
 import { JsonAuthor, JsonData, JsonMessageMentionsChannels, JsonMessageMentionsUsers, JsonMessageMentionsRoles, ReturnTypeBase, TranscriptOptionsBase, ReturnFormat, outputBase, CustomError } from "discord-message-transcript-base";
@@ -53,6 +53,7 @@ export async function createTranscript<T extends ReturnType = typeof ReturnType.
             timeZone = 'UTC',
             watermark = true,
         } = options;
+
         const checkedFileName = (fileName ?? `Transcript-${channel.isDMBased() ? "DirectMessage" : channel.name}-${channel.id}`);
         const internalOptions: TranscriptOptionsBase = {
             fileName: checkedFileName,
@@ -75,25 +76,49 @@ export async function createTranscript<T extends ReturnType = typeof ReturnType.
         }
 
         const jsonTranscript = channel.isDMBased() ? new Json(null, channel, internalOptions) : new Json(channel.guild, channel, internalOptions); 
-        let lastMessageID: string | undefined;
+        
         const authors = new Map<string, JsonAuthor>();
         const mentions: MapMentions = {
             channels: new Map<string, JsonMessageMentionsChannels>(),
             roles: new Map<string, JsonMessageMentionsRoles>(),
             users: new Map<string, JsonMessageMentionsUsers>(),
         }
+        const urlCache = new Map<string, Promise<string>>();
+        const fetchMessageParameter: FetchMessagesContext = {
+            channel: channel,
+            options: internalOptions,
+            cdnOptions: options.cdnOptions ?? null,
+            transcriptState: {
+                authors: authors,
+                mentions: mentions,
+                urlCache: urlCache
+            },
+            lastMessageId: undefined
+        }
 
         while (true) {
-            const { messages, end, lastMessageId } = await fetchMessages(channel, internalOptions, options.cdnOptions ?? null, authors, mentions, lastMessageID);
+            const { messages, end, newLastMessageId } = await fetchMessages(fetchMessageParameter);
             jsonTranscript.addMessages(messages);
-            lastMessageID = lastMessageId;
+            fetchMessageParameter.lastMessageId = newLastMessageId;
             if (end || (jsonTranscript.messages.length >= quantity && quantity != 0)) {
                 break;
             }
         }
-        jsonTranscript.sliceMessages(quantity);
+
+        urlCache.clear(); // Clean cache
+
+        if (quantity > 0 && jsonTranscript.messages.length > quantity ) {
+           jsonTranscript.sliceMessages(quantity); 
+        }
+
         jsonTranscript.setAuthors(Array.from(authors.values()));
+        authors.clear(); // Clean cache
+
         jsonTranscript.setMentions({ channels: Array.from(mentions.channels.values()), roles: Array.from(mentions.roles.values()), users: Array.from(mentions.users.values()) });
+        mentions.channels.clear(); // Clean cache
+        mentions.roles.clear(); // Clean cache
+        mentions.users.clear(); // Clean cache
+
         const result = await output(await jsonTranscript.toJson());
         if (!options.returnType || options.returnType == "attachment") {
             if (!(result instanceof Buffer)) {

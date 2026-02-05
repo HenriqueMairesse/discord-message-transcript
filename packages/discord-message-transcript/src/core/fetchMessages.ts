@@ -5,8 +5,11 @@ import { JsonAuthor, JsonMessage, TranscriptOptionsBase } from "discord-message-
 import { CDNOptions, MapMentions } from "../types/types.js";
 import { getMentions } from "./getMentions.js";
 
-export async function fetchMessages(channel: TextBasedChannel, options: TranscriptOptionsBase, cdnOptions: CDNOptions | null, authors: Map<string,JsonAuthor>, mentions: MapMentions, before?: string): Promise<{ messages: JsonMessage[], end: boolean, lastMessageId?: string }> {
-    const originalMessages = await channel.messages.fetch({ limit: 100, cache: false, before: before });
+export async function fetchMessages(ctx: FetchMessagesContext): Promise<{ messages: JsonMessage[], end: boolean, newLastMessageId: string | undefined }> {
+    const {channel, options, cdnOptions, transcriptState, lastMessageId} = ctx;
+    const {authors, mentions, urlCache} = transcriptState;
+    
+    const originalMessages = await channel.messages.fetch({ limit: 100, cache: false, before: lastMessageId});
 
     const rawMessages: JsonMessage[] = await Promise.all(originalMessages.map(async (message) => {
         const attachments = await Promise.all(message.attachments.map(async (attachment) => {
@@ -15,7 +18,7 @@ export async function fetchMessages(channel: TextBasedChannel, options: Transcri
                 name: attachment.name,
                 size: attachment.size,
                 spoiler: attachment.spoiler,
-                url: await urlResolver(attachment.url, options, cdnOptions),
+                url: await urlResolver(attachment.url, options, cdnOptions, urlCache),
             };
         }));
 
@@ -23,10 +26,10 @@ export async function fetchMessages(channel: TextBasedChannel, options: Transcri
         const embeds = message.system && message.embeds.length == 1 && message.embeds[0].data.type == EmbedType.PollResult && !options.includePolls ? []
         : await Promise.all(message.embeds.map(async (embed) => {
             const [authorIcon, thumbnailUrl, imageUrl, footerIcon] = await Promise.all([
-                embed.author?.iconURL ? urlResolver(embed.author.iconURL, options, cdnOptions) : Promise.resolve(null),
-                embed.thumbnail?.url ? urlResolver(embed.thumbnail.url, options, cdnOptions) : Promise.resolve(null),
-                embed.image?.url ? urlResolver(embed.image.url, options, cdnOptions) : Promise.resolve(null),
-                embed.footer?.iconURL ? urlResolver(embed.footer.iconURL, options, cdnOptions) : Promise.resolve(null),
+                embed.author?.iconURL ? urlResolver(embed.author.iconURL, options, cdnOptions, urlCache) : Promise.resolve(null),
+                embed.thumbnail?.url ? urlResolver(embed.thumbnail.url, options, cdnOptions, urlCache) : Promise.resolve(null),
+                embed.image?.url ? urlResolver(embed.image.url, options, cdnOptions, urlCache) : Promise.resolve(null),
+                embed.footer?.iconURL ? urlResolver(embed.footer.iconURL, options, cdnOptions, urlCache) : Promise.resolve(null),
             ]);
             return {
                 author: embed.author ? { name: embed.author.name, url: embed.author.url ?? null, iconURL: authorIcon } : null,
@@ -45,7 +48,7 @@ export async function fetchMessages(channel: TextBasedChannel, options: Transcri
 
         if (!authors.has(message.author.id))  {
             authors.set(message.author.id, {
-                avatarURL: await urlResolver(message.author.displayAvatarURL(), options, cdnOptions),
+                avatarURL: await urlResolver(message.author.displayAvatarURL(), options, cdnOptions, urlCache),
                 bot: message.author.bot,
                 displayName: message.author.displayName,
                 guildTag: message.author.primaryGuild?.tag ?? null,
@@ -58,7 +61,7 @@ export async function fetchMessages(channel: TextBasedChannel, options: Transcri
             });
         }
 
-        const components = await componentsToJson(message.components, options, cdnOptions);
+        const components = await componentsToJson(message.components, options, cdnOptions, urlCache);
 
         await getMentions(message, mentions);
 
@@ -98,10 +101,10 @@ export async function fetchMessages(channel: TextBasedChannel, options: Transcri
         };
     }));
 
-    const lastMessageId = originalMessages.last()?.id;
+    const newLastMessageId = originalMessages.last()?.id;
     const messages = rawMessages.filter(m => !(!options.includeEmpty && m.attachments.length == 0 && m.components.length == 0 && m.content == "" && m.embeds.length == 0 && !m.poll));
     const end = originalMessages.size !== 100;
-    return { messages, end, lastMessageId };
+    return { messages, end, newLastMessageId };
 }
 
 
@@ -124,3 +127,17 @@ function formatTimeLeftPoll(timestamp: number): string {
 
     return "now"; // fallback
 } 
+
+export type FetchMessagesContext = {
+    channel: TextBasedChannel,
+    options: TranscriptOptionsBase,
+    cdnOptions: CDNOptions | null,
+    transcriptState: TranscriptState,
+    lastMessageId: string | undefined,
+};
+
+type TranscriptState = {
+    authors: Map<string, JsonAuthor>,
+    mentions: MapMentions,
+    urlCache: Map<string, Promise<string>>,
+}

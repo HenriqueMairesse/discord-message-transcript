@@ -4,7 +4,7 @@ import { JsonTopLevelComponent, JsonButtonComponent, JsonSelectMenu, JsonCompone
 import { urlResolver } from "./urlResolver.js";
 import { CDNOptions } from "../types/types.js";
 
-export async function componentsToJson(components: TopLevelComponent[], options: TranscriptOptionsBase, cdnOptions: CDNOptions | null): Promise<JsonTopLevelComponent[]> {
+export async function componentsToJson(components: TopLevelComponent[], options: TranscriptOptionsBase, cdnOptions: CDNOptions | null, urlCache: Map<string, Promise<string>>): Promise<JsonTopLevelComponent[]> {
     const processedComponents = await Promise.all(components.filter(component => !(!options.includeV2Components && component.type != ComponentType.ActionRow))
     .map<Promise<JsonTopLevelComponent | null>>(async component => {
         switch (component.type) {
@@ -51,7 +51,7 @@ export async function componentsToJson(components: TopLevelComponent[], options:
             }
             case ComponentType.Container: {
                 const newOptions = {...options, includeComponents: true, includeButtons: true};
-                const componentsJson = await componentsToJson(component.components, newOptions, cdnOptions);
+                const componentsJson = await componentsToJson(component.components, newOptions, cdnOptions, urlCache);
                 return {
                     type: JsonComponentType.Container,
                     components: componentsJson.filter(isJsonComponentInContainer), // Input components that are container-safe must always produce container-safe output.
@@ -64,14 +64,14 @@ export async function componentsToJson(components: TopLevelComponent[], options:
                     type: JsonComponentType.File,
                     fileName: component.data.name ?? null,
                     size: component.data.size ?? 0,
-                    url: await urlResolver(component.file.url, options, cdnOptions),
+                    url: await urlResolver(component.file.url, options, cdnOptions, urlCache),
                     spoiler: component.spoiler,
                 };
             }
             case ComponentType.MediaGallery: {
                 const mediaItems = await Promise.all(component.items.map(async item => {
                     return {
-                        media: { url: await urlResolver(item.media.url, options, cdnOptions) },
+                        media: { url: await urlResolver(item.media.url, options, cdnOptions, urlCache) },
                         spoiler: item.spoiler,
                     };
                 }));
@@ -95,7 +95,7 @@ export async function componentsToJson(components: TopLevelComponent[], options:
                     accessoryJson = {
                         type: JsonComponentType.Thumbnail,
                         media: {
-                            url: await urlResolver(component.accessory.media.url, options, cdnOptions),
+                            url: await urlResolver(component.accessory.media.url, options, cdnOptions, urlCache),
                         },
                         spoiler: component.accessory.spoiler,
                     };
