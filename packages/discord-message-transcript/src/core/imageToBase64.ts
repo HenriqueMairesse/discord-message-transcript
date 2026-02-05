@@ -42,7 +42,7 @@ export async function imageToBase64(url: string): Promise<string> {
 
         request.setTimeout(15000, () => {
             request.destroy();
-            CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of converting to base64.\nRequest timeout for ${url}. Using original URL.`);
+            CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of converting to base64.\nRequest timeout for ${url}.`);
             resolve(url);
         });
 

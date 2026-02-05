@@ -44,13 +44,13 @@ export async function cdnResolver(url, cdnOptions) {
 async function cdnRedirectType(url, contentType, cdnOptions) {
     switch (cdnOptions.type) {
         case "CUSTOM": {
-            return await cdnOptions.customCdnResolver(url, contentType, cdnOptions.other);
+            return await cdnOptions.resolver(url, contentType, cdnOptions.customData);
         }
         case "CLOUDFLARE_R2": {
-            return await cdnCloudflare();
+            return await cdnCloudflareR2(url, contentType, cdnOptions);
         }
     }
 }
-async function cdnCloudflare() {
-    return ''; // TODO: Implement cloudflare cdn
+async function cdnCloudflareR2(url, contentType, cdnOptions) {
+    return '';
 }

@@ -49,7 +49,7 @@ export interface TranscriptOptions<T extends ReturnType, Other = unknown> {
     /**
      * CDN Options
      */
-    cdnOptions: CDNOptions<Other>,
+    cdnOptions: CDNOptions,
     /**
      * The name of the file to be created.
      * Default depends if is DM or Guild
@@ -155,24 +155,32 @@ export interface MapMentions {
 
 export type MimeType = `${string}/${string}`;
 
-export type CDNOptions<Other> = (Partial<{
+export type CDNOptions = (Partial<{
     includeAudio: boolean;
     includeImage: boolean;
     includeVideo: boolean;
     includeOthers: boolean;
-}>) & ({
+}>) & (
+    CDNOptionsCustom<any> | 
+    CDNOptionsCloudinary  |
+    CDNOptionsUploadcare
+);
+
+export type CDNOptionsCustom<T = unknown> = {
     type: "CUSTOM",
-    customCdnResolver: (
+    resolver: (
         url: string,
         contentType: MimeType | null,
-        other: Other
+        customData: T
         ) => Promise<string> | string,
-    other: Other,
-} | {
-    type: "CLOUDFLARE_R2"
-    accountId: string
-    accessKey: string
-    secretKey: string
-    bucket: string
-    publicUrl: string
-});
+    customData: T,
+}
+
+export type CDNOptionsCloudinary = {
+    type: "CLOUDINARY",
+}
+
+export type CDNOptionsUploadcare = {
+    type: "UPLOADCARE",
+    publicKey: string
+}

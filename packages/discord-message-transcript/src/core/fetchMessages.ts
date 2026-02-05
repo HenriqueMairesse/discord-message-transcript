@@ -5,7 +5,7 @@ import { JsonAuthor, JsonMessage, TranscriptOptionsBase } from "discord-message-
 import { CDNOptions, MapMentions } from "../types/types.js";
 import { getMentions } from "./getMentions.js";
 
-export async function fetchMessages(channel: TextBasedChannel, options: TranscriptOptionsBase, cdnOptions: CDNOptions<unknown> | null, authors: Map<string,JsonAuthor>, mentions: MapMentions, after?: string): Promise<{ messages: JsonMessage[], end: boolean }> {
+export async function fetchMessages(channel: TextBasedChannel, options: TranscriptOptionsBase, cdnOptions: CDNOptions | null, authors: Map<string,JsonAuthor>, mentions: MapMentions, after?: string): Promise<{ messages: JsonMessage[], end: boolean }> {
     const originalMessages = await channel.messages.fetch({ limit: 100, cache: false, after: after });
 
     const rawMessages: JsonMessage[] = await Promise.all(originalMessages.map(async (message) => {

@@ -4,7 +4,7 @@ import { JsonTopLevelComponent, JsonButtonComponent, JsonSelectMenu, JsonCompone
 import { urlResolver } from "./urlResolver.js";
 import { CDNOptions } from "../types/types.js";
 
-export async function componentsToJson(components: TopLevelComponent[], options: TranscriptOptionsBase, cdnOptions: CDNOptions<unknown> | null): Promise<JsonTopLevelComponent[]> {
+export async function componentsToJson(components: TopLevelComponent[], options: TranscriptOptionsBase, cdnOptions: CDNOptions | null): Promise<JsonTopLevelComponent[]> {
     const processedComponents = await Promise.all(components.filter(component => !(!options.includeV2Components && component.type != ComponentType.ActionRow))
     .map<Promise<JsonTopLevelComponent | null>>(async component => {
         switch (component.type) {
