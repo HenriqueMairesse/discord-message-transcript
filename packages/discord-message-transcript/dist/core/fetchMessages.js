@@ -1,85 +1,28 @@
 import { EmbedType } from "discord.js";
 import { componentsToJson } from "./componentToJson.js";
-import { urlToBase64 } from "./imageToBase64.js";
-import { CustomError } from "discord-message-transcript-base";
+import { urlResolver } from "./urlResolver.js";
 import { getMentions } from "./getMentions.js";
-export async function fetchMessages(channel, options, authors, mentions, after) {
+export async function fetchMessages(channel, options, cdnOptions, authors, mentions, after) {
     const originalMessages = await channel.messages.fetch({ limit: 100, cache: false, after: after });
     const rawMessages = await Promise.all(originalMessages.map(async (message) => {
-        let authorAvatar = message.author.displayAvatarURL();
-        if (options.saveImages) {
-            try {
-                authorAvatar = await urlToBase64(authorAvatar);
-            }
-            catch (err) {
-                if (err instanceof CustomError)
-                    console.error(err);
-            }
-        }
         const attachments = await Promise.all(message.attachments.map(async (attachment) => {
-            let attachmentUrl = attachment.url;
-            if (options.saveImages && attachment.contentType?.startsWith('image/')) {
-                try {
-                    attachmentUrl = await urlToBase64(attachment.url);
-                }
-                catch (err) {
-                    if (err instanceof CustomError)
-                        console.error(err);
-                }
-            }
             return {
                 contentType: attachment.contentType,
                 name: attachment.name,
                 size: attachment.size,
                 spoiler: attachment.spoiler,
-                url: attachmentUrl,
+                url: await urlResolver(attachment.url, options, cdnOptions, attachment.contentType?.startsWith('image/') ?? false),
             };
         }));
         // This only works because embeds with the type poll_result that are send when a poll end are marked as a message send by the system  
         const embeds = message.system && message.embeds.length == 1 && message.embeds[0].data.type == EmbedType.PollResult && !options.includePolls ? []
             : await Promise.all(message.embeds.map(async (embed) => {
-                let authorIcon = embed.author?.iconURL ?? null;
-                let thumbnailUrl = embed.thumbnail?.url ?? null;
-                let imageUrl = embed.image?.url ?? null;
-                let footerIcon = embed.footer?.iconURL ?? null;
-                if (options.saveImages) {
-                    if (authorIcon) {
-                        try {
-                            authorIcon = await urlToBase64(authorIcon);
-                        }
-                        catch (err) {
-                            if (err instanceof CustomError)
-                                console.error(err);
-                        }
-                    }
-                    if (thumbnailUrl) {
-                        try {
-                            thumbnailUrl = await urlToBase64(thumbnailUrl);
-                        }
-                        catch (err) {
-                            if (err instanceof CustomError)
-                                console.error(err);
-                        }
-                    }
-                    if (imageUrl) {
-                        try {
-                            imageUrl = await urlToBase64(imageUrl);
-                        }
-                        catch (err) {
-                            if (err instanceof CustomError)
-                                console.error(err);
-                        }
-                    }
-                    if (footerIcon) {
-                        try {
-                            footerIcon = await urlToBase64(footerIcon);
-                        }
-                        catch (err) {
-                            if (err instanceof CustomError)
-                                console.error(err);
-                        }
-                    }
-                }
+                const [authorIcon, thumbnailUrl, imageUrl, footerIcon] = await Promise.all([
+                    embed.author?.iconURL ? urlResolver(embed.author.iconURL, options, cdnOptions, true) : Promise.resolve(null),
+                    embed.thumbnail?.url ? urlResolver(embed.thumbnail.url, options, cdnOptions, true) : Promise.resolve(null),
+                    embed.image?.url ? urlResolver(embed.image.url, options, cdnOptions, true) : Promise.resolve(null),
+                    embed.footer?.iconURL ? urlResolver(embed.footer.iconURL, options, cdnOptions, true) : Promise.resolve(null),
+                ]);
                 return {
                     author: embed.author ? { name: embed.author.name, url: embed.author.url ?? null, iconURL: authorIcon } : null,
                     description: embed.description ?? null,
@@ -96,7 +39,7 @@ export async function fetchMessages(channel, options, authors, mentions, after) 
             }));
         if (!authors.has(message.author.id)) {
             authors.set(message.author.id, {
-                avatarURL: authorAvatar,
+                avatarURL: await urlResolver(message.author.displayAvatarURL(), options, cdnOptions, true),
                 bot: message.author.bot,
                 displayName: message.author.displayName,
                 guildTag: message.author.primaryGuild?.tag ?? null,
@@ -108,7 +51,7 @@ export async function fetchMessages(channel, options, authors, mentions, after) 
                 system: message.author.system,
             });
         }
-        const components = await componentsToJson(message.components, options);
+        const components = await componentsToJson(message.components, options, cdnOptions);
         await getMentions(message, mentions);
         return {
             attachments: options.includeAttachments ? attachments : [],

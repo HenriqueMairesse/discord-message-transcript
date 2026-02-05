@@ -149,7 +149,7 @@ export type CDNOptions<Other> = (Partial<{
     includeAudio: boolean;
     includeImage: boolean;
     includeVideo: boolean;
-    includeDownloads: boolean;
+    includeOthers: boolean;
 }>) & ({
     type: Exclude<CDNType, "CUSTOM">;
 } | {

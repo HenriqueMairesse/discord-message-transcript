@@ -1,9 +1,7 @@
-import { CDNOptions, MimeType } from "../types/types.js";
 import https from 'https';
 import http from 'http';
 import { CustomWarn } from "discord-message-transcript-base";
-
-export async function cdnResolver(url: string, cdnOptions: CDNOptions<unknown>): Promise<string> {
+export async function cdnResolver(url, cdnOptions) {
     return new Promise((resolve, reject) => {
         const client = url.startsWith('https') ? https : http;
         const request = client.get(url, { headers: { "User-Agent": "discord-message-transcript" } }, async (response) => {
@@ -20,46 +18,39 @@ export async function cdnResolver(url: string, cdnOptions: CDNOptions<unknown>):
                 return resolve(url);
             }
             response.destroy();
-            const isImage = contentType.startsWith('image/') && contentType !== 'image/gif';
+            const isImage = contentType.startsWith('image/');
             const isAudio = contentType.startsWith('audio/');
-            const isVideo = contentType.startsWith('video/') || contentType === 'image/gif';
-            if ((cdnOptions.includeImage && isImage) || 
-                (cdnOptions.includeAudio && isAudio) || 
-                (cdnOptions.includeVideo && isVideo) || 
-                (cdnOptions.includeOthers && !isAudio && !isImage && !isVideo) ) {
-                return resolve(await cdnRedirectType(url, contentType as MimeType, cdnOptions));
+            const isVideo = contentType.startsWith('video/');
+            if ((cdnOptions.includeImage && isImage) ||
+                (cdnOptions.includeAudio && isAudio) ||
+                (cdnOptions.includeVideo && isVideo) ||
+                (cdnOptions.includeOthers && !isAudio && !isImage && !isVideo)) {
+                return resolve(await cdnRedirectType(url, contentType, cdnOptions));
             }
-
             return resolve(url);
-        })
-        
+        });
         request.on('error', (err) => {
             CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of uploading to CDN.\nError message: ${err.message}`);
             return resolve(url);
         });
-
         request.setTimeout(15000, () => {
             request.destroy();
             CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of uploading to CDN.\nRequest timeout for ${url}. Using original URL.`);
             resolve(url);
         });
-
         request.end();
-    })
+    });
 }
-
-async function cdnRedirectType(url: string, contentType: MimeType, cdnOptions: CDNOptions<unknown>): Promise<string> {
+async function cdnRedirectType(url, contentType, cdnOptions) {
     switch (cdnOptions.type) {
         case "CUSTOM": {
             return await cdnOptions.customCdnResolver(url, contentType, cdnOptions.other);
         }
-
         case "CLOUDFLARE": {
             return await cdnCloudflare();
         }
     }
 }
-
-async function cdnCloudflare(): Promise<string> {
+async function cdnCloudflare() {
     return ''; // TODO: Implement cloudflare cdn
 }

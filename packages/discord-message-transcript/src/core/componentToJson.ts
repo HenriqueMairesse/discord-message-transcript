@@ -1,7 +1,6 @@
 import { TopLevelComponent, ComponentType } from "discord.js";
 import { mapButtonStyle, mapSelectorType, mapSeparatorSpacing } from "./mappers.js"
 import { JsonTopLevelComponent, JsonButtonComponent, JsonSelectMenu, JsonComponentType, JsonComponentInContainer, JsonThumbnailComponent, JsonTextDisplayComponent, TranscriptOptionsBase } from "discord-message-transcript-base";
-import { CustomError } from "discord-message-transcript-base";
 import { urlResolver } from "./urlResolver.js";
 import { CDNOptions } from "../types/types.js";
 
@@ -92,7 +91,7 @@ export async function componentsToJson(components: TopLevelComponent[], options:
                         url: component.accessory.url,
                         disabled: component.accessory.disabled,
                     };
-                } else {
+                } else if (component.accessory.type === ComponentType.Thumbnail) {
                     accessoryJson = {
                         type: JsonComponentType.Thumbnail,
                         media: {
@@ -100,7 +99,7 @@ export async function componentsToJson(components: TopLevelComponent[], options:
                         },
                         spoiler: component.accessory.spoiler,
                     };
-                }
+                } else return null;
                 const sectionComponents: JsonTextDisplayComponent[] = component.components.map(c => ({
                     type: JsonComponentType.TextDisplay,
                     content: c.content,

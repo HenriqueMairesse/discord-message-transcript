@@ -1,7 +1,7 @@
 import { EmbedType, TextBasedChannel } from "discord.js";
 import { componentsToJson } from "./componentToJson.js";
 import { urlResolver } from "./urlResolver.js";
-import { CustomError, JsonAuthor, JsonMessage, TranscriptOptionsBase } from "discord-message-transcript-base";
+import { JsonAuthor, JsonMessage, TranscriptOptionsBase } from "discord-message-transcript-base";
 import { CDNOptions, MapMentions } from "../types/types.js";
 import { getMentions } from "./getMentions.js";
 

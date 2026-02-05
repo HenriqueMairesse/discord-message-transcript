@@ -1,3 +1,4 @@
 import { TopLevelComponent } from "discord.js";
 import { JsonTopLevelComponent, TranscriptOptionsBase } from "discord-message-transcript-base";
-export declare function componentsToJson(components: TopLevelComponent[], options: TranscriptOptionsBase): Promise<JsonTopLevelComponent[]>;
+import { CDNOptions } from "../types/types.js";
+export declare function componentsToJson(components: TopLevelComponent[], options: TranscriptOptionsBase, cdnOptions: CDNOptions<unknown> | null): Promise<JsonTopLevelComponent[]>;

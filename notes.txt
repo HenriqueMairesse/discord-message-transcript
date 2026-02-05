@@ -6,4 +6,4 @@ In Mind:
 
 Issues: 
     - Other type isn't being infered by ts
-    - Every url is going to imageToBase64
+    - Fix github actions dev-next 
