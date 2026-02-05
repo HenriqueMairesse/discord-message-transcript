@@ -57,7 +57,7 @@ export async function createTranscript(channel, options = {}) {
         while (true) {
             const { messages, end } = await fetchMessages(channel, internalOptions, options.cdnOptions ?? null, authors, mentions, lastMessageID);
             jsonTranscript.addMessages(messages);
-            lastMessageID = messages[messages.length - 1]?.id;
+            lastMessageID = lastMessageId;
             if (end || (jsonTranscript.messages.length >= quantity && quantity != 0)) {
                 break;
             }

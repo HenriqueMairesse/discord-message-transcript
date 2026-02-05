@@ -89,9 +89,10 @@ export async function fetchMessages(channel, options, cdnOptions, authors, menti
             system: message.system,
         };
     }));
+    const lastMessageId = originalMessages.last()?.id;
     const messages = rawMessages.filter(m => !(!options.includeEmpty && m.attachments.length == 0 && m.components.length == 0 && m.content == "" && m.embeds.length == 0 && !m.poll));
     const end = originalMessages.size !== 100;
-    return { messages, end };
+    return { messages, end, lastMessageId };
 }
 function formatTimeLeftPoll(timestamp) {
     const now = new Date();

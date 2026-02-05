@@ -4,4 +4,5 @@ import { CDNOptions, MapMentions } from "../types/types.js";
 export declare function fetchMessages(channel: TextBasedChannel, options: TranscriptOptionsBase, cdnOptions: CDNOptions | null, authors: Map<string, JsonAuthor>, mentions: MapMentions, after?: string): Promise<{
     messages: JsonMessage[];
     end: boolean;
+    lastMessageId?: string;
 }>;
