@@ -50,6 +50,7 @@ This project provides two packages:
 - Single-file HTML output
 - Lightweight JSON format
 - Optional image embedding
+- Optional CDN Upload (Can be custom)
 - Markdown + syntax highlighting
 - No tracking or telemetry
 
