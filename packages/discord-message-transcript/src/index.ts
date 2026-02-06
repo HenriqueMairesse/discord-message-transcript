@@ -115,6 +115,16 @@ export async function createTranscript<T extends ReturnType = typeof ReturnType.
            jsonTranscript.sliceMessages(quantity); 
         }
 
+        if (options.cdnOptions) {
+            options.cdnOptions = {
+                includeAudio: true,
+                includeImage: true,
+                includeVideo: true,
+                includeOthers: true,
+                ...options.cdnOptions
+            }
+        }
+
         if (options.cdnOptions || options.saveImages) {
             await Promise.all([
                 (async () => {
