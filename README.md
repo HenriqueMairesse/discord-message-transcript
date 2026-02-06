@@ -229,6 +229,7 @@ const options = {
         includeImage: true,
         includeVideo: true,
         publicKey: 'your-public-key',
+        cdnDomain: 'your.cdnDomain.net'
     }
 };
 ```

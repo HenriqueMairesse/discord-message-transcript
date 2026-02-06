@@ -9,4 +9,4 @@ Some Future Features without date to implement:
     - Create a website with documentation (Maybe use TypeDoc with github pages or my own website)
     - Add support to .txt and/or .md - utility to log messages
     - Add responsive css
-    -
+    - Sticker Support
