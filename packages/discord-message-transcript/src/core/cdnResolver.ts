@@ -1,11 +1,11 @@
 import { CDNOptions, MimeType } from "../types/types.js";
 import https from 'https';
 import http from 'http';
-import { CustomWarn } from "discord-message-transcript-base";
+import { CustomWarn, TranscriptOptionsBase } from "discord-message-transcript-base";
 import crypto from 'crypto';
 import { getCDNLimiter } from "./limiter.js";
 
-export async function cdnResolver(url: string, cdnOptions: CDNOptions): Promise<string> {
+export async function cdnResolver(url: string, options: TranscriptOptionsBase, cdnOptions: CDNOptions): Promise<string> {
 
     const limit = getCDNLimiter();
 
@@ -44,7 +44,7 @@ Failed to receive a valid content-type from ${url}.`
                     (cdnOptions.includeAudio && isAudio) || 
                     (cdnOptions.includeVideo && isVideo) || 
                     (cdnOptions.includeOthers && !isAudio && !isImage && !isVideo) ) {
-                    return resolve(await cdnRedirectType(url, contentType as MimeType, cdnOptions));
+                    return resolve(await cdnRedirectType(url, options, contentType as MimeType, cdnOptions));
                 }
 
                 return resolve(url);
@@ -72,7 +72,7 @@ Request timeout for ${url}.`
     })
 }
 
-async function cdnRedirectType(url: string, contentType: MimeType, cdnOptions: CDNOptions): Promise<string> {
+async function cdnRedirectType(url: string, options: TranscriptOptionsBase, contentType: MimeType, cdnOptions: CDNOptions): Promise<string> {
     switch (cdnOptions.provider) {
         case "CUSTOM": {
             try {
@@ -88,7 +88,7 @@ Error: ${error?.message ?? error}`
             }
         }
         case "CLOUDINARY": {
-            return await cloudinaryResolver(url, cdnOptions.cloudName, cdnOptions.apiKey, cdnOptions.apiSecret);;
+            return await cloudinaryResolver(url, options.fileName, cdnOptions.cloudName, cdnOptions.apiKey, cdnOptions.apiSecret);;
         }
         case "UPLOADCARE": {
             return await uploadCareResolver(url, cdnOptions.publicKey, cdnOptions.cdnDomain);
@@ -175,11 +175,12 @@ Error: ${error?.message ?? error}`
     }
 }
 
-export async function cloudinaryResolver(url: string, cloudName: string, apiKey: string, apiSecret: string): Promise<string> {
+export async function cloudinaryResolver(url: string, fileName: string, cloudName: string, apiKey: string, apiSecret: string): Promise<string> {
     try {
         const paramsToSign: Record<string, string> = {
+            folder: `transcripts/${fileName}`,
             timestamp: Math.floor(Date.now() / 1000).toString(),
-            unique_filename: "false",
+            unique_filename: "true",
             use_filename: "true",
         };
 
@@ -192,6 +193,7 @@ export async function cloudinaryResolver(url: string, cloudName: string, apiKey:
             .digest("hex");
 
         const form = new FormData();
+        form.append("folder", paramsToSign.folder)
         form.append("file", url);
         form.append("api_key", apiKey);
         form.append("timestamp", paramsToSign.timestamp);

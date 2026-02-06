@@ -10,7 +10,7 @@ export async function urlResolver(url: string, options: TranscriptOptionsBase, c
         if (cache) return await cache;
     }
     let returnUrl;
-    if (cdnOptions) returnUrl = cdnResolver(url, cdnOptions);
+    if (cdnOptions) returnUrl = cdnResolver(url, options, cdnOptions);
     else if (options.saveImages) returnUrl = imageToBase64(url);
     if (returnUrl) {
         urlCache.set(url, returnUrl);

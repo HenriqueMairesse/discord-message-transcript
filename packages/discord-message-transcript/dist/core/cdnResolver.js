@@ -3,7 +3,7 @@ import http from 'http';
 import { CustomWarn } from "discord-message-transcript-base";
 import crypto from 'crypto';
 import { getCDNLimiter } from "./limiter.js";
-export async function cdnResolver(url, cdnOptions) {
+export async function cdnResolver(url, options, cdnOptions) {
     const limit = getCDNLimiter();
     return limit(async () => {
         return new Promise((resolve, reject) => {
@@ -34,7 +34,7 @@ Failed to receive a valid content-type from ${url}.`);
                     (cdnOptions.includeAudio && isAudio) ||
                     (cdnOptions.includeVideo && isVideo) ||
                     (cdnOptions.includeOthers && !isAudio && !isImage && !isVideo)) {
-                    return resolve(await cdnRedirectType(url, contentType, cdnOptions));
+                    return resolve(await cdnRedirectType(url, options, contentType, cdnOptions));
                 }
                 return resolve(url);
             });
@@ -53,7 +53,7 @@ Request timeout for ${url}.`);
         });
     });
 }
-async function cdnRedirectType(url, contentType, cdnOptions) {
+async function cdnRedirectType(url, options, contentType, cdnOptions) {
     switch (cdnOptions.provider) {
         case "CUSTOM": {
             try {
@@ -68,7 +68,7 @@ Error: ${error?.message ?? error}`);
             }
         }
         case "CLOUDINARY": {
-            return await cloudinaryResolver(url, cdnOptions.cloudName, cdnOptions.apiKey, cdnOptions.apiSecret);
+            return await cloudinaryResolver(url, options.fileName, cdnOptions.cloudName, cdnOptions.apiKey, cdnOptions.apiSecret);
             ;
         }
         case "UPLOADCARE": {
@@ -139,11 +139,12 @@ Error: ${error?.message ?? error}`);
         return url;
     }
 }
-export async function cloudinaryResolver(url, cloudName, apiKey, apiSecret) {
+export async function cloudinaryResolver(url, fileName, cloudName, apiKey, apiSecret) {
     try {
         const paramsToSign = {
+            folder: `transcripts/${fileName}`,
             timestamp: Math.floor(Date.now() / 1000).toString(),
-            unique_filename: "false",
+            unique_filename: "true",
             use_filename: "true",
         };
         const stringToSign = Object.keys(paramsToSign).sort().map(k => `${k}=${paramsToSign[k]}`).join("&");
@@ -153,6 +154,7 @@ export async function cloudinaryResolver(url, cloudName, apiKey, apiSecret) {
             .update(stringToSign + apiSecret)
             .digest("hex");
         const form = new FormData();
+        form.append("folder", paramsToSign.folder);
         form.append("file", url);
         form.append("api_key", apiKey);
         form.append("timestamp", paramsToSign.timestamp);

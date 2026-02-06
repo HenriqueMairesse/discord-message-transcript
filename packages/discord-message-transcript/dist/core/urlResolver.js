@@ -10,7 +10,7 @@ export async function urlResolver(url, options, cdnOptions, urlCache) {
     }
     let returnUrl;
     if (cdnOptions)
-        returnUrl = cdnResolver(url, cdnOptions);
+        returnUrl = cdnResolver(url, options, cdnOptions);
     else if (options.saveImages)
         returnUrl = imageToBase64(url);
     if (returnUrl) {
