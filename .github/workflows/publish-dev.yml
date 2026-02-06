@@ -75,46 +75,35 @@ jobs:
 
           if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
             PREID="dev"
+            TAG="dev"
 
-            # incrementa patch base
             BASE_VERSION=$(node -e "
               const [a,b,c] = '$BASE_VERSION'.split('.').map(Number);
               console.log([a,b,c+1].join('.'));
             ")
           else
             PREID="dev-next"
+            TAG="dev-next"
           fi
 
           echo "Base version: $BASE_VERSION"
-          echo "Preid: $PREID"
+          echo "Tag: $TAG"
 
-          # versões publicadas
-          VERSIONS=$(npm view "$PKG_NAME" versions --json 2>/dev/null || echo "[]")
+          LAST_VERSION=$(npm view "$PKG_NAME@$TAG" version 2>/dev/null || echo "")
 
-          NEXT_N=$(echo "$VERSIONS" | node -e "
-          const raw = require('fs').readFileSync(0,'utf8');
-          let versions = [];
+          echo "Last tagged version: $LAST_VERSION"
 
-          try {
-            versions = JSON.parse(raw);
-            if (!Array.isArray(versions)) versions = [versions];
-          } catch {}
+          if [[ "$LAST_VERSION" == "" ]]; then
+            NEXT_N=0
+          else
+            N=$(echo "$LAST_VERSION" | node -e "
+              const v = process.argv[1];
+              const m = v.match(/$PREID\.(\d+)\./);
+              console.log(m ? Number(m[1]) : 0);
+            " "$LAST_VERSION")
 
-          const base = '$BASE_VERSION';
-          const preid = '$PREID';
-
-          const regex = new RegExp('^' + base + '-' + preid + '\\.(\\d+)');
-
-          const nums = versions
-            .map(v => {
-              const m = v.match(regex);
-              return m ? Number(m[1]) : null;
-            })
-            .filter(v => v !== null);
-
-          if (!nums.length) console.log(0);
-          else console.log(Math.max(...nums) + 1);
-          ")
+            NEXT_N=$((N + 1))
+          fi
 
           NEW_VERSION="${BASE_VERSION}-${PREID}.${NEXT_N}.${RUN}"
 
