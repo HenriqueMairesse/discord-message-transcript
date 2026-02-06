@@ -79,7 +79,7 @@ export class Html {
     }
 
     private async messagesBuilder() {
-        return Promise.all(this.data.messages.map(async message => {
+        return (await Promise.all(this.data.messages.map(async message => {
             const date = new Date(message.createdTimestamp);
             
             return `
@@ -109,7 +109,7 @@ export class Html {
     </div>
 </div>
         `;
-        }).join(""));
+        }))).join("");
     }
 
     async toHTML() {

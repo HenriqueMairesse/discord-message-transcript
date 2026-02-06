@@ -81,6 +81,15 @@ export async function createTranscript(channel, options = {}) {
         if (quantity > 0 && jsonTranscript.getMessages().length > quantity) {
             jsonTranscript.sliceMessages(quantity);
         }
+        if (options.cdnOptions) {
+            options.cdnOptions = {
+                includeAudio: true,
+                includeImage: true,
+                includeVideo: true,
+                includeOthers: true,
+                ...options.cdnOptions
+            };
+        }
         if (options.cdnOptions || options.saveImages) {
             await Promise.all([
                 (async () => {

@@ -72,14 +72,14 @@ Error: ${error?.message ?? error}`);
             ;
         }
         case "UPLOADCARE": {
-            return await uploadCareResolver(url, cdnOptions.publicKey);
+            return await uploadCareResolver(url, cdnOptions.publicKey, cdnOptions.cdnDomain);
         }
     }
 }
 function sleep(ms) {
     return new Promise(r => setTimeout(r, ms));
 }
-export async function uploadCareResolver(url, publicKey) {
+export async function uploadCareResolver(url, publicKey, cdnDomain) {
     try {
         const form = new FormData();
         form.append("pub_key", publicKey);
@@ -108,7 +108,7 @@ export async function uploadCareResolver(url, publicKey) {
         }
         const json = await res.json();
         if (json.uuid) {
-            return `https://ucarecdn.com/${json.uuid}/`;
+            return `https://${cdnDomain}/${json.uuid}/`;
         }
         let delay = 200;
         let maxDelay = 2000;
@@ -121,7 +121,7 @@ export async function uploadCareResolver(url, publicKey) {
                     throw new Error(`Uploadcare status failed with status code ${resToken.status}`);
                 const jsonToken = await resToken.json();
                 if (jsonToken.status === "success" && jsonToken.file_id) {
-                    return `https://ucarecdn.com/${jsonToken.file_id}/`;
+                    return `https://${cdnDomain}/${jsonToken.file_id}/`;
                 }
                 if (jsonToken.status === "error") {
                     throw new Error(jsonToken.error || "Uploadcare failed");
@@ -133,7 +133,7 @@ export async function uploadCareResolver(url, publicKey) {
     }
     catch (error) {
         CustomWarn(`Uploadcare CDN upload failed. Using original URL as fallback.
-Check Uploadcare public key, project settings, rate limits, and network access.
+Check Uploadcare public key, CDN domain, project settings, rate limits, and network access.
 URL: ${url}
 Error: ${error?.message ?? error}`);
         return url;
@@ -141,19 +141,24 @@ Error: ${error?.message ?? error}`);
 }
 export async function cloudinaryResolver(url, cloudName, apiKey, apiSecret) {
     try {
-        const timestamp = Math.floor(Date.now() / 1000);
+        const paramsToSign = {
+            timestamp: Math.floor(Date.now() / 1000).toString(),
+            unique_filename: "false",
+            use_filename: "true",
+        };
+        const stringToSign = Object.keys(paramsToSign).sort().map(k => `${k}=${paramsToSign[k]}`).join("&");
         // signature SHA1
         const signature = crypto
             .createHash("sha1")
-            .update(`timestamp=${timestamp}${apiSecret}`)
+            .update(stringToSign + apiSecret)
             .digest("hex");
         const form = new FormData();
         form.append("file", url);
         form.append("api_key", apiKey);
-        form.append("timestamp", timestamp.toString());
+        form.append("timestamp", paramsToSign.timestamp);
         form.append("signature", signature);
-        form.append("use_filename", "true");
-        form.append("unique_filename", "false");
+        form.append("use_filename", paramsToSign.use_filename);
+        form.append("unique_filename", paramsToSign.unique_filename);
         const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
             method: "POST",
             body: form,
@@ -170,7 +175,7 @@ export async function cloudinaryResolver(url, cloudName, apiKey, apiSecret) {
                 case 429:
                     throw new Error(`Cloudinary upload failed with status code ${res.status} - Rate limited.`);
                 default:
-                    throw new Error(`Cloudinary upload failed with status code ${res.status}`);
+                    throw new Error(`Cloudinary upload failed with status code ${res.status}.`);
             }
         }
         const json = await res.json();
@@ -187,3 +192,4 @@ Error: ${error?.message ?? error}`);
         return url;
     }
 }
+// Note: for debug use ${JSON.stringify(await res.json())} to understand the error

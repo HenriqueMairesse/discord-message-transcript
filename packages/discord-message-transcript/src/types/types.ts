@@ -290,5 +290,11 @@ export type CDNOptionsUploadcare = {
     /**
      * Your Uploadcare public key.
      */
-    publicKey: string
+    publicKey: string,
+    /**
+     * Your Uploadcare CDN domain.
+     * Example: "aaa111aaa1.ucarecd.net".
+     * DO NOT INCLUDE https://
+     */
+    cdnDomain: string,
 }
