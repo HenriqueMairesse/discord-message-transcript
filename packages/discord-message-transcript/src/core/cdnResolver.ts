@@ -178,7 +178,7 @@ Error: ${error?.message ?? error}`
 export async function cloudinaryResolver(url: string, fileName: string, cloudName: string, apiKey: string, apiSecret: string): Promise<string> {
     try {
         const paramsToSign: Record<string, string> = {
-            folder: `transcripts/${fileName}`,
+            folder: `discord-message-transcript/${fileName}`,
             timestamp: Math.floor(Date.now() / 1000).toString(),
             unique_filename: "true",
             use_filename: "true",
