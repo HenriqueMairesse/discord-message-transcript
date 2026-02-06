@@ -1,8 +1,6 @@
 import { TopLevelComponent, ComponentType } from "discord.js";
 import { mapButtonStyle, mapSelectorType, mapSeparatorSpacing } from "./mappers.js"
 import { JsonTopLevelComponent, JsonButtonComponent, JsonSelectMenu, JsonComponentType, JsonComponentInContainer, JsonThumbnailComponent, JsonTextDisplayComponent, TranscriptOptionsBase } from "discord-message-transcript-base";
-import { CustomError } from "discord-message-transcript-base";
-import { urlToBase64 } from "./imageToBase64.js";
 
 export async function componentsToJson(components: TopLevelComponent[], options: TranscriptOptionsBase): Promise<JsonTopLevelComponent[]> {
     const processedComponents = await Promise.all(components.filter(component => !(!options.includeV2Components && component.type != ComponentType.ActionRow))
@@ -60,37 +58,21 @@ export async function componentsToJson(components: TopLevelComponent[], options:
                 };
             }
             case ComponentType.File: {
-                let fileUrl = component.file.url;
-                if (options.saveImages) {
-                    try {
-                        fileUrl = await urlToBase64(fileUrl);
-                    } catch (err) {
-                        if (err instanceof CustomError) console.error(err);
-                    }
-                }
                 return {
                     type: JsonComponentType.File,
                     fileName: component.data.name ?? null,
                     size: component.data.size ?? 0,
-                    url: fileUrl,
+                    url: component.file.url,
                     spoiler: component.spoiler,
                 };
             }
             case ComponentType.MediaGallery: {
-                const mediaItems = await Promise.all(component.items.map(async item => {
-                    let mediaUrl = item.media.url;
-                    if (options.saveImages) {
-                        try {
-                            mediaUrl = await urlToBase64(mediaUrl);
-                        } catch (err) {
-                            if (err instanceof CustomError) console.error(err);
-                        }
-                    }
+                const mediaItems = component.items.map(item => {
                     return {
-                        media: { url: mediaUrl },
+                        media: { url: item.media.url },
                         spoiler: item.spoiler,
                     };
-                }));
+                });
                 return {
                     type: JsonComponentType.MediaGallery,
                     items: mediaItems,
@@ -107,23 +89,15 @@ export async function componentsToJson(components: TopLevelComponent[], options:
                         url: component.accessory.url,
                         disabled: component.accessory.disabled,
                     };
-                } else {
-                    let thumbnailUrl = component.accessory.media.url;
-                    if (options.saveImages) {
-                        try {
-                            thumbnailUrl = await urlToBase64(thumbnailUrl);
-                        } catch (err) {
-                            if (err instanceof CustomError) console.error(err);
-                        }
-                    }
+                } else if (component.accessory.type === ComponentType.Thumbnail) {
                     accessoryJson = {
                         type: JsonComponentType.Thumbnail,
                         media: {
-                            url: thumbnailUrl,
+                            url: component.accessory.media.url,
                         },
                         spoiler: component.accessory.spoiler,
                     };
-                }
+                } else return null;
                 const sectionComponents: JsonTextDisplayComponent[] = component.components.map(c => ({
                     type: JsonComponentType.TextDisplay,
                     content: c.content,
@@ -154,7 +128,7 @@ export async function componentsToJson(components: TopLevelComponent[], options:
     return processedComponents.filter(c => c != null);
 }
 
-function isJsonComponentInContainer(
+export function isJsonComponentInContainer(
   component: JsonTopLevelComponent
 ): component is JsonComponentInContainer {
   return (

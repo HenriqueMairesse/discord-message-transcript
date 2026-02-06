@@ -1,9 +1,27 @@
+/**
+ * An enum-like object for the possible return types, excluding 'attachment'.
+ */
 export const ReturnTypeBase = {
+    /**
+     * Returns a `Buffer`.
+     */
     Buffer: "buffer",
+    /**
+     * Returns a `Stream.Readable`.
+     */
     Stream: "stream",
+    /**
+     * Returns a `string`.
+     */
     String: "string",
+    /**
+     * Returns an `Uploadable` object.
+     */
     Uploadable: "uploadable"
 };
+/**
+ * An enum for all possible return types, used for parsing.
+ */
 export var ReturnTypeParse;
 (function (ReturnTypeParse) {
     ReturnTypeParse["Attachment"] = "attachment";
@@ -13,10 +31,22 @@ export var ReturnTypeParse;
     ReturnTypeParse["Uploadable"] = "uploadable";
 })(ReturnTypeParse || (ReturnTypeParse = {}));
 ;
+/**
+ * An enum-like object for the possible transcript formats.
+ */
 export const ReturnFormat = {
+    /**
+     * JSON format.
+     */
     JSON: "JSON",
+    /**
+     * HTML format.
+     */
     HTML: "HTML"
 };
+/**
+ * An enum representing the styles of a Discord button.
+ */
 export var JsonButtonStyle;
 (function (JsonButtonStyle) {
     JsonButtonStyle[JsonButtonStyle["Primary"] = 1] = "Primary";
@@ -26,6 +56,9 @@ export var JsonButtonStyle;
     JsonButtonStyle[JsonButtonStyle["Link"] = 5] = "Link";
     JsonButtonStyle[JsonButtonStyle["Premium"] = 6] = "Premium";
 })(JsonButtonStyle || (JsonButtonStyle = {}));
+/**
+ * An enum representing all known component types.
+ */
 export var JsonComponentType;
 (function (JsonComponentType) {
     JsonComponentType[JsonComponentType["ActionRow"] = 1] = "ActionRow";
@@ -47,6 +80,9 @@ export var JsonComponentType;
     JsonComponentType[JsonComponentType["Label"] = 18] = "Label";
     JsonComponentType[JsonComponentType["FileUpload"] = 19] = "FileUpload";
 })(JsonComponentType || (JsonComponentType = {}));
+/**
+ * An enum representing the spacing size of a separator component.
+ */
 export var JsonSeparatorSpacingSize;
 (function (JsonSeparatorSpacingSize) {
     JsonSeparatorSpacingSize[JsonSeparatorSpacingSize["Small"] = 1] = "Small";

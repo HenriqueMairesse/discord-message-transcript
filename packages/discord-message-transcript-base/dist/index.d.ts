@@ -1,6 +1,6 @@
 import { ConvertTranscriptOptions, ReturnTypeBase, OutputTypeBase } from "./types/types.js";
 export * from './types/types.js';
-export { CustomError } from "./core/error.js";
+export { CustomError, CustomWarn } from "./core/customMessages.js";
 export { output as outputBase } from "./core/output.js";
 /**
  * Converts a JSON transcript string into an HTML transcript.

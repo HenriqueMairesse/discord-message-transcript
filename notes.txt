@@ -1,7 +1,12 @@
 In Mind: 
     - Embeds: 
         - Special builder to each type of embed (rich and poll_result already implemented)
-    - Style: 
-        - Remake the style
 
 Issues: 
+
+Some Future Features without date to implement: 
+    - Add automatic Tests(Like Vitest/Jest)
+    - Create a website with documentation (Maybe use TypeDoc with github pages or my own website)
+    - Add support to .txt and/or .md - utility to log messages
+    - Add responsive css
+    - Sticker Support

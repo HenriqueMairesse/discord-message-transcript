@@ -6,7 +6,7 @@ export declare class Html {
     private getIcon;
     private headerBuilder;
     private messagesBuilder;
-    toHTML(): string;
+    toHTML(): Promise<string>;
     private pollBuilder;
     private pollResultEmbedBuilder;
     private embedBuilder;

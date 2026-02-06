@@ -1,4 +1,3 @@
-import { CustomError } from "../../core/error.js";
 import { markdownToHTML } from "../../core/markdown.js";
 import { JsonAttachment, JsonButtonComponent, JsonButtonStyle, JsonComponentType, JsonData, JsonEmbed, JsonMessage, JsonPoll, JsonReaction, JsonSelectMenu, JsonTopLevelComponent } from "../../types/types.js";
 import { ACTIONROW_CSS, ATTACHMENT_CSS, BUTTON_CSS, COMPONENTS_CSS, COMPONENTSV2_CSS, DEFAULT_CSS, EMBED_CSS, MESSAGE_CSS, POLL_CSS, POLL_RESULT_EMBED_CSS, REACTIONS_CSS } from "./css.js";
@@ -26,7 +25,7 @@ export class Html {
                 second: '2-digit'
             });
         } catch (error) {
-            throw new CustomError("[discord-message-transcript] Invalid LocalDate and/or TimeZone.");
+            throw new Error("[discord-message-transcript] Invalid LocalDate and/or TimeZone.");
         }
     }
 
@@ -79,8 +78,8 @@ export class Html {
         `;
     }
 
-    private messagesBuilder() {
-        return this.data.messages.map(message => {
+    private async messagesBuilder() {
+        return (await Promise.all(this.data.messages.map(async message => {
             const date = new Date(message.createdTimestamp);
             
             return `
@@ -110,10 +109,10 @@ export class Html {
     </div>
 </div>
         `;
-        }).join("");
+        }))).join("");
     }
 
-    toHTML() {
+    async toHTML() {
         const { options } = this.data;
         const cssContent = `
             ${DEFAULT_CSS}
@@ -147,7 +146,7 @@ export class Html {
         ${this.headerBuilder()}
     </header>
     <main style="display: flex; flex-direction: column; padding: 2.25%; flex: 1;">
-       ${this.messagesBuilder()}
+       ${await this.messagesBuilder()}
     </main>
     ${options.watermark ? `<footer>
         <br>

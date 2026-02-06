@@ -1,6 +1,6 @@
 {
   "name": "discord-message-transcript-base",
-  "version": "1.1.7",
+  "version": "1.2.0",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -35,5 +35,8 @@
   "devDependencies": {
     "@types/node": "^25.0.6",
     "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

@@ -1,8 +1,8 @@
-import { CustomError } from "./core/error.js";
+import { CustomError } from "./core/customMessages.js";
 import { output } from "./core/output.js";
 import { ReturnTypeBase, ReturnFormat } from "./types/types.js";
 export * from './types/types.js';
-export { CustomError } from "./core/error.js";
+export { CustomError, CustomWarn } from "./core/customMessages.js";
 export { output as outputBase } from "./core/output.js";
 /**
  * Converts a JSON transcript string into an HTML transcript.

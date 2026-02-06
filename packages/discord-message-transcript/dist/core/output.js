@@ -1,5 +1,5 @@
 import { Readable } from 'stream';
-import { outputBase } from "discord-message-transcript-base";
+import { outputBase, CustomError } from "discord-message-transcript-base";
 export async function output(json) {
     const stringJSON = JSON.stringify(json);
     if (json.options.returnFormat == "JSON") {
@@ -24,5 +24,5 @@ export async function output(json) {
     if (json.options.returnFormat == "HTML") {
         return await outputBase(json);
     }
-    throw new Error("Return format or return type invalid!");
+    throw new CustomError("Return format or return type invalid!");
 }

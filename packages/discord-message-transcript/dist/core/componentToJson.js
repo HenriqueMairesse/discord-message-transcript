@@ -1,8 +1,6 @@
 import { ComponentType } from "discord.js";
 import { mapButtonStyle, mapSelectorType, mapSeparatorSpacing } from "./mappers.js";
 import { JsonComponentType } from "discord-message-transcript-base";
-import { CustomError } from "discord-message-transcript-base";
-import { urlToBase64 } from "./imageToBase64.js";
 export async function componentsToJson(components, options) {
     const processedComponents = await Promise.all(components.filter(component => !(!options.includeV2Components && component.type != ComponentType.ActionRow))
         .map(async (component) => {
@@ -64,41 +62,21 @@ export async function componentsToJson(components, options) {
                 };
             }
             case ComponentType.File: {
-                let fileUrl = component.file.url;
-                if (options.saveImages) {
-                    try {
-                        fileUrl = await urlToBase64(fileUrl);
-                    }
-                    catch (err) {
-                        if (err instanceof CustomError)
-                            console.error(err);
-                    }
-                }
                 return {
                     type: JsonComponentType.File,
                     fileName: component.data.name ?? null,
                     size: component.data.size ?? 0,
-                    url: fileUrl,
+                    url: component.file.url,
                     spoiler: component.spoiler,
                 };
             }
             case ComponentType.MediaGallery: {
-                const mediaItems = await Promise.all(component.items.map(async (item) => {
-                    let mediaUrl = item.media.url;
-                    if (options.saveImages) {
-                        try {
-                            mediaUrl = await urlToBase64(mediaUrl);
-                        }
-                        catch (err) {
-                            if (err instanceof CustomError)
-                                console.error(err);
-                        }
-                    }
+                const mediaItems = component.items.map(item => {
                     return {
-                        media: { url: mediaUrl },
+                        media: { url: item.media.url },
                         spoiler: item.spoiler,
                     };
-                }));
+                });
                 return {
                     type: JsonComponentType.MediaGallery,
                     items: mediaItems,
@@ -116,25 +94,17 @@ export async function componentsToJson(components, options) {
                         disabled: component.accessory.disabled,
                     };
                 }
-                else {
-                    let thumbnailUrl = component.accessory.media.url;
-                    if (options.saveImages) {
-                        try {
-                            thumbnailUrl = await urlToBase64(thumbnailUrl);
-                        }
-                        catch (err) {
-                            if (err instanceof CustomError)
-                                console.error(err);
-                        }
-                    }
+                else if (component.accessory.type === ComponentType.Thumbnail) {
                     accessoryJson = {
                         type: JsonComponentType.Thumbnail,
                         media: {
-                            url: thumbnailUrl,
+                            url: component.accessory.media.url,
                         },
                         spoiler: component.accessory.spoiler,
                     };
                 }
+                else
+                    return null;
                 const sectionComponents = component.components.map(c => ({
                     type: JsonComponentType.TextDisplay,
                     content: c.content,
@@ -164,7 +134,7 @@ export async function componentsToJson(components, options) {
     }));
     return processedComponents.filter(c => c != null);
 }
-function isJsonComponentInContainer(component) {
+export function isJsonComponentInContainer(component) {
     return (component.type == JsonComponentType.ActionRow ||
         component.type == JsonComponentType.File ||
         component.type == JsonComponentType.MediaGallery ||

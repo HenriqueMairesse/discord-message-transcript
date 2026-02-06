@@ -1,6 +1,6 @@
 import { AttachmentBuilder } from "discord.js";
 import Stream, { Readable } from 'stream'
-import { outputBase, JsonData, Uploadable  } from "discord-message-transcript-base";
+import { outputBase, JsonData, Uploadable, CustomError  } from "discord-message-transcript-base";
 
 export async function output(json: JsonData): Promise<string | Stream | AttachmentBuilder | Buffer | Uploadable> {
 
@@ -30,5 +30,5 @@ export async function output(json: JsonData): Promise<string | Stream | Attachme
         return await outputBase(json);
     }
 
-    throw new Error("Return format or return type invalid!");
+    throw new CustomError("Return format or return type invalid!");
 }

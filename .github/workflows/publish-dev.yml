@@ -39,7 +39,7 @@ jobs:
       - uses: pnpm/action-setup@v4
         if: steps.changes.outputs.publish == 'true'
         with:
-          version: 9
+          version: 10.15.0
 
       - name: Install dependencies
         if: steps.changes.outputs.publish == 'true'
@@ -75,42 +75,41 @@ jobs:
 
           if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
             PREID="dev"
+            TAG="dev"
+
             BASE_VERSION=$(node -e "
               const [a,b,c] = '$BASE_VERSION'.split('.').map(Number);
               console.log([a,b,c+1].join('.'));
             ")
           else
             PREID="dev-next"
+            TAG="dev-next"
           fi
 
           echo "Base version: $BASE_VERSION"
-          echo "Preid: $PREID"
+          echo "Tag: $TAG"
 
-          # pega versões publicadas
-          VERSIONS=$(npm view "$PKG_NAME" versions --json 2>/dev/null || echo "[]")
+          LAST_VERSION=$(npm view "$PKG_NAME@$TAG" version 2>/dev/null || echo "")
 
-          LAST_N=$(echo "$VERSIONS" | node -e "
-            const versions = JSON.parse(require('fs').readFileSync(0,'utf8'));
-            const base = '$BASE_VERSION';
-            const preid = '$PREID';
+          echo "Last tagged version: $LAST_VERSION"
 
-            const matches = versions
-              .filter(v => v.startsWith(base + '-' + preid + '.'))
-              .map(v => {
-                const m = v.match(new RegExp(base + '-' + preid + '\\.(\\d+)'));
-                return m ? Number(m[1]) : null;
-              })
-              .filter(v => v !== null);
+          if [[ "$LAST_VERSION" == "" ]]; then
+            NEXT_N=0
+          else
+            N=$(echo "$LAST_VERSION" | node -e "
+              const v = process.argv[1];
+              const m = v.match(/$PREID\.(\d+)\./);
+              console.log(m ? Number(m[1]) : 0);
+            " "$LAST_VERSION")
 
-            if (!matches.length) console.log(-1);
-            else console.log(Math.max(...matches));
-          ")
+            NEXT_N=$((N + 1))
+          fi
 
-          NEXT_N=$((LAST_N + 1))
           NEW_VERSION="${BASE_VERSION}-${PREID}.${NEXT_N}.${RUN}"
 
           echo "📦 Publishing version: $NEW_VERSION"
           pnpm version "$NEW_VERSION" --no-git-tag-version
+
 
       # 🔢 lê versão base
       - name: Read base version
