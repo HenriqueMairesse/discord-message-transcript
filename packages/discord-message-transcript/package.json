@@ -1,6 +1,6 @@
 {
   "name": "discord-message-transcript",
-  "version": "1.2.0-dev-next.0",
+  "version": "1.2.0",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
