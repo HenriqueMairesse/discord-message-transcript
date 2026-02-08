@@ -3,8 +3,7 @@ name: Publish dev packages
 on:
   push:
     branches:
-      - main
-      - '1.*'
+      - '*'
   workflow_dispatch:
 
 jobs:
@@ -69,44 +68,46 @@ jobs:
         run: |
           PKG_NAME=$(node -p "require('./package.json').name")
           CURRENT_VERSION=$(node -p "require('./package.json').version")
-
+      
           BASE_VERSION=$(echo "$CURRENT_VERSION" | cut -d- -f1)
           RUN=${GITHUB_RUN_NUMBER}
-
+      
           if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
             PREID="dev"
             TAG="dev"
-
-            BASE_VERSION=$(node -e "
-              const [a,b,c] = '$BASE_VERSION'.split('.').map(Number);
-              console.log([a,b,c+1].join('.'));
-            ")
           else
             PREID="dev-next"
             TAG="dev-next"
           fi
-
+      
           echo "Base version: $BASE_VERSION"
           echo "Tag: $TAG"
-
+      
           LAST_VERSION=$(npm view "$PKG_NAME@$TAG" version 2>/dev/null || echo "")
-
+      
           echo "Last tagged version: $LAST_VERSION"
-
+      
           if [[ "$LAST_VERSION" == "" ]]; then
             NEXT_N=0
           else
-            N=$(echo "$LAST_VERSION" | node -e "
-              const v = process.argv[1];
-              const m = v.match(/$PREID\.(\d+)\./);
-              console.log(m ? Number(m[1]) : 0);
-            " "$LAST_VERSION")
-
-            NEXT_N=$((N + 1))
+            LAST_BASE=$(echo "$LAST_VERSION" | cut -d- -f1)
+      
+            if [[ "$LAST_BASE" != "$BASE_VERSION" ]]; then
+              echo "Base version changed → reset counter"
+              NEXT_N=0
+            else
+              N=$(echo "$LAST_VERSION" | node -e "
+                const v = process.argv[1];
+                const m = v.match(new RegExp('$PREID\\.(\\d+)\\.'));
+                console.log(m ? Number(m[1]) : 0);
+              " "$LAST_VERSION")
+      
+              NEXT_N=$((N + 1))
+            fi
           fi
-
+      
           NEW_VERSION="${BASE_VERSION}-${PREID}.${NEXT_N}.${RUN}"
-
+      
           echo "📦 Publishing version: $NEW_VERSION"
           pnpm version "$NEW_VERSION" --no-git-tag-version
 
