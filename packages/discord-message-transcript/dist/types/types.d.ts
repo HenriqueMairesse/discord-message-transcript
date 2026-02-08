@@ -74,6 +74,12 @@ export interface TranscriptOptions<T extends ReturnType> {
      */
     cdnOptions: CDNOptions;
     /**
+     * Disable all warnings to keep console output clean.
+     * ⚠️ Can hide issues like unsafe URLs or fallback usage.
+     * @default false
+     */
+    disableWarnings: boolean;
+    /**
      * The name of the generated file (without extension).
      * @default `Transcript-channel-name-channel-id`
      */
@@ -146,6 +152,14 @@ export interface TranscriptOptions<T extends ReturnType> {
      * @default ReturnType.Attachment
      */
     returnType: T;
+    /**
+     * Enables safe mode, blocking potentially unsafe URLs and content.
+     * Prevents suspicious links, images, or HTML from being included in the final transcript.
+     *
+     * ⚠️ Disabling may allow unsafe content to appear in the transcript.
+     * @default true
+     */
+    safeMode: boolean;
     /**
      * Whether to save images as base64 data directly in the transcript.
      * This is an alternative to using a CDN and results in larger file sizes.

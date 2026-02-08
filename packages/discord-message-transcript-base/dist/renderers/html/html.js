@@ -55,19 +55,19 @@ export class Html {
             <div style="display: flex; flex-direction: column; justify-content: center; gap: 1.25rem;">
                 ${guild ? `<div id="guild" class="line">
                     <h4>Guild: </h4>
-                    <h4 style="font-weight: normal;">${guild.name}</h4>
+                    <h4 style="font-weight: normal;">${sanitize(guild.name)}</h4>
                 </div>` : ""}
                 ${channel.parent ? `<div id="category" class="line">
                     <h4>Category: </h4>
-                    <h4 style="font-weight: normal;">${channel.parent.name}</h4>
+                    <h4 style="font-weight: normal;">${sanitize(channel.parent.name)}</h4>
                 </div>` : ""}
                 <div id="channel" class="line">
                     <h4>Channel: </h4>
-                    <h4 style="font-weight: normal;">${channel.name}</h4>
+                    <h4 style="font-weight: normal;">${sanitize(channel.name)}</h4>
                 </div>
                 ${channel.topic ? `<div id="topic" class="line">
                     <h4>Topic: </h4>
-                    <h4 style="font-weight: normal;">${channel.topic}</h4>
+                    <h4 style="font-weight: normal;">${sanitize(channel.topic)}</h4>
                 </div>` : ""}
             </div>
         </div>
@@ -77,9 +77,9 @@ export class Html {
         return (await Promise.all(this.data.messages.map(async (message) => {
             const date = new Date(message.createdTimestamp);
             return `
-<div class="messageDiv" id="${message.id}" data-author-id="${message.authorId}">
+<div class="messageDiv" id="${sanitize(message.id)}" data-author-id="${sanitize(message.authorId)}">
     ${message.references && message.references.messageId ?
-                `<div class="messageReply" data-id="${message.references.messageId}">
+                `<div class="messageReply" data-id="${sanitize(message.references.messageId)}">
         <svg class="messageReplySvg"><use href="#reply-icon"></use></svg>
         <img class="messageReplyImg" src="">
         <div class="replyBadges"></div>
@@ -126,7 +126,7 @@ export class Html {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${options.fileName}</title>
+    <title>${sanitize(options.fileName)}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/atom-one-dark.min.css">
     <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
     ${options.selfContained ? `<style>${cssContent}</style>` : `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/discord-message-transcript-base@${packageJson.version}/dist/assets/style.css">`}
@@ -223,13 +223,13 @@ export class Html {
                         <div class="embedHeaderLeft">
                             ${embed.author ? `
                             <div class="embedHeaderLeftAuthor">
-                                ${embed.author.iconURL ? `<img class="embedHeaderLeftAuthorImg" src="${sanitize(embed.author.iconURL)}">` : ""}
+                                ${embed.author.iconURL ? `<img class="embedHeaderLeftAuthorImg" src="${embed.author.iconURL}">` : ""}
                                 ${embedAuthor}
                             </div>` : ""}
                             ${embedTitle}
                             ${embed.description ? `<div class="embedDescription">${markdownToHTML(embed.description, this.data.mentions, message.mentions, this.dateFormat)}</div>` : ""}
                         </div>
-                        ${embed.thumbnail ? `<img class="embedHeaderThumbnail" src="${sanitize(embed.thumbnail.url)}">` : ""}
+                        ${embed.thumbnail ? `<img class="embedHeaderThumbnail" src="${embed.thumbnail.url}">` : ""}
                     </div>` : ""}
                     ${embed.fields && embed.fields.length > 0 ? `
                     <div class="embedFields">
@@ -241,11 +241,11 @@ export class Html {
                     </div>` : ""}
                     ${embed.image ? `
                     <div class="embedImage">
-                        <img src="${sanitize(embed.image.url)}">
+                        <img src="${embed.image.url}">
                     </div>` : ""}
                     ${embed.footer || embed.timestamp ? `
                     <div class="embedFooter">
-                        ${embed.footer?.iconURL ? `<img class="embedFooterImg" src="${sanitize(embed.footer.iconURL)}">` : ""}
+                        ${embed.footer?.iconURL ? `<img class="embedFooterImg" src="${embed.footer.iconURL}">` : ""}
                         ${embed.footer?.text || embed.timestamp ? `<p class="embedFooterText">${embed.footer?.text ? sanitize(embed.footer.text) : ''}${embed.footer?.text && embed.timestamp ? ' | ' : ''}${embed.timestamp ? this.dateFormat.format(new Date(embed.timestamp)) : ''}</p>` : ""}
                     </div>` : ""}
                 </div>
@@ -256,13 +256,23 @@ export class Html {
         return attachments.map(attachment => {
             let html = "";
             if (attachment.contentType?.startsWith('image/')) {
-                html = `<img class="attachmentImage" src="${sanitize(attachment.url)}">`;
+                html = `<img class="attachmentImage" src="${attachment.url}">`;
             }
             else if (attachment.contentType?.startsWith('video/')) {
-                html = `<video class="attachmentVideo" controls src="${sanitize(attachment.url)}"></video>`;
+                if (attachment.url == "") {
+                    html = `<video class="attachmentVideo" controls src="${attachment.url}"></video>`;
+                }
+                else {
+                    html = `<div class="attachmentVideoUnavailable">Video unavailable</div>`;
+                }
             }
             else if (attachment.contentType?.startsWith('audio/')) {
-                html = `<audio class="attachmentAudio" controls src="${sanitize(attachment.url)}"></audio>`;
+                if (attachment.url == "") {
+                    html = `<audio class="attachmentAudio" controls src="${attachment.url}"></audio>`;
+                }
+                else {
+                    html = `<div class="attachmentAudioUnavailable">Audio unavailable</div>`;
+                }
             }
             else {
                 let fileSize = attachment.size / 1024;
@@ -277,9 +287,13 @@ export class Html {
                             <p class="attachmentFileName">${attachment.name ? sanitize(attachment.name) : 'attachment'}</p>
                             <div class="attachmentFileSize">${fileSize.toFixed(2)} ${COUNT_UNIT[count]}</div>
                         </div>
-                        <a class="attachmentDownload" href="${sanitize(attachment.url)}" target="_blank">
+                        ${attachment.url != "" ?
+                    `<a class="attachmentDownload" href="${attachment.url}" target="_blank">
                             <svg class="attachmentDownloadIcon"><use href="#download-icon"></use></svg>
-                        </a>
+                        </a>` :
+                    `<span class="attachmentDownload">
+                            <svg class="attachmentDownloadIcon"><use href="#download-icon"></use></svg>
+                        </span>`}
                     </div>
                 `;
             }
@@ -302,7 +316,7 @@ export class Html {
                 }
                 case JsonComponentType.Container: {
                     const html = `
-                    <div class="container" style="${component.hexAccentColor ? `border-left-color: ${component.hexAccentColor}` : ''}">
+                    <div class="container" style="border-left-color: ${component.hexAccentColor}">
                         ${this.componentBuilder(message, component.components)}
                     </div>
                     `;
@@ -321,9 +335,13 @@ export class Html {
                                 <p class="attachmentFileName">${component.fileName ? sanitize(component.fileName) : 'file'}</p>
                                 <div class="attachmentFileSize">${fileSize.toFixed(2)} ${COUNT_UNIT[count]}</div>
                             </div>
-                            <a class="attachmentDownload" href="${component.url ? sanitize(component.url) : ''}" target="_blank">
+                            ${component.url != "" ?
+                        `<a class="attachmentDownload" href="${component.url}" target="_blank">
                                 <svg class="attachmentDownloadIcon"><use href="#download-icon"></use></svg>
-                            </a>
+                            </a>` :
+                        `<span class="attachmentDownload">
+                                <svg class="attachmentDownloadIcon"><use href="#download-icon"></use></svg>
+                            </span>`}
                         </div>
                     `;
                     return this.spoilerAttachmentBuilder(component.spoiler, html);
@@ -334,7 +352,7 @@ export class Html {
                         ${component.items.map(image => {
                         return `
                             <div class="mediaGalleryItem"> 
-                                ${this.spoilerAttachmentBuilder(image.spoiler, `<img class="mediaGalleryImg" src="${sanitize(image.media.url)}">`)}
+                                ${this.spoilerAttachmentBuilder(image.spoiler, `<img class="mediaGalleryImg" src="${image.media.url}">`)}
                             </div>
                             `;
                     }).join("")}
@@ -350,7 +368,7 @@ export class Html {
                         <div class="sectionRight">
                             ${component.accessory.type == JsonComponentType.Button ? this.buttonBuilder(component.accessory)
                         : component.accessory.type == JsonComponentType.Thumbnail ? this.spoilerAttachmentBuilder(component.accessory.spoiler, `
-                            <img class="sectionThumbnail" src="${sanitize(component.accessory.media.url)}">
+                            <img class="sectionThumbnail" src="${component.accessory.media.url}">
                             `) : ""}
                         </div>
                     </div> 

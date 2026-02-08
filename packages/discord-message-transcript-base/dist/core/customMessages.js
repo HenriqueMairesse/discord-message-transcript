@@ -5,6 +5,8 @@ export class CustomError extends Error {
         Object.setPrototypeOf(this, CustomError.prototype);
     }
 }
-export function CustomWarn(message) {
+export function CustomWarn(message, disableWarnings) {
+    if (disableWarnings)
+        return;
     console.warn(`[discord-message-transcript] Warning: ${message}`);
 }

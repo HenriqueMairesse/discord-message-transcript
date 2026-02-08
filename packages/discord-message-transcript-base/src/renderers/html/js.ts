@@ -99,8 +99,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const authorName = repliedToAuthor?.member?.displayName ?? repliedToAuthor?.displayName ?? 'Unknown';
                 const authorColor = repliedToAuthor?.member?.displayHexColor ?? 'inherit';
                 
-                const authorNameSpan = \`<span style="color: \${authorColor};">\${authorName}</span>\`;
-                replyTextDiv.innerHTML = authorNameSpan + " " + content;
+                replyTextDiv.innerHTML = "";
+
+                const nameSpan = document.createElement("span");
+                nameSpan.style.color = authorColor;
+                nameSpan.textContent = authorName;
+
+                replyTextDiv.appendChild(nameSpan);
+                replyTextDiv.appendChild(document.createTextNode(" " + content));
             }
         }
     });

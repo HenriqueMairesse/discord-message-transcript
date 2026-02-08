@@ -8,6 +8,7 @@ export class CustomError extends Error {
     }
 }
 
-export function CustomWarn(message: string) {
+export function CustomWarn(message: string, disableWarnings: boolean) {
+    if (disableWarnings) return;
     console.warn(`[discord-message-transcript] Warning: ${message}`)
 }

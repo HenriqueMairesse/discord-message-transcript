@@ -4,6 +4,8 @@ In Mind:
 
 Issues: 
 
+Todo: 
+
 Some Future Features without date to implement: 
     - Add automatic Tests(Like Vitest/Jest)
     - Create a website with documentation (Maybe use TypeDoc with github pages or my own website)

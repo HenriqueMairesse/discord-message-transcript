@@ -1,12 +1,14 @@
 import { ChannelType, Message } from "discord.js"
 import { MapMentions } from "../types/types.js"
+import { isValidHexColor, sanitize } from "../../../discord-message-transcript-base/src/core/sanitizer.js"
 
 export async function getMentions(message: Message, mentions: MapMentions) {
     message.mentions.channels.forEach(channel => {
         if (!mentions.channels.has(channel.id)) {
             mentions.channels.set(channel.id, {
                 id: channel.id,
-                name: channel.type !== ChannelType.DM ? channel.name : channel.recipient?.displayName ?? null
+                name: channel.type !== ChannelType.DM ? channel.name ? sanitize(channel.name) : null 
+                : channel.recipient?.displayName ? sanitize(channel.recipient?.displayName) : null
             })
         }
     })
@@ -15,8 +17,8 @@ export async function getMentions(message: Message, mentions: MapMentions) {
         if (!mentions.roles.has(role.id)) {
             mentions.roles.set(role.id, {
                 id: role.id,
-                color: role.hexColor,
-                name: role.name
+                color: isValidHexColor(role.hexColor, false),
+                name: sanitize(role.name)
             })
         }
     })
@@ -26,8 +28,8 @@ export async function getMentions(message: Message, mentions: MapMentions) {
             if (!mentions.users.has(member.id)) {
                 mentions.users.set(member.id, {
                     id: member.id,
-                    color: member.displayHexColor,
-                    name: member.displayName
+                    color: isValidHexColor(member.displayHexColor, true),
+                    name: sanitize(member.displayName)
                 })
             }
         })
@@ -36,8 +38,8 @@ export async function getMentions(message: Message, mentions: MapMentions) {
             if (!mentions.users.has(user.id)) {
                 mentions.users.set(user.id, {
                     id: user.id,
-                    color: user.hexAccentColor ?? null,
-                    name: user.displayName
+                    color: isValidHexColor(user.hexAccentColor ?? null, true),
+                    name: sanitize(user.displayName)
                 })
             }
         })
@@ -61,7 +63,7 @@ async function fetchRoleMention(message: Message, mentions: MapMentions) {
         try {
             const role = await message.guild?.roles.fetch(id);
             if (!role) continue;
-            mentions.roles.set(role.id, { id: role.id, color: role.hexColor, name: role.name })
+            mentions.roles.set(role.id, { id: role.id, color: isValidHexColor(role.hexColor, false), name: sanitize(role.name) })
         } catch {}  // Role may not exist
     }
 
@@ -82,7 +84,7 @@ async function fetchUserMention(message: Message, mentions: MapMentions) {
             try {
                 const user = await message.guild.members.fetch(id);
                 if (user) {
-                    mentions.users.set(user.id, { id: user.id, color: user.displayHexColor, name: user.displayName });
+                    mentions.users.set(user.id, { id: user.id, color: isValidHexColor(user.displayHexColor, true), name: sanitize(user.displayName) });
                     continue; // Continue inside if to allow fallback to regular user fetch
                 }
             } catch {} // Member may not exist
@@ -90,7 +92,7 @@ async function fetchUserMention(message: Message, mentions: MapMentions) {
         try {
             const user = await message.client.users.fetch(id);
             if (!user) continue;
-            mentions.users.set(user.id, { id: user.id, color: message.guild ? null : user.hexAccentColor ?? null, name: user.displayName })
+            mentions.users.set(user.id, { id: user.id, color: message.guild ? null : isValidHexColor(user.hexAccentColor ?? null, true) ?? null, name: sanitize(user.displayName) })
         } catch {} // User may not exist
     }
 }
@@ -109,7 +111,7 @@ async function fetchChannelMention(message: Message, mentions: MapMentions) {
         try {
             const channel = await message.guild?.channels.fetch(id);
             if (!channel) continue;
-            mentions.channels.set(channel.id, { id: channel.id, name: channel.name })
+            mentions.channels.set(channel.id, { id: channel.id, name: sanitize(channel.name) })
         } catch {} // Channel may not exist
     }
 }

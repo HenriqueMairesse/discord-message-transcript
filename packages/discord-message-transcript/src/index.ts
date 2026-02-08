@@ -38,6 +38,7 @@ export async function createTranscript<T extends ReturnType = typeof ReturnType.
 
         const {
             fileName = null,
+            disableWarnings = false,
             includeAttachments = true,
             includeButtons = true,
             includeComponents = true,
@@ -49,6 +50,7 @@ export async function createTranscript<T extends ReturnType = typeof ReturnType.
             localDate = 'en-GB',
             quantity = 0,
             returnFormat = ReturnFormat.HTML,
+            safeMode = true,
             saveImages = false,
             selfContained = false,
             timeZone = 'UTC',
@@ -58,12 +60,13 @@ export async function createTranscript<T extends ReturnType = typeof ReturnType.
         const checkedFileName = (fileName ?? `Transcript-${channel.isDMBased() ? "DirectMessage" : channel.name}-${channel.id}`);
         let validQuantity = true;
         if (quantity < 0) {
-            CustomWarn("Quantity can't be a negative number, please use 0 for unlimited messages.\nUsing 0 as fallback!");
+            CustomWarn("Quantity can't be a negative number, please use 0 for unlimited messages.\nUsing 0 as fallback!", options.disableWarnings ?? false);
             validQuantity = false;
         }
         
         const internalOptions: TranscriptOptionsBase = {
             fileName: checkedFileName,
+            disableWarnings,
             includeAttachments,
             includeButtons,
             includeComponents,
@@ -76,6 +79,7 @@ export async function createTranscript<T extends ReturnType = typeof ReturnType.
             quantity: validQuantity ? quantity : 0,
             returnFormat,
             returnType: artificialReturnType,
+            safeMode,
             saveImages,
             selfContained,
             timeZone,

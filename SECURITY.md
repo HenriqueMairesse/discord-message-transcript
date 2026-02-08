@@ -2,8 +2,13 @@
 
 ## Overview
 
-This project is a client-side and API-based utility for exporting and rendering Discord messages.
-It does not provide hosting, data storage, or server-side processing of user content.
+This project generates HTML transcripts from Discord messages and may optionally forward external asset URLs (images, videos, audio or any other file type) to a user-configured CDN before generating the final HTML output.
+
+By default, assets are not downloaded by this library. When CDN features are enabled, URLs are forwarded directly to the configured provider (for example Cloudinary or Uploadcare), which performs the download independently.
+
+Custom CDN handlers may implement their own download logic, which is fully controlled by the end user.
+
+This project does not provide hosting, persistent data storage, or any remote processing infrastructure operated by the maintainers. All processing occurs within the environment where the library is executed.
 
 ---
 
@@ -12,6 +17,18 @@ It does not provide hosting, data storage, or server-side processing of user con
 Only the latest released version of this project is supported with security updates.
 
 ---
+
+## Default Security Behavior
+
+By default, this library applies multiple safety checks when generating HTML transcripts,
+including sanitization of message content and validation of external asset URLs.
+
+These protections are enabled through `safeMode` (enabled by default).
+
+Disabling `safeMode` will bypass URL safety checks and may allow unsafe external content
+to be embedded in generated HTML transcripts.
+
+Text content is always escaped and cannot be bypassed.
 
 ## Reporting a Vulnerability
 
@@ -35,6 +52,7 @@ The following may be considered security vulnerabilities:
 - Data leakage beyond explicitly requested transcripts
 - Cross-site scripting (XSS) in generated HTML output
 - Bypassing Discord permission or access controls
+- Server-side request forgery (SSRF) when external assets are downloaded (for example when using base64 embedding or custom CDN handlers)
 
 ---
 
@@ -46,16 +64,20 @@ The following are **not** considered security vulnerabilities:
 - Sharing or publishing exported content by the end user
 - Discord permission misconfiguration
 - Use of public CDNs (such as highlight.js) for client-side rendering
-- Security risks caused by opening generated HTML files in untrusted environments
+- Use of third-party CDNs for client-side rendering
+- Security issues caused by explicitly disabling built-in safety features (e.g. `safeMode: false`)
+- Risks introduced by modifying the generated HTML manually
+- Opening transcripts in environments that intentionally disable browser security protections
 
 ---
 
 ## Scope and Limitations
 
 - This project does not operate servers or remote services
-- No data is collected, stored, or processed by the maintainers
+- No data is collected, stored, or processed by infrastructure operated by the maintainers
 - All Discord data access occurs exclusively through the official Discord API
 - All rendering is performed locally or in the end user’s environment
+- The security of the environment where the generated HTML is opened or hosted (browser, operating system, web server, or third-party infrastructure) is the responsibility of the end user.
 
 ---
 

@@ -16,6 +16,17 @@ export type JsonTopLevelComponent = JsonActionRow | JsonButtonComponent | JsonSe
  */
 export type JsonV2Component = JsonContainerComponent | JsonFileComponent | JsonMediaGalleryComponent | JsonSectionComponent | JsonSeparatorComponent | JsonTextDisplayComponent | JsonThumbnailComponent;
 /**
+ * A hexColor type
+ */
+export type hexColor = `#${string}`;
+/**
+ * Result from dns.lookup
+ */
+export type LookupResult = {
+    address: string;
+    family: number;
+};
+/**
  * A union of all possible timestamp styles for formatting dates and times in Discord.
  */
 export type StyleTimeStampKey = "t" | "T" | "d" | "D" | "f" | "F";
@@ -92,6 +103,12 @@ export interface TranscriptOptionsBase {
      */
     fileName: string;
     /**
+     * Disable all warnings to keep console output clean.
+     * ⚠️ Can hide issues like unsafe URLs or fallback usage.
+     * @default false
+     */
+    disableWarnings: boolean;
+    /**
      * Whether to include attachments.
      */
     includeAttachments: boolean;
@@ -140,6 +157,14 @@ export interface TranscriptOptionsBase {
      */
     returnType: ReturnTypeBase;
     /**
+     * Enables safe mode, blocking potentially unsafe URLs and content.
+     * Prevents suspicious links, images, or HTML from being included in the final transcript.
+     *
+     * ⚠️ Disabling may allow unsafe content to appear in the transcript.
+     * @default true
+     */
+    safeMode: boolean;
+    /**
      * Whether to save images as base64.
      */
     saveImages: boolean;
@@ -161,6 +186,7 @@ export interface TranscriptOptionsBase {
  */
 export interface TranscriptOptionsParse {
     fileName: string;
+    disableWarnings: boolean;
     includeAttachments: boolean;
     includeButtons: boolean;
     includeComponents: boolean;
@@ -173,6 +199,7 @@ export interface TranscriptOptionsParse {
     quantity: number;
     returnFormat: ReturnFormat;
     returnType: ReturnTypeParse;
+    safeMode: boolean;
     saveImages: boolean;
     selfContained: boolean;
     timeZone: TimeZone;
@@ -288,7 +315,7 @@ export interface JsonAuthor {
         /**
          * The member's display color in hex format.
          */
-        displayHexColor: string;
+        displayHexColor: hexColor;
         /**
          * The member's display name in the guild.
          */
@@ -339,7 +366,7 @@ export interface JsonContainerComponent {
     /**
      * The accent color of the container's border.
      */
-    hexAccentColor: string | null;
+    hexAccentColor: hexColor;
     /**
      * Whether the container's content is a spoiler.
      */
@@ -453,7 +480,7 @@ export interface JsonEmbed {
         iconURL: string | null;
         text: string;
     } | null;
-    hexColor: string | null;
+    hexColor: hexColor | null;
     image: {
         url: string;
     } | null;
@@ -548,7 +575,7 @@ export interface JsonMessageMentionsChannels {
 export interface JsonMessageMentionsRoles {
     id: string;
     name: string;
-    color: string;
+    color: hexColor;
 }
 /**
  * A JSON-serializable representation of a user mention.
@@ -556,7 +583,7 @@ export interface JsonMessageMentionsRoles {
 export interface JsonMessageMentionsUsers {
     id: string;
     name: string;
-    color: string | null;
+    color: hexColor | null;
 }
 /**
  * A JSON-serializable representation of a poll.

@@ -1,6 +1,7 @@
 import { EmbedType } from "discord.js";
 import { componentsToJson } from "./componentToJson.js";
 import { getMentions } from "./getMentions.js";
+import { isValidHexColor, sanitize } from "../../../discord-message-transcript-base/src/core/sanitizer.js";
 export async function fetchMessages(ctx) {
     const { channel, options, transcriptState, lastMessageId } = ctx;
     const { authors, mentions } = transcriptState;
@@ -12,7 +13,7 @@ export async function fetchMessages(ctx) {
                 name: attachment.name,
                 size: attachment.size,
                 spoiler: attachment.spoiler,
-                url: attachment.url,
+                url: attachment.proxyURL,
             };
         });
         // This only works because embeds with the type poll_result that are send when a poll end are marked as a message send by the system  
@@ -20,13 +21,13 @@ export async function fetchMessages(ctx) {
             ? []
             : message.embeds.map(embed => {
                 return {
-                    author: embed.author ? { name: embed.author.name, url: embed.author.url ?? null, iconURL: embed.author?.iconURL ?? null } : null,
+                    author: embed.author ? { name: embed.author.name, url: embed.author.url ?? null, iconURL: embed.author.proxyIconURL ?? embed.author?.iconURL ?? null } : null,
                     description: embed.description ?? null,
                     fields: embed.fields.map(field => ({ inline: field.inline ?? false, name: field.name, value: field.value })),
-                    footer: embed.footer ? { iconURL: embed.footer?.iconURL ?? null, text: embed.footer.text } : null,
-                    hexColor: embed.hexColor ?? null,
-                    image: embed.image?.url ? { url: embed.image.url } : null,
-                    thumbnail: embed.thumbnail?.url ? { url: embed.thumbnail.url } : null,
+                    footer: embed.footer ? { iconURL: embed.footer.proxyIconURL ?? embed.footer?.iconURL ?? null, text: embed.footer.text } : null,
+                    hexColor: isValidHexColor(embed.hexColor, true),
+                    image: embed.image?.url ? { url: embed.image.proxyURL ?? embed.image.url } : null,
+                    thumbnail: embed.thumbnail?.url ? { url: embed.thumbnail.proxyURL ?? embed.thumbnail.url } : null,
                     timestamp: embed.timestamp,
                     title: embed.title,
                     type: embed.data.type ?? "rich",
@@ -37,11 +38,11 @@ export async function fetchMessages(ctx) {
             authors.set(message.author.id, {
                 avatarURL: message.author.displayAvatarURL(),
                 bot: message.author.bot,
-                displayName: message.author.displayName,
+                displayName: sanitize(message.author.displayName),
                 guildTag: message.author.primaryGuild?.tag ?? null,
                 id: message.author.id,
                 member: message.member ? {
-                    displayHexColor: message.member.displayHexColor,
+                    displayHexColor: isValidHexColor(message.member.displayHexColor, false),
                     displayName: message.member.displayName,
                 } : null,
                 system: message.author.system,

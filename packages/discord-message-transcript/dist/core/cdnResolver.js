@@ -15,7 +15,7 @@ export async function cdnResolver(url, options, cdnOptions) {
                 if (response.statusCode !== 200) {
                     response.destroy();
                     CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of uploading to CDN.
-Failed to fetch attachment with status code: ${response.statusCode} from ${url}.`);
+Failed to fetch attachment with status code: ${response.statusCode} from ${url}.`, options.disableWarnings);
                     return resolve(url);
                 }
                 const contentType = response.headers["content-type"];
@@ -23,7 +23,7 @@ Failed to fetch attachment with status code: ${response.statusCode} from ${url}.
                 if (!contentType || splitContentType.length != 2 || splitContentType[0].length == 0 || splitContentType[1].length == 0) {
                     response.destroy();
                     CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of uploading to CDN.
-Failed to receive a valid content-type from ${url}.`);
+Failed to receive a valid content-type from ${url}.`, options.disableWarnings);
                     return resolve(url);
                 }
                 response.destroy();
@@ -40,13 +40,13 @@ Failed to receive a valid content-type from ${url}.`);
             });
             request.on('error', (err) => {
                 CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of uploading to CDN.
-Error: ${err.message}`);
+Error: ${err.message}`, options.disableWarnings);
                 return resolve(url);
             });
             request.setTimeout(15000, () => {
                 request.destroy();
                 CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of uploading to CDN.
-Request timeout for ${url}.`);
+Request timeout for ${url}.`, options.disableWarnings);
                 resolve(url);
             });
             request.end();
@@ -54,32 +54,38 @@ Request timeout for ${url}.`);
     });
 }
 async function cdnRedirectType(url, options, contentType, cdnOptions) {
+    let newUrl;
     switch (cdnOptions.provider) {
         case "CUSTOM": {
             try {
-                return await cdnOptions.resolver(url, contentType, cdnOptions.customData);
+                newUrl = await cdnOptions.resolver(url, contentType, cdnOptions.customData);
+                break;
             }
             catch (error) {
                 CustomWarn(`Custom CDN resolver threw an error. Falling back to original URL.
 This is most likely an issue in the custom CDN implementation provided by the user.
 URL: ${url}
-Error: ${error?.message ?? error}`);
+Error: ${error?.message ?? error}`, options.disableWarnings);
                 return url;
             }
         }
         case "CLOUDINARY": {
-            return await cloudinaryResolver(url, options.fileName, cdnOptions.cloudName, cdnOptions.apiKey, cdnOptions.apiSecret);
-            ;
+            newUrl = await cloudinaryResolver(url, options.fileName, cdnOptions.cloudName, cdnOptions.apiKey, cdnOptions.apiSecret, options.disableWarnings);
+            break;
         }
         case "UPLOADCARE": {
-            return await uploadCareResolver(url, cdnOptions.publicKey, cdnOptions.cdnDomain);
+            newUrl = await uploadCareResolver(url, cdnOptions.publicKey, cdnOptions.cdnDomain, options.disableWarnings);
+            break;
         }
     }
+    if (validateCdnUrl(newUrl, options.disableWarnings))
+        return newUrl;
+    return url;
 }
 function sleep(ms) {
     return new Promise(r => setTimeout(r, ms));
 }
-export async function uploadCareResolver(url, publicKey, cdnDomain) {
+export async function uploadCareResolver(url, publicKey, cdnDomain, disableWarnings) {
     try {
         const form = new FormData();
         form.append("pub_key", publicKey);
@@ -135,22 +141,22 @@ export async function uploadCareResolver(url, publicKey, cdnDomain) {
         CustomWarn(`Uploadcare CDN upload failed. Using original URL as fallback.
 Check Uploadcare public key, CDN domain, project settings, rate limits, and network access.
 URL: ${url}
-Error: ${error?.message ?? error}`);
+Error: ${error?.message ?? error}`, disableWarnings);
         return url;
     }
 }
-export async function cloudinaryResolver(url, fileName, cloudName, apiKey, apiSecret) {
+export async function cloudinaryResolver(url, fileName, cloudName, apiKey, apiSecret, disableWarnings) {
     try {
         const paramsToSign = {
-            folder: `transcripts/${fileName}`,
+            folder: `discord-message-transcript/${fileName}`,
             timestamp: Math.floor(Date.now() / 1000).toString(),
             unique_filename: "true",
             use_filename: "true",
         };
         const stringToSign = Object.keys(paramsToSign).sort().map(k => `${k}=${paramsToSign[k]}`).join("&");
-        // signature SHA1
+        // signature SHA256
         const signature = crypto
-            .createHash("sha1")
+            .createHash("sha256")
             .update(stringToSign + apiSecret)
             .digest("hex");
         const form = new FormData();
@@ -190,8 +196,15 @@ export async function cloudinaryResolver(url, fileName, cloudName, apiKey, apiSe
         CustomWarn(`Failed to upload asset to Cloudinary CDN. Using original URL as fallback.
 Check Cloudinary configuration (cloud name, API key, API secret) and network access.
 URL: ${url}
-Error: ${error?.message ?? error}`);
+Error: ${error?.message ?? error}`, disableWarnings);
         return url;
     }
 }
 // Note: for debug use ${JSON.stringify(await res.json())} to understand the error
+function validateCdnUrl(url, disableWarnings) {
+    if (url.includes('"') || url.includes('<') || url.includes('>')) {
+        CustomWarn(`Unsafe URL received from CDN, using fallback.\nURL: ${url}`, disableWarnings);
+        return false;
+    }
+    return true;
+}

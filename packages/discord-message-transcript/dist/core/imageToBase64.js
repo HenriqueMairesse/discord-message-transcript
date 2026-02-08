@@ -2,7 +2,7 @@ import https from 'https';
 import http from 'http';
 import { CustomWarn } from 'discord-message-transcript-base';
 import { getBase64Limiter } from './limiter.js';
-export async function imageToBase64(url) {
+export async function imageToBase64(url, disableWarnings) {
     const limit = getBase64Limiter();
     return limit(async () => {
         return new Promise((resolve, reject) => {
@@ -11,7 +11,7 @@ export async function imageToBase64(url) {
                 if (response.statusCode !== 200) {
                     response.destroy();
                     CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of converting to base64.
-Failed to fetch image with status code: ${response.statusCode} from ${url}.`);
+Failed to fetch image with status code: ${response.statusCode} from ${url}.`, disableWarnings);
                     return resolve(url);
                 }
                 const contentType = response.headers['content-type'];
@@ -31,20 +31,20 @@ Failed to fetch image with status code: ${response.statusCode} from ${url}.`);
                 response.on('error', (err) => {
                     CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of converting to base64.
 Stream error while fetching from ${url}.
-Error: ${err.message}`);
+Error: ${err.message}`, disableWarnings);
                     resolve(url);
                 });
             });
             request.on('error', (err) => {
                 CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of converting to base64.
 Error fetching image from ${url}
-Error: ${err.message}`);
+Error: ${err.message}`, disableWarnings);
                 return resolve(url);
             });
             request.setTimeout(15000, () => {
                 request.destroy();
                 CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of converting to base64.
-Request timeout for ${url}.`);
+Request timeout for ${url}.`, disableWarnings);
                 resolve(url);
             });
             request.end();

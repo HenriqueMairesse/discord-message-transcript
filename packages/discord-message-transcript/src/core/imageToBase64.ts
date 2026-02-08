@@ -3,7 +3,7 @@ import http from 'http';
 import { CustomWarn } from 'discord-message-transcript-base';
 import { getBase64Limiter } from './limiter.js';
 
-export async function imageToBase64(url: string): Promise<string> {
+export async function imageToBase64(url: string, disableWarnings: boolean): Promise<string> {
 
     const limit = getBase64Limiter();
 
@@ -15,7 +15,8 @@ export async function imageToBase64(url: string): Promise<string> {
                     response.destroy();
                     CustomWarn(
 `This is not an issue with the package. Using the original URL as fallback instead of converting to base64.
-Failed to fetch image with status code: ${response.statusCode} from ${url}.`);
+Failed to fetch image with status code: ${response.statusCode} from ${url}.`,
+                    disableWarnings);
                     return resolve(url);
                 }
 
@@ -40,7 +41,8 @@ Failed to fetch image with status code: ${response.statusCode} from ${url}.`);
                     CustomWarn(
 `This is not an issue with the package. Using the original URL as fallback instead of converting to base64.
 Stream error while fetching from ${url}.
-Error: ${err.message}`);
+Error: ${err.message}`,
+                    disableWarnings);
                     resolve(url);
                 });
             });
@@ -49,8 +51,8 @@ Error: ${err.message}`);
                 CustomWarn(
 `This is not an issue with the package. Using the original URL as fallback instead of converting to base64.
 Error fetching image from ${url}
-Error: ${err.message}`
-                );
+Error: ${err.message}`,
+                disableWarnings);
                 return resolve(url);
             });
 
@@ -58,8 +60,8 @@ Error: ${err.message}`
                 request.destroy();
                 CustomWarn(
 `This is not an issue with the package. Using the original URL as fallback instead of converting to base64.
-Request timeout for ${url}.`
-                );
+Request timeout for ${url}.`,
+                disableWarnings);
                 resolve(url);
             });
 

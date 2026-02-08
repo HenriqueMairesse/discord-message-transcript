@@ -1,6 +1,7 @@
 import { ComponentType } from "discord.js";
 import { mapButtonStyle, mapSelectorType, mapSeparatorSpacing } from "./mappers.js";
 import { JsonComponentType } from "discord-message-transcript-base";
+import { isValidHexColor } from "../../../discord-message-transcript-base/src/core/sanitizer.js";
 export async function componentsToJson(components, options) {
     const processedComponents = await Promise.all(components.filter(component => !(!options.includeV2Components && component.type != ComponentType.ActionRow))
         .map(async (component) => {
@@ -57,7 +58,7 @@ export async function componentsToJson(components, options) {
                 return {
                     type: JsonComponentType.Container,
                     components: componentsJson.filter(isJsonComponentInContainer), // Input components that are container-safe must always produce container-safe output.
-                    hexAccentColor: component.hexAccentColor,
+                    hexAccentColor: isValidHexColor(component.hexAccentColor, false),
                     spoiler: component.spoiler,
                 };
             }
@@ -66,14 +67,14 @@ export async function componentsToJson(components, options) {
                     type: JsonComponentType.File,
                     fileName: component.data.name ?? null,
                     size: component.data.size ?? 0,
-                    url: component.file.url,
+                    url: component.file.data.proxy_url ?? component.file.url,
                     spoiler: component.spoiler,
                 };
             }
             case ComponentType.MediaGallery: {
                 const mediaItems = component.items.map(item => {
                     return {
-                        media: { url: item.media.url },
+                        media: { url: item.media.data.proxy_url ?? item.media.url },
                         spoiler: item.spoiler,
                     };
                 });
@@ -98,7 +99,7 @@ export async function componentsToJson(components, options) {
                     accessoryJson = {
                         type: JsonComponentType.Thumbnail,
                         media: {
-                            url: component.accessory.media.url,
+                            url: component.accessory.media.data.proxy_url ?? component.accessory.media.url,
                         },
                         spoiler: component.accessory.spoiler,
                     };

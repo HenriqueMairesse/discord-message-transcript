@@ -1,5 +1,6 @@
 import { BaseGuildTextChannel, DMChannel } from "discord.js";
 import { urlResolver } from "../../core/urlResolver.js";
+import { resolveImageURL } from "../../../../discord-message-transcript-base/src/core/sanitizer.js";
 export class Json {
     guild;
     channel;
@@ -43,8 +44,9 @@ export class Json {
     async toJson() {
         const channel = await this.channel.fetch();
         const channelImg = channel instanceof DMChannel ? channel.recipient?.displayAvatarURL() ?? "cdn.discordapp.com/embed/avatars/4.png" : channel.isDMBased() ? channel.iconURL() ?? (await channel.fetchOwner()).displayAvatarURL() : null;
+        const safeChannelImg = await resolveImageURL(channelImg, this.options, true);
         const guild = !channel.isDMBased() ? this.guild : null;
-        const guildIcon = guild?.iconURL();
+        const guildIcon = guild ? await resolveImageURL(guild.iconURL(), this.options, true) : null;
         const guildJson = !guild ? null : {
             name: guild.name,
             id: guild.id,
@@ -58,7 +60,7 @@ export class Json {
                 parent: channel.isDMBased() ? null : (channel.parent ? { name: channel.parent.name, id: channel.parent.id } : null),
                 topic: (channel instanceof BaseGuildTextChannel) ? channel.topic : null,
                 id: channel.id,
-                img: channelImg ? await urlResolver(channelImg, this.options, this.cdnOptions, this.urlCache) : null,
+                img: safeChannelImg ? await urlResolver(safeChannelImg, this.options, this.cdnOptions, this.urlCache) : null,
             },
             authors: this.authors,
             messages: this.messages.reverse(),
