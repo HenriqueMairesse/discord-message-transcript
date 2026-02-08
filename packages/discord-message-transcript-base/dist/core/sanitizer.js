@@ -1,8 +1,10 @@
-import dns from "node:dns/promises";
 import net from "node:net";
 import { CustomWarn } from "./customMessages.js";
+import { Resolver } from "dns/promises";
 export const FALLBACK_PIXEL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+const DNS_SERVERS = ["1.1.1.1", "8.8.8.8"];
 const DNS_LOOKUP_TIMEOUT = 5000;
+const TRUSTED_DISCORD_HOSTS = ["discordapp.com", "discordapp.net"];
 export function sanitize(text) {
     return text
         .replace(/&/g, "&amp;")
@@ -56,6 +58,10 @@ export async function isSafeForHTML(url, options) {
         CustomWarn(`Unsafe URL rejected: Invalid URL format\nURL: ${url}`, disableWarnings);
         return false;
     }
+    const host = u.hostname.toLowerCase();
+    // If is from discord accept
+    if (isTrustedDiscordHost(host))
+        return true;
     // Don't accept if isn't https or http
     if (!["http:", "https:"].includes(u.protocol)) {
         CustomWarn(`Unsafe URL rejected: Invalid protocol "${u.protocol}"\nURL: ${url}`, disableWarnings);
@@ -69,7 +75,6 @@ export async function isSafeForHTML(url, options) {
         CustomWarn(`Unsafe URL rejected: Invalid port "${u.port}"\nURL: ${url}`, disableWarnings);
         return false;
     }
-    const host = u.hostname.toLowerCase();
     // Block localhost and loopback addresses (SSRF protection)
     if (host === "localhost" ||
         host === "127.0.0.1" ||
@@ -77,21 +82,12 @@ export async function isSafeForHTML(url, options) {
         CustomWarn(`Unsafe URL rejected: Blacklisted host "${host}"\nURL: ${url}`, disableWarnings);
         return false;
     }
-    async function lookupWithTimeout(host) {
-        return await Promise.race([
-            dns.lookup(host, { all: true }),
-            new Promise((_, reject) => setTimeout(() => {
-                CustomWarn(`DNS lookup timeout for ${host}`, disableWarnings);
-                reject(new Error());
-            }, DNS_LOOKUP_TIMEOUT))
-        ]);
-    }
     let ips;
     try {
-        ips = await lookupWithTimeout(host);
+        ips = await resolveAllIps(host);
     }
-    catch {
-        CustomWarn(`Unsafe URL rejected: DNS lookup failed or timed out for host "${host}"\nURL: ${url}`, disableWarnings);
+    catch (e) {
+        CustomWarn(`Unsafe URL rejected: DNS lookup failed or timed out for host "${host}". Error: ${e.message}\nURL: ${url}`, disableWarnings);
         return false;
     }
     // Block private/internal network IPs (SSRF protection)
@@ -104,12 +100,37 @@ export async function isSafeForHTML(url, options) {
     const path = u.pathname.toLowerCase();
     // External SVGs can execute scripts → allow only from Discord CDN
     if (path.endsWith(".svg")) {
-        if (!(host.endsWith("discordapp.com") || host.endsWith("discordapp.net"))) {
-            CustomWarn(`Unsafe URL rejected: External SVG not from Discord CDN\nURL: ${url}`, disableWarnings);
-            return false;
-        }
+        CustomWarn(`Unsafe URL rejected: External SVG not from Discord CDN\nURL: ${url}`, disableWarnings);
+        return false;
     }
     return true;
+}
+export async function resolveAllIps(host) {
+    const resolver = new Resolver();
+    resolver.setServers(DNS_SERVERS);
+    const lookupPromise = (async () => {
+        const results = [];
+        const [v4, v6] = await Promise.allSettled([
+            resolver.resolve4(host),
+            resolver.resolve6(host)
+        ]);
+        if (v4.status === "fulfilled") {
+            for (const ip of v4.value) {
+                results.push({ address: ip, family: 4 });
+            }
+        }
+        if (v6.status === "fulfilled") {
+            for (const ip of v6.value) {
+                results.push({ address: ip, family: 6 });
+            }
+        }
+        if (results.length === 0) {
+            throw new Error(`No DNS records found for ${host}`);
+        }
+        return results;
+    })();
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error(`DNS timeout for ${host}`)), DNS_LOOKUP_TIMEOUT));
+    return Promise.race([lookupPromise, timeoutPromise]);
 }
 function isPrivateIp(ip) {
     if (!net.isIP(ip))
@@ -128,4 +149,10 @@ function isPrivateIp(ip) {
         (parts[0] === 192 && parts[1] === 168) ||
         (parts[0] === 169 && parts[1] === 254) ||
         (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31));
+}
+function isTrustedDiscordHost(host) {
+    host = host.toLowerCase();
+    return TRUSTED_DISCORD_HOSTS.some(trusted => {
+        return host === trusted || host.endsWith("." + trusted);
+    });
 }

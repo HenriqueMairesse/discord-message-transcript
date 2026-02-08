@@ -30,8 +30,8 @@ export type hexColor = `#${string}`;
  */
 
 export type LookupResult = {
-  address: string;
-  family: number;
+  address: string,
+  family: 4 | 6
 };
 
 /**

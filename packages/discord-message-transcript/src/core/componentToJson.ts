@@ -63,14 +63,14 @@ export async function componentsToJson(components: TopLevelComponent[], options:
                     type: JsonComponentType.File,
                     fileName: component.data.name ?? null,
                     size: component.data.size ?? 0,
-                    url: component.file.data.proxy_url ?? component.file.url,
+                    url: component.file.url,
                     spoiler: component.spoiler,
                 };
             }
             case ComponentType.MediaGallery: {
                 const mediaItems = component.items.map(item => {
                     return {
-                        media: { url: item.media.data.proxy_url ?? item.media.url },
+                        media: { url: item.media.url },
                         spoiler: item.spoiler,
                     };
                 });
@@ -94,7 +94,7 @@ export async function componentsToJson(components: TopLevelComponent[], options:
                     accessoryJson = {
                         type: JsonComponentType.Thumbnail,
                         media: {
-                            url: component.accessory.media.data.proxy_url ?? component.accessory.media.url,
+                            url: component.accessory.media.url,
                         },
                         spoiler: component.accessory.spoiler,
                     };

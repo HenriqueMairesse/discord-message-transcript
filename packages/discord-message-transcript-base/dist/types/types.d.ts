@@ -24,7 +24,7 @@ export type hexColor = `#${string}`;
  */
 export type LookupResult = {
     address: string;
-    family: number;
+    family: 4 | 6;
 };
 /**
  * A union of all possible timestamp styles for formatting dates and times in Discord.

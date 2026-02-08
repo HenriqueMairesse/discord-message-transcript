@@ -18,7 +18,7 @@ export async function fetchMessages(ctx: FetchMessagesContext): Promise<{ messag
                 name: attachment.name,
                 size: attachment.size,
                 spoiler: attachment.spoiler,
-                url: attachment.proxyURL,
+                url: attachment.url,
             };
         });
 
@@ -27,13 +27,13 @@ export async function fetchMessages(ctx: FetchMessagesContext): Promise<{ messag
         ? [] 
         : message.embeds.map(embed => {
             return {
-                author: embed.author ? { name: embed.author.name, url: embed.author.url ?? null, iconURL: embed.author.proxyIconURL ?? embed.author?.iconURL ?? null } : null,
+                author: embed.author ? { name: embed.author.name, url: embed.author.url ?? null, iconURL: embed.author?.iconURL ?? null } : null,
                 description: embed.description ?? null,
                 fields: embed.fields.map(field => ({ inline: field.inline ?? false, name: field.name, value: field.value })),
-                footer: embed.footer ? { iconURL: embed.footer.proxyIconURL ?? embed.footer?.iconURL ?? null, text: embed.footer.text } : null,
+                footer: embed.footer ? { iconURL: embed.footer?.iconURL ?? null, text: embed.footer.text } : null,
                 hexColor: isValidHexColor(embed.hexColor, true),
-                image: embed.image?.url ? { url: embed.image.proxyURL ?? embed.image.url } : null,
-                thumbnail: embed.thumbnail?.url ? { url: embed.thumbnail.proxyURL ?? embed.thumbnail.url } : null,
+                image: embed.image?.url ? { url: embed.image.url } : null,
+                thumbnail: embed.thumbnail?.url ? { url: embed.thumbnail.url } : null,
                 timestamp: embed.timestamp,
                 title: embed.title,
                 type: embed.data.type ?? "rich",
