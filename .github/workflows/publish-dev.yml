@@ -2,8 +2,8 @@ name: Publish dev packages
 
 on:
   push:
-    branches:
-      - '*'
+    branches-ignore:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -48,18 +48,22 @@ jobs:
         if: steps.changes.outputs.publish == 'true'
         run: pnpm -r build
 
-      # 🏷️ Define tag npm
+      # 🏷️ TAG BASEADA NA BRANCH
       - name: Define npm tag
         if: steps.changes.outputs.publish == 'true'
         id: npm_tag
         run: |
-          if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
-            echo "tag=dev" >> $GITHUB_OUTPUT
-          else
+          BRANCH="${GITHUB_REF_NAME}"
+
+          if [[ "$BRANCH" == *"-next"* ]]; then
             echo "tag=dev-next" >> $GITHUB_OUTPUT
+            echo "preid=dev-next" >> $GITHUB_OUTPUT
+          else
+            echo "tag=dev" >> $GITHUB_OUTPUT
+            echo "preid=dev" >> $GITHUB_OUTPUT
           fi
 
-      # 📦 VERSIONAMENTO BASE
+      # 📦 VERSIONAMENTO BASE (mesma lógica tua)
       - name: Bump dev version (base)
         if: steps.changes.outputs.publish == 'true'
         working-directory: packages/discord-message-transcript-base
@@ -68,30 +72,27 @@ jobs:
         run: |
           PKG_NAME=$(node -p "require('./package.json').name")
           CURRENT_VERSION=$(node -p "require('./package.json').version")
-      
+
+          # sempre só versão base (remove qualquer sufixo)
           BASE_VERSION=$(echo "$CURRENT_VERSION" | cut -d- -f1)
+
           RUN=${GITHUB_RUN_NUMBER}
-      
-          if [[ "${GITHUB_REF_NAME}" == "main" ]]; then
-            PREID="dev"
-            TAG="dev"
-          else
-            PREID="dev-next"
-            TAG="dev-next"
-          fi
-      
+
+          PREID="${{ steps.npm_tag.outputs.preid }}"
+          TAG="${{ steps.npm_tag.outputs.tag }}"
+
           echo "Base version: $BASE_VERSION"
           echo "Tag: $TAG"
-      
+
           LAST_VERSION=$(npm view "$PKG_NAME@$TAG" version 2>/dev/null || echo "")
-      
+
           echo "Last tagged version: $LAST_VERSION"
-      
+
           if [[ "$LAST_VERSION" == "" ]]; then
             NEXT_N=0
           else
             LAST_BASE=$(echo "$LAST_VERSION" | cut -d- -f1)
-      
+
             if [[ "$LAST_BASE" != "$BASE_VERSION" ]]; then
               echo "Base version changed → reset counter"
               NEXT_N=0
@@ -101,31 +102,29 @@ jobs:
                 const m = v.match(new RegExp('$PREID\\.(\\d+)\\.'));
                 console.log(m ? Number(m[1]) : 0);
               " "$LAST_VERSION")
-      
+
               NEXT_N=$((N + 1))
             fi
           fi
-      
+
           NEW_VERSION="${BASE_VERSION}-${PREID}.${NEXT_N}.${RUN}"
-      
+
           echo "📦 Publishing version: $NEW_VERSION"
           pnpm version "$NEW_VERSION" --no-git-tag-version
 
-
-      # 🔢 lê versão base
+      # 🔢 lê versão base gerada
       - name: Read base version
         if: steps.changes.outputs.publish == 'true'
         id: base_version
         run: |
           echo "version=$(node -p "require('./packages/discord-message-transcript-base/package.json').version")" >> $GITHUB_OUTPUT
 
-      # 🔁 sync main version
+      # 🔁 sincroniza todos packages
       - name: Sync main version
         if: steps.changes.outputs.publish == 'true'
         working-directory: packages/discord-message-transcript
         run: pnpm version ${{ steps.base_version.outputs.version }} --no-git-tag-version
 
-      # 🔗 sync dependency
       - name: Sync base dependency version
         if: steps.changes.outputs.publish == 'true'
         working-directory: packages/discord-message-transcript
@@ -139,7 +138,7 @@ jobs:
           "
 
       # 🚀 publish base
-      - name: Publish base (dev)
+      - name: Publish base
         if: steps.changes.outputs.publish == 'true'
         working-directory: packages/discord-message-transcript-base
         run: pnpm publish --tag ${{ steps.npm_tag.outputs.tag }} --no-git-checks
@@ -147,7 +146,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       # 🚀 publish main
-      - name: Publish main (dev)
+      - name: Publish main
         if: steps.changes.outputs.publish == 'true'
         working-directory: packages/discord-message-transcript
         run: pnpm publish --tag ${{ steps.npm_tag.outputs.tag }} --no-git-checks
