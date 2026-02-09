@@ -170,14 +170,31 @@ export async function resolveAllIps(host: string): Promise<LookupResult[]> {
 function isPrivateIp(ip: string): boolean {
   if (!net.isIP(ip)) return true;
 
+  // Handle IPv4-mapped IPv6 addresses (e.g., ::ffff:192.168.1.1)
+  if (ip.startsWith('::ffff:')) {
+    ip = ip.substring(7);
+  }
+
   // Detects private IPv6 ranges
   if (ip.includes(":")) {
-    return (
-      ip === "::1" ||
-      ip.startsWith("fc") ||
-      ip.startsWith("fd") ||
-      ip.startsWith("fe80")
-    );
+    const lowercasedIp = ip.toLowerCase();
+
+    if (lowercasedIp === "::1") return true;
+
+    // Unique Local (fc00::/7)
+    if (lowercasedIp.startsWith('fc') || lowercasedIp.startsWith('fd')) return true;
+
+    // Link-Local (fe80::/10)
+    if (
+      lowercasedIp.startsWith('fe8') ||
+      lowercasedIp.startsWith('fe9') ||
+      lowercasedIp.startsWith('fea') ||
+      lowercasedIp.startsWith('feb')
+    ) {
+      return true;
+    }
+
+    return false;
   }
 
   const parts = ip.split(".").map(Number);
