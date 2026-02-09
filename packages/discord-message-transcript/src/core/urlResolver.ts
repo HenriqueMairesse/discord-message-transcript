@@ -1,26 +1,29 @@
 import { JsonAuthor, JsonComponentType, JsonMessage, JsonTopLevelComponent, TranscriptOptionsBase } from "discord-message-transcript-base";
-import { CDNOptions } from "../types/types.js";
+import { CDNOptions, safeUrlReturn } from "@/types";
 import { cdnResolver } from "./cdnResolver.js";
 import { imageToBase64 } from "./imageToBase64.js";
 import { isJsonComponentInContainer } from "./componentToJson.js";
-import { FALLBACK_PIXEL, isSafeForHTML, resolveImageURL } from "../../../discord-message-transcript-base/src/core/sanitizer.js";
+import { FALLBACK_PIXEL } from "discord-message-transcript-base";
+import { resolveImageURL } from "./resolveImageUrl.js";
+import { isSafeForHTML } from "@/networkSecurity";
 
-export async function urlResolver(url: string, options: TranscriptOptionsBase, cdnOptions: CDNOptions | null, urlCache: Map<string, Promise<string>>): Promise<string> {
-    if (url == FALLBACK_PIXEL || url == "") return url;    
-    if (urlCache.has(url)) {
-        const cache = urlCache.get(url);
+export async function urlResolver(safeUrlObject: safeUrlReturn, options: TranscriptOptionsBase, cdnOptions: CDNOptions | null, urlCache: Map<string, Promise<string>>): Promise<string> {
+    if (safeUrlObject.safe == false) return "";
+    if (safeUrlObject.url == FALLBACK_PIXEL) return safeUrlObject.url;    
+    if (urlCache.has(safeUrlObject.url)) {
+        const cache = urlCache.get(safeUrlObject.url);
         if (cache) return await cache;
     }
 
     let returnUrl;
-    if (cdnOptions) returnUrl = cdnResolver(url, options, cdnOptions);
-    else if (options.saveImages) returnUrl = imageToBase64(url, options.disableWarnings);
+    if (cdnOptions) returnUrl = cdnResolver(safeUrlObject, options, cdnOptions);
+    else if (options.saveImages) returnUrl = imageToBase64(safeUrlObject, options.disableWarnings);
 
     if (returnUrl) {
-        urlCache.set(url, returnUrl);
+        urlCache.set(safeUrlObject.url, returnUrl);
         return await returnUrl;
     }
-    return url;
+    return safeUrlObject.url;
 }
 
 export async function messagesUrlResolver(messages: JsonMessage[], options: TranscriptOptionsBase, cdnOptions: CDNOptions | null, urlCache: Map<string, Promise<string>>): Promise<JsonMessage[]> {
@@ -28,16 +31,16 @@ export async function messagesUrlResolver(messages: JsonMessage[], options: Tran
         // Needs to wait for resolve correct when used attachment://
         const attachments = await Promise.all(message.attachments.map(async attachment => {
 
-            let url;
+            let safeUrlObject: safeUrlReturn;
             if (attachment.contentType?.startsWith("image/")) {
-                url = await resolveImageURL(attachment.url, options, false, message.attachments);
+                safeUrlObject = await resolveImageURL(attachment.url, options, false, message.attachments);
             } else {
-                url = await isSafeForHTML(attachment.url, options) ? attachment.url : "";
+                safeUrlObject = await isSafeForHTML(attachment.url, options);
             }
 
             return {
                 ...attachment,
-                url: await urlResolver(url, options, cdnOptions, urlCache)
+                url: await urlResolver(safeUrlObject, options, cdnOptions, urlCache)
             }
         }))
 
@@ -87,9 +90,12 @@ export async function messagesUrlResolver(messages: JsonMessage[], options: Tran
                 }
 
                 if (component.type == JsonComponentType.File) {
+
+                    const safeUrlObject = await isSafeForHTML(component.url, options);
+
                     return {
                         ...component,
-                        url: await urlResolver((await isSafeForHTML(component.url, options) ? component.url : ""), options, cdnOptions, urlCache),
+                        url: await urlResolver(safeUrlObject, options, cdnOptions, urlCache),
                     };
                 }
 

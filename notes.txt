@@ -5,7 +5,6 @@ In Mind:
 Issues: 
 
 Todo: 
-    - Lots of dns timeout and trying to convert txt to image
 
 Some Future Features without date to implement: 
     - Add automatic Tests(Like Vitest/Jest)

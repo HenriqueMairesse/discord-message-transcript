@@ -1,9 +1,8 @@
 import { EmbedType, TextBasedChannel } from "discord.js";
 import { componentsToJson } from "./componentToJson.js";
-import { JsonAuthor, JsonMessage, TranscriptOptionsBase } from "discord-message-transcript-base";
-import { MapMentions } from "../types/types.js";
+import { JsonAuthor, JsonMessage, TranscriptOptionsBase, isValidHexColor, sanitize } from "discord-message-transcript-base";
+import { MapMentions } from "@/types";
 import { getMentions } from "./getMentions.js";
-import { isValidHexColor, sanitize } from "../../../discord-message-transcript-base/src/core/sanitizer.js";
 
 export async function fetchMessages(ctx: FetchMessagesContext): Promise<{ messages: JsonMessage[], end: boolean, newLastMessageId: string | undefined }> {
     const {channel, options, transcriptState, lastMessageId} = ctx;

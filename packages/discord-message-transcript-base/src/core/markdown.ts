@@ -1,4 +1,4 @@
-import { ArrayMentions, StyleTimeStampKey } from "../types/types.js";
+import { ArrayMentions, StyleTimeStampKey } from "@/types";
 import { sanitize } from "./sanitizer.js";
 
 const BLOCK_TOKEN = "\0CB\0";

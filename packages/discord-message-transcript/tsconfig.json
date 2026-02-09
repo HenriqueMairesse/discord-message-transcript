@@ -9,7 +9,14 @@
     "strict": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "tsBuildInfoFile": "./dist/.tsbuildinfo"
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "baseUrl": "./",
+    "paths": {
+      "@/core/*": ["src/core/*"], 
+      "@/networkSecurity": ["src/core/networkSecurity/index.ts"],
+      "@/types": ["src/types/types.ts"],
+      "@/renderers/*": ["src/renderers/*"]
+    }
   },
   "include": ["src"],
   "references": [

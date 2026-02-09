@@ -1,11 +1,11 @@
-import { markdownToHTML } from "../../core/markdown.js";
+import { markdownToHTML } from "@/core/markdown.js";
 import { JsonAttachment, JsonButtonComponent, JsonButtonStyle, JsonComponentType, JsonData, JsonEmbed, JsonMessage, JsonPoll, JsonReaction, JsonSelectMenu, JsonTopLevelComponent } from "../../types/types.js";
 import { ACTIONROW_CSS, ATTACHMENT_CSS, BUTTON_CSS, COMPONENTS_CSS, COMPONENTSV2_CSS, DEFAULT_CSS, EMBED_CSS, MESSAGE_CSS, POLL_CSS, POLL_RESULT_EMBED_CSS, REACTIONS_CSS } from "./css.js";
 import { script } from "./js.js";
-import packageJson from "./../../../package.json" with { type: 'json' };
-import { sanitize } from "../../core/sanitizer.js";
-import highlightHash from "../../assets/highlightJsHash.json" with { type: 'json'};
-import transcriptHash from "../../assets/transcriptHash.json" with { type: 'json'};
+import packageJson from "package.json" with { type: 'json' };
+import { sanitize } from "@/core/sanitizer.js";
+import highlightHash from "@/assets/highlightJsHash.json" with { type: 'json'};
+import transcriptHash from "@/assets/transcriptHash.json" with { type: 'json'};
 
 const COUNT_UNIT = ["KB", "MB", "GB", "TB"];
 const BUTTON_COLOR = ["black", "#5865f2", "#323538", "#32c05f", "#be3638", "#323538", "#5865f2"];

@@ -2,40 +2,44 @@ import { JsonComponentType } from "discord-message-transcript-base";
 import { cdnResolver } from "./cdnResolver.js";
 import { imageToBase64 } from "./imageToBase64.js";
 import { isJsonComponentInContainer } from "./componentToJson.js";
-import { FALLBACK_PIXEL, isSafeForHTML, resolveImageURL } from "../../../discord-message-transcript-base/src/core/sanitizer.js";
-export async function urlResolver(url, options, cdnOptions, urlCache) {
-    if (url == FALLBACK_PIXEL || url == "")
-        return url;
-    if (urlCache.has(url)) {
-        const cache = urlCache.get(url);
+import { FALLBACK_PIXEL } from "discord-message-transcript-base";
+import { resolveImageURL } from "./resolveImageUrl.js";
+import { isSafeForHTML } from "@/networkSecurity";
+export async function urlResolver(safeUrlObject, options, cdnOptions, urlCache) {
+    if (safeUrlObject.safe == false)
+        return "";
+    if (safeUrlObject.url == FALLBACK_PIXEL)
+        return safeUrlObject.url;
+    if (urlCache.has(safeUrlObject.url)) {
+        const cache = urlCache.get(safeUrlObject.url);
         if (cache)
             return await cache;
     }
     let returnUrl;
     if (cdnOptions)
-        returnUrl = cdnResolver(url, options, cdnOptions);
+        returnUrl = cdnResolver(safeUrlObject, options, cdnOptions);
     else if (options.saveImages)
-        returnUrl = imageToBase64(url, options.disableWarnings);
+        returnUrl = imageToBase64(safeUrlObject, options.disableWarnings);
     if (returnUrl) {
-        urlCache.set(url, returnUrl);
+        urlCache.set(safeUrlObject.url, returnUrl);
         return await returnUrl;
     }
-    return url;
+    return safeUrlObject.url;
 }
 export async function messagesUrlResolver(messages, options, cdnOptions, urlCache) {
     return await Promise.all(messages.map(async (message) => {
         // Needs to wait for resolve correct when used attachment://
         const attachments = await Promise.all(message.attachments.map(async (attachment) => {
-            let url;
+            let safeUrlObject;
             if (attachment.contentType?.startsWith("image/")) {
-                url = await resolveImageURL(attachment.url, options, false, message.attachments);
+                safeUrlObject = await resolveImageURL(attachment.url, options, false, message.attachments);
             }
             else {
-                url = await isSafeForHTML(attachment.url, options) ? attachment.url : "";
+                safeUrlObject = await isSafeForHTML(attachment.url, options);
             }
             return {
                 ...attachment,
-                url: await urlResolver(url, options, cdnOptions, urlCache)
+                url: await urlResolver(safeUrlObject, options, cdnOptions, urlCache)
             };
         }));
         const embedsPromise = Promise.all(message.embeds.map(async (embed) => {
@@ -78,9 +82,10 @@ export async function messagesUrlResolver(messages, options, cdnOptions, urlCach
                     };
                 }
                 if (component.type == JsonComponentType.File) {
+                    const safeUrlObject = await isSafeForHTML(component.url, options);
                     return {
                         ...component,
-                        url: await urlResolver((await isSafeForHTML(component.url, options) ? component.url : ""), options, cdnOptions, urlCache),
+                        url: await urlResolver(safeUrlObject, options, cdnOptions, urlCache),
                     };
                 }
                 if (component.type == JsonComponentType.Container) {

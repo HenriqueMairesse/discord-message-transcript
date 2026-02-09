@@ -1,9 +1,10 @@
-import { CustomError } from "./core/customMessages.js";
-import { output } from "./core/output.js";
-import { ReturnTypeBase, ReturnFormat } from "./types/types.js";
-export * from './types/types.js';
-export { CustomError, CustomWarn } from "./core/customMessages.js";
-export { output as outputBase } from "./core/output.js";
+import { CustomError } from "@/core/customMessages.js";
+import { output } from "@/core/output.js";
+import { ReturnTypeBase, ReturnFormat } from "@/types";
+export * from '@/types';
+export { CustomError, CustomWarn } from "@/core/customMessages.js";
+export { output as outputBase } from "@/core/output.js";
+export { FALLBACK_PIXEL, isValidHexColor, sanitize } from "@/core/sanitizer.js";
 /**
  * Converts a JSON transcript string into an HTML transcript.
  * Depending on the `returnType` option, this function can return a `string`, a `Buffer`, a `Stream`, or an `Uploadable` object.

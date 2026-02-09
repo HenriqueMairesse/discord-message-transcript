@@ -1,15 +1,15 @@
-export { CreateTranscriptOptions, ConvertTranscriptOptions, TranscriptOptions, ReturnType, CDNOptions, MimeType } from "./types/types.js";
+export { CreateTranscriptOptions, ConvertTranscriptOptions, TranscriptOptions, ReturnType, CDNOptions, MimeType } from "@/types";
 export { ReturnFormat, LocalDate, TimeZone } from "discord-message-transcript-base";
-export { setBase64Concurrency, setCDNConcurrency } from './core/limiter.js'
+export { setBase64Concurrency, setCDNConcurrency } from '@/core/limiter.js'
 
 import { AttachmentBuilder, TextBasedChannel } from "discord.js";
-import { Json } from "./renderers/json/json.js";
-import { fetchMessages, FetchMessagesContext } from "./core/fetchMessages.js";
-import { ConvertTranscriptOptions, CreateTranscriptOptions, MapMentions, OutputType, ReturnType } from "./types/types.js";
-import { output } from "./core/output.js";
+import { Json } from "@/renderers/json/json.js";
+import { fetchMessages, FetchMessagesContext } from "@/core/fetchMessages.js";
+import { ConvertTranscriptOptions, CreateTranscriptOptions, MapMentions, OutputType, ReturnType } from "@/types";
+import { output } from "@/core/output.js";
 import { JsonAuthor, JsonData, JsonMessageMentionsChannels, JsonMessageMentionsUsers, JsonMessageMentionsRoles, ReturnTypeBase, TranscriptOptionsBase, ReturnFormat, outputBase, CustomError, CustomWarn } from "discord-message-transcript-base";
-import { returnTypeMapper } from "./core/mappers.js";
-import { authorUrlResolver, messagesUrlResolver } from "./core/urlResolver.js";
+import { returnTypeMapper } from "@/core/mappers.js";
+import { authorUrlResolver, messagesUrlResolver } from "@/core/urlResolver.js";
 
 /**
  * Creates a transcript of a Discord channel's messages.
