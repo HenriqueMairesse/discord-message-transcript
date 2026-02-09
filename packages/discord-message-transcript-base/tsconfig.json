@@ -13,7 +13,7 @@
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
     "baseUrl": ".",
     "paths": {
-      "@/": ["src/*"],
+      "@/*": ["src/*"],
       "@/core/*": ["src/core/*"], 
       "@/types": ["src/types/types.ts"],
       "@/renderers/*": ["src/renderers/*"],

@@ -12,6 +12,7 @@
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
     "baseUrl": "./",
     "paths": {
+      "@/*": ["src/*"],
       "@/core/*": ["src/core/*"], 
       "@/networkSecurity": ["src/core/networkSecurity/index.ts"],
       "@/types": ["src/types/types.ts"],

@@ -67,7 +67,7 @@ export function markdownToHTML(text: string, mentions: ArrayMentions, everyone: 
     });
 
     // Spoiler (||)
-    text = text.replace(/\|\|((?:(?!\|\|)[^])+) \|\|/g, `<span class="spoilerMsg">$1</span>`);
+    text = text.replace(/\|\|((?:(?!\|\|)[^])+)\|\|/g, `<span class="spoilerMsg">$1</span>`);
 
     // Bold & Italic (***)
     text = text.replace(/\*\*\*((?:(?!\*\*\*)[\s\S])*)\*\*\*/g, `<strong><em>$1</em></strong>`);
