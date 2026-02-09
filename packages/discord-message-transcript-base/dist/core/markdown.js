@@ -7,7 +7,7 @@ export function markdownToHTML(text, mentions, everyone, dateFormat) {
     const codeBlock = [];
     const codeLine = [];
     // Code Block (```)
-    text = text.replace(/```(?:(\S+)\n)?([\s\S]+?)```/g, (_m, lang, code) => {
+    text = text.replace(/```(?:(\S+)\n)?((?:(?!```)[\s\S])+)```/g, (_m, lang, code) => {
         const rawLang = lang?.toLowerCase();
         const normalizedLang = rawLang ? (LANGUAGE_ALIAS[rawLang] ?? rawLang) : null;
         const language = normalizedLang && SUPPORTED_LANGUAGES.has(rawLang) ? normalizedLang : 'plaintext';
@@ -51,18 +51,19 @@ export function markdownToHTML(text, mentions, everyone, dateFormat) {
         return `<p class="pList">${indentation}${bullet} ${text}</p>`;
     });
     // Spoiler (||)
-    text = text.replace(/\|\|(.*?)\|\|/gs, `<span class="spoilerMsg">$1</span>`);
+    text = text.replace(/\|\|((?:(?!\|\|)[^])+) \|\|/g, `<span class="spoilerMsg">$1</span>`);
     // Bold & Italic (***)
-    text = text.replace(/\*\*\*(.*?)\*\*\*/gs, `<strong><em>$1</em></strong>`);
+    text = text.replace(/\*\*\*((?:(?!\*\*\*)[\s\S])*)\*\*\*/g, `<strong><em>$1</em></strong>`);
     // Bold (**)
-    text = text.replace(/\*\*(.*?)\*\*/gs, `<strong>$1</strong>`);
+    text = text.replace(/\*\*((?:(?!\*\*)[\s\S])*)\*\*/g, `<strong>$1</strong>`);
     // Underline(__)
-    text = text.replace(/__(.*?)__/gs, `<u>$1</u>`);
+    text = text.replace(/__((?:(?!__)[\s\S])*)__/g, `<u>$1</u>`);
     // Italic (*)
-    text = text.replace(/\*(.*?)\*/gs, `<em>$1</em>`);
-    text = text.replace(/\_(.*?)\_/gs, `<em>$1</em>`);
+    text = text.replace(/\*((?:(?!\*)[\s\S])*)\*/g, `<em>$1</em>`);
+    // Italic (_)
+    text = text.replace(/_((?:(?!_)[\s\S])*)_/g, `<em>$1</em>`);
     // Strikethrough (~~)
-    text = text.replace(/~~(.*?)~~/gs, `<s>$1</s>`);
+    text = text.replace(/~~((?:(?!~~)[\s\S])*)~~/g, `<s>$1</s>`);
     // Links ([]() && https)
     text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/g, (_m, text, link) => `<a href="${link}" target="_blank" rel="noopener noreferrer">${text}</a>`);
     text = text.replace(/(?<!href=")(https?:\/\/[^\s]+)/g, (_m, link) => `<a href="${link}" target="_blank" rel="noopener noreferrer">${link}</a>`);

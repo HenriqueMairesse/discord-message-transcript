@@ -8,7 +8,22 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@/core/*": ["src/core/*"], 
+      "@/types": ["src/types/types.ts"],
+      "@/renderers/*": ["src/renderers/*"],
+      "@/assets/*": ["src/assets/*"]
+    }
   },
-  "include": ["src"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.json",
+    "src/**/*.js",
+    "src/**/*.css"
+  ],
 }

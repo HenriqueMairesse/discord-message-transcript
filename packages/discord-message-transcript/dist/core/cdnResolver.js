@@ -1,21 +1,24 @@
-import https from 'https';
-import http from 'http';
 import { CustomWarn } from "discord-message-transcript-base";
 import crypto from 'crypto';
 import { getCDNLimiter } from "./limiter.js";
-export async function cdnResolver(url, options, cdnOptions) {
+import https from 'https';
+import http from 'http';
+import { createLookup } from "@/networkSecurity";
+export async function cdnResolver(safeUrlObject, options, cdnOptions) {
+    const url = safeUrlObject.url;
     const limit = getCDNLimiter();
     return limit(async () => {
         return new Promise((resolve, reject) => {
-            const client = url.startsWith('https') ? https : http;
-            const request = client.request(url, {
-                method: 'HEAD',
-                headers: { "User-Agent": "discord-message-transcript" }
+            const client = safeUrlObject.url.startsWith('https') ? https : http;
+            const lookup = createLookup(safeUrlObject.safeIps);
+            const request = client.get(url, {
+                headers: { "User-Agent": "discord-message-transcript" },
+                lookup: lookup
             }, async (response) => {
                 if (response.statusCode !== 200) {
                     response.destroy();
                     CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of uploading to CDN.
-Failed to fetch attachment with status code: ${response.statusCode} from ${url}.`, options.disableWarnings);
+Failed to fetch attachment with status code: ${response.statusCode} from ${safeUrlObject.url}.`, options.disableWarnings);
                     return resolve(url);
                 }
                 const contentType = response.headers["content-type"];
@@ -47,7 +50,7 @@ Error: ${err.message}`, options.disableWarnings);
                 request.destroy();
                 CustomWarn(`This is not an issue with the package. Using the original URL as fallback instead of uploading to CDN.
 Request timeout for ${url}.`, options.disableWarnings);
-                resolve(url);
+                return resolve(url);
             });
             request.end();
         });

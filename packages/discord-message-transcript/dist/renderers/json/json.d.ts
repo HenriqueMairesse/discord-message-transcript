@@ -1,6 +1,6 @@
 import { Guild, TextBasedChannel } from "discord.js";
 import { ArrayMentions, JsonAuthor, JsonMessage, TranscriptOptionsBase, JsonData } from "discord-message-transcript-base";
-import { CDNOptions } from "../../types/types.js";
+import { CDNOptions } from "@/types";
 export declare class Json {
     private guild;
     private channel;

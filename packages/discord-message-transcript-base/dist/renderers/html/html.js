@@ -1,9 +1,11 @@
-import { markdownToHTML } from "../../core/markdown.js";
+import { markdownToHTML } from "@/core/markdown.js";
 import { JsonButtonStyle, JsonComponentType } from "../../types/types.js";
 import { ACTIONROW_CSS, ATTACHMENT_CSS, BUTTON_CSS, COMPONENTS_CSS, COMPONENTSV2_CSS, DEFAULT_CSS, EMBED_CSS, MESSAGE_CSS, POLL_CSS, POLL_RESULT_EMBED_CSS, REACTIONS_CSS } from "./css.js";
 import { script } from "./js.js";
-import packageJson from "./../../../package.json" with { type: 'json' };
-import { sanitize } from "../../core/sanitizer.js";
+import packageJson from "package.json" with { type: 'json' };
+import { sanitize } from "@/core/sanitizer.js";
+import highlightHash from "@/assets/highlightJsHash.json" with { type: 'json' };
+import transcriptHash from "@/assets/transcriptHash.json" with { type: 'json' };
 const COUNT_UNIT = ["KB", "MB", "GB", "TB"];
 const BUTTON_COLOR = ["black", "#5865f2", "#323538", "#32c05f", "#be3638", "#323538", "#5865f2"];
 export class Html {
@@ -127,9 +129,9 @@ export class Html {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${sanitize(options.fileName)}</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/atom-one-dark.min.css">
-    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
-    ${options.selfContained ? `<style>${cssContent}</style>` : `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/discord-message-transcript-base@${packageJson.version}/dist/assets/style.css">`}
+    <link rel="stylesheet" integrity="${highlightHash.style}" crossorigin="anonymous" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/atom-one-dark.min.css">
+    <script integrity="${highlightHash.script}" crossorigin="anonymous" src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
+    ${options.selfContained ? `<style>${cssContent}</style>` : `<link rel="stylesheet" integrity="${transcriptHash.style}" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/discord-message-transcript-base@${packageJson.version}/dist/assets/style.css">`}
 </head>
 <body>
     ${this.svgBuilder()}
@@ -146,7 +148,7 @@ export class Html {
     <script id="authorData" type="application/json">
         ${JSON.stringify({ authors: this.data.authors })}
     </script>
-    ${options.selfContained ? `<script>${jsContent}</script>` : `<script src="https://cdn.jsdelivr.net/npm/discord-message-transcript-base@${packageJson.version}/dist/assets/script.js"></script>`}
+    ${options.selfContained ? `<script>${jsContent}</script>` : `<script integrity="${transcriptHash.script}" crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/discord-message-transcript-base@${packageJson.version}/dist/assets/script.js"></script>`}
 </body>
 </html>
         `;

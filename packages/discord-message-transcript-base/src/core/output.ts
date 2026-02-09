@@ -1,6 +1,6 @@
-import { JsonData, Uploadable } from "../types/types.js";
+import { JsonData, Uploadable } from "@/types";
 import Stream, { Readable } from 'stream'
-import { Html } from "../renderers/html/html.js";
+import { Html } from "@/renderers/html/html.js";
 
 export async function output(json: JsonData): Promise<string | Stream | Buffer | Uploadable> {
 

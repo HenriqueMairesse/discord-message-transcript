@@ -1,16 +1,29 @@
-import https from 'https';
-import http from 'http';
 import { CustomWarn } from 'discord-message-transcript-base';
 import { getBase64Limiter } from './limiter.js';
+import https from 'https';
+import http from 'http';
+import { safeUrlReturn } from '@/types';
+import { createLookup } from '@/networkSecurity';
 
-export async function imageToBase64(url: string, disableWarnings: boolean): Promise<string> {
+const MAX_BYTES = 25 * 1024 * 1024; // 25MB
 
+export async function imageToBase64(safeUrlObject: safeUrlReturn, disableWarnings: boolean): Promise<string> {
+
+    const url = safeUrlObject.url;
     const limit = getBase64Limiter();
 
     return limit(async () => {
         return new Promise((resolve, reject) => {
+            
             const client = url.startsWith('https') ? https : http;
-            const request = client.get(url, { headers: { "User-Agent": "discord-message-transcript" } }, (response) => {
+            const lookup = createLookup(safeUrlObject.safeIps);
+
+            const request = client.get(url, 
+            { 
+                headers: { "User-Agent": "discord-message-transcript" } ,
+                lookup: lookup
+            }, 
+            (response) => {
                 if (response.statusCode !== 200) {
                     response.destroy();
                     CustomWarn(
@@ -26,8 +39,14 @@ Failed to fetch image with status code: ${response.statusCode} from ${url}.`,
                     return resolve(url);
                 }
 
+                let total = 0
                 const chunks: Buffer[] = [];
                 response.on('data', (chunk) => {
+                    total += chunk.length;
+                    if (total > MAX_BYTES) {
+                        response.destroy();
+                        return resolve(url);
+                    }
                     chunks.push(chunk);
                 });
 

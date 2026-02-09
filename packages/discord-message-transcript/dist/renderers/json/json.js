@@ -1,6 +1,6 @@
 import { BaseGuildTextChannel, DMChannel } from "discord.js";
-import { urlResolver } from "../../core/urlResolver.js";
-import { resolveImageURL } from "../../../../discord-message-transcript-base/src/core/sanitizer.js";
+import { urlResolver } from "@/core/urlResolver.js";
+import { resolveImageURL } from "@/core/resolveImageUrl.js";
 export class Json {
     guild;
     channel;

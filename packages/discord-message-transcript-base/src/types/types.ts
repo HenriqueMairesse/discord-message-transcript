@@ -26,15 +26,6 @@ export type JsonV2Component = JsonContainerComponent | JsonFileComponent | JsonM
 export type hexColor = `#${string}`;
 
 /**
- * Result from dns.lookup
- */
-
-export type LookupResult = {
-  address: string,
-  family: 4 | 6
-};
-
-/**
  * A union of all possible timestamp styles for formatting dates and times in Discord.
  */
 export type StyleTimeStampKey = "t" | "T" | "d" | "D" | "f" | "F";
@@ -189,6 +180,7 @@ export interface TranscriptOptionsBase {
     safeMode: boolean
     /**
      * Whether to save images as base64.
+     * Only saves images with less than 25mb for safety - 25mb is a good security size to an image
      */
     saveImages: boolean,
     /**

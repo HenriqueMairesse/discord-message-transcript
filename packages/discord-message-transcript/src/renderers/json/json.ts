@@ -1,8 +1,8 @@
 import { BaseGuildTextChannel, DMChannel, Guild, TextBasedChannel } from "discord.js";
 import { ArrayMentions, JsonAuthor, JsonMessage, TranscriptOptionsBase, JsonData } from "discord-message-transcript-base";
-import { urlResolver } from "../../core/urlResolver.js";
-import { CDNOptions } from "../../types/types.js";
-import { resolveImageURL } from "../../../../discord-message-transcript-base/src/core/sanitizer.js";
+import { urlResolver } from "@/core/urlResolver.js";
+import { CDNOptions } from "@/types";
+import { resolveImageURL } from "@/core/resolveImageUrl.js";
 
 export class Json {
     private guild: Guild | null;
