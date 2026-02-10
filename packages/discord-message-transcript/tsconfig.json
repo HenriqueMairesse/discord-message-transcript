@@ -18,7 +18,8 @@
       "@/types": ["src/types/types.ts"],
       "@/renderers/*": ["src/renderers/*"],
       "@/assetResolver": ["src/core/assetResolver/index.ts"],
-      "@/utils/*": ["src/utils/*"]
+      "@/utils/*": ["src/utils/*"],
+      "@/discordParser": ["src/core/discordParser/index.ts"]
     }
   },
   "include": ["src"],

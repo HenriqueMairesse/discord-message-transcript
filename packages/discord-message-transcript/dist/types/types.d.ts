@@ -1,5 +1,6 @@
-import { JsonMessageMentionsChannels, JsonMessageMentionsRoles, JsonMessageMentionsUsers, LocalDate, TimeZone, Uploadable, ReturnFormat } from "discord-message-transcript-base";
-import { AttachmentBuilder } from "discord.js";
+import { Json } from "@/renderers/json/json.js";
+import { JsonMessageMentionsChannels, JsonMessageMentionsRoles, JsonMessageMentionsUsers, LocalDate, TimeZone, Uploadable, ReturnFormat, TranscriptOptionsBase, JsonAuthor } from "discord-message-transcript-base";
+import { AttachmentBuilder, TextBasedChannel } from "discord.js";
 import Stream from 'stream';
 /**
  * An enum-like object providing the possible return types for the transcript functions.
@@ -298,3 +299,24 @@ export interface safeUrlReturn {
     safeIps: string[];
     url: string;
 }
+export type FetchMessagesContext = {
+    channel: TextBasedChannel;
+    options: TranscriptOptionsBase;
+    transcriptState: TranscriptState;
+    lastMessageId: string | undefined;
+};
+export type TranscriptState = {
+    authors: Map<string, JsonAuthor>;
+    mentions: MapMentions;
+};
+export type ReturnDiscordParser = [
+    json: Json,
+    maps: Maps
+];
+export type MapAuthors = Map<string, JsonAuthor>;
+export type MapCache = Map<string, Promise<string>>;
+export type Maps = {
+    authors: MapAuthors;
+    mentions: MapMentions;
+    urlCache: MapCache;
+};

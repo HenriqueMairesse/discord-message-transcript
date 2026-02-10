@@ -3,7 +3,7 @@ import { JsonComponentType, JsonMessage, JsonTopLevelComponent, TranscriptOption
 import { imageUrlResolver } from "./imageUrlResolver.js";
 import { isSafeForHTML } from "@/networkSecurity";
 import { urlResolver } from "./urlResolver.js";
-import { isJsonComponentInContainer } from "@/core/componentToJson.js";
+import { isJsonComponentInContainer } from "@/core/discordParser/componentToJson.js";
 
 export async function messagesUrlResolver(messages: JsonMessage[], options: TranscriptOptionsBase, cdnOptions: CDNOptions | null, urlCache: Map<string, Promise<string>>): Promise<JsonMessage[]> {
     return await Promise.all(messages.map(async message => {

@@ -1,6 +1,7 @@
 import { sleep } from "@/utils/sleep.js";
 import { CDNProviderError, warnCdnError } from "./cdnCustomError.js";
 import { USER_AGENT } from "../contants.js";
+// https://uploadcare.com/api-refs/upload-api/#tag/Upload/operation/fromURLUpload
 export async function uploadCareCdnResolver(url, publicKey, cdnDomain, disableWarnings) {
     try {
         if (!publicKey || !cdnDomain) {

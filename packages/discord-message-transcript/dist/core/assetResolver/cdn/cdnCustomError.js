@@ -19,7 +19,7 @@ export function warnCdnError(provider, url, err, disableWarnings) {
         CustomWarn(`[CDN:${err.provider}] Upload failed → fallback to original URL
 URL: ${url}
 Reason: ${err.message}
-Code: ${err.code}${err.status ? ` (HTTP ${err.status})` : ""}${err.hint ? `\nHint: ${err.hint}` : ""}`, disableWarnings);
+Code: ${err.code}${err.status ? ` (HTTP ${err.status})` : ""}${err.hint ? `\nHint: ${err.hint}` : ""} ${err.errorMessage ? `\nError Message: ${err.errorMessage}` : ""}`, disableWarnings);
         return;
     }
     CustomWarn(`[CDN:${provider}] Unknown error → fallback to original URL

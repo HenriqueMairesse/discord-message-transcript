@@ -1,7 +1,7 @@
-import { EmbedType, TextBasedChannel } from "discord.js";
+import { EmbedType } from "discord.js";
 import { componentsToJson } from "./componentToJson.js";
-import { JsonAuthor, JsonMessage, TranscriptOptionsBase, isValidHexColor, sanitize } from "discord-message-transcript-base";
-import { MapMentions } from "@/types";
+import { JsonMessage, isValidHexColor, sanitize } from "discord-message-transcript-base";
+import { FetchMessagesContext } from "@/types";
 import { getMentions } from "./getMentions.js";
 
 export async function fetchMessages(ctx: FetchMessagesContext): Promise<{ messages: JsonMessage[], end: boolean, newLastMessageId: string | undefined }> {
@@ -121,15 +121,3 @@ function formatTimeLeftPoll(timestamp: number): string {
 
     return "now"; // fallback
 } 
-
-export type FetchMessagesContext = {
-    channel: TextBasedChannel,
-    options: TranscriptOptionsBase,
-    transcriptState: TranscriptState,
-    lastMessageId: string | undefined,
-};
-
-type TranscriptState = {
-    authors: Map<string, JsonAuthor>,
-    mentions: MapMentions,
-}

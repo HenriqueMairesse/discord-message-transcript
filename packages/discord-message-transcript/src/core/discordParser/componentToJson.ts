@@ -1,13 +1,18 @@
-import { ComponentType } from "discord.js";
-import { mapButtonStyle, mapSelectorType, mapSeparatorSpacing } from "./mappers.js";
-import { JsonComponentType } from "discord-message-transcript-base";
+import { TopLevelComponent, ComponentType, ActionRow, MessageActionRowComponent, ContainerComponent, FileComponent, MediaGalleryComponent, SectionComponent, SeparatorComponent, TextDisplayComponent } from "discord.js";
+import { mapButtonStyle, mapSelectorType, mapSeparatorSpacing } from "../mappers.js"
+import { JsonTopLevelComponent, JsonButtonComponent, JsonSelectMenu, JsonComponentType, JsonThumbnailComponent, JsonTextDisplayComponent, TranscriptOptionsBase, JsonActionRow, JsonContainerComponent, JsonFileComponent, JsonMediaGalleryComponent, JsonSectionComponent, JsonSeparatorComponent, JsonComponentInContainer } from "discord-message-transcript-base";
 import { isValidHexColor } from "discord-message-transcript-base";
-export async function componentsToJson(components, options) {
+
+export async function componentsToJson(components: TopLevelComponent[], options: TranscriptOptionsBase): Promise<JsonTopLevelComponent[]> {
+
     const filtered = components.filter(c => options.includeV2Components || c.type === ComponentType.ActionRow);
-    const processed = await Promise.all(filtered.map(c => convertComponent(c, options)));
+
+    const processed: (JsonTopLevelComponent | null)[] = await Promise.all(filtered.map(c => convertComponent(c, options)));
+
     return processed.filter(c => c != null);
 }
-async function convertComponent(component, options) {
+
+async function convertComponent(component: TopLevelComponent, options: TranscriptOptionsBase): Promise<JsonTopLevelComponent | null> {
     switch (component.type) {
         case ComponentType.ActionRow:
             return convertActionRow(component, options);
@@ -27,15 +32,18 @@ async function convertComponent(component, options) {
             return null;
     }
 }
-async function convertActionRow(component, options) {
+
+async function convertActionRow(component: ActionRow<MessageActionRowComponent>, options: TranscriptOptionsBase): Promise<JsonActionRow | null> {
     const rowComponents = await Promise.all(component.components
         .filter(c => (c.type === ComponentType.Button ? options.includeButtons : options.includeComponents))
-        .map(c => convertActionRowChild(c)));
-    if (rowComponents.length === 0)
-        return null;
+        .map(c => convertActionRowChild(c))
+    );
+
+    if (rowComponents.length === 0) return null;
     return { type: JsonComponentType.ActionRow, components: rowComponents };
 }
-async function convertActionRowChild(component) {
+
+async function convertActionRowChild(component: MessageActionRowComponent): Promise<JsonButtonComponent | JsonSelectMenu> {
     switch (component.type) {
         case ComponentType.Button: {
             return {
@@ -47,6 +55,7 @@ async function convertActionRowChild(component) {
                 disabled: component.disabled,
             };
         }
+
         case ComponentType.StringSelect: {
             return {
                 type: JsonComponentType.StringSelect,
@@ -59,6 +68,7 @@ async function convertActionRowChild(component) {
                 })),
             };
         }
+    
         default: {
             return {
                 type: mapSelectorType(component.type),
@@ -68,8 +78,9 @@ async function convertActionRowChild(component) {
         }
     }
 }
-async function convertContainer(component, options) {
-    const newOptions = { ...options, includeComponents: true, includeButtons: true };
+
+async function convertContainer(component: ContainerComponent, options: TranscriptOptionsBase): Promise<JsonContainerComponent> {
+    const newOptions = {...options, includeComponents: true, includeButtons: true};
     const componentsJson = await componentsToJson(component.components, newOptions);
     return {
         type: JsonComponentType.Container,
@@ -78,7 +89,8 @@ async function convertContainer(component, options) {
         spoiler: component.spoiler,
     };
 }
-function convertFile(component) {
+
+function convertFile(component: FileComponent): JsonFileComponent {
     return {
         type: JsonComponentType.File,
         fileName: component.data.name ?? null,
@@ -87,7 +99,8 @@ function convertFile(component) {
         spoiler: component.spoiler,
     };
 }
-async function convertMediaGallery(component) {
+
+async function convertMediaGallery(component: MediaGalleryComponent): Promise<JsonMediaGalleryComponent> {
     const mediaItems = await Promise.all(component.items.map(item => {
         return {
             media: { url: item.media.url },
@@ -99,8 +112,10 @@ async function convertMediaGallery(component) {
         items: mediaItems,
     };
 }
-function convertSection(component) {
-    let accessoryJson = null;
+
+function convertSection(component: SectionComponent): JsonSectionComponent {
+
+    let accessoryJson: JsonButtonComponent | JsonThumbnailComponent | null = null;
     switch (component.accessory.type) {
         case ComponentType.Button: {
             accessoryJson = {
@@ -113,6 +128,7 @@ function convertSection(component) {
             };
             break;
         }
+
         case ComponentType.Thumbnail: {
             accessoryJson = {
                 type: JsonComponentType.Thumbnail,
@@ -123,37 +139,47 @@ function convertSection(component) {
             };
             break;
         }
+    
         default:
             break;
     }
-    const sectionComponents = component.components.map(c => ({
+
+    const sectionComponents: JsonTextDisplayComponent[] = component.components.map(c => ({
         type: JsonComponentType.TextDisplay,
         content: c.content,
-    }));
+    })); 
+
     return {
         type: JsonComponentType.Section,
         accessory: accessoryJson,
         components: sectionComponents,
     };
 }
-function convertSeparator(component) {
+
+function convertSeparator(component: SeparatorComponent): JsonSeparatorComponent {
     return {
         type: JsonComponentType.Separator,
         spacing: mapSeparatorSpacing(component.spacing),
         divider: component.divider,
     };
 }
-function convertTextDisplay(component) {
+
+function convertTextDisplay(component: TextDisplayComponent): JsonTextDisplayComponent {
     return {
         type: JsonComponentType.TextDisplay,
         content: component.content,
     };
 }
-export function isJsonComponentInContainer(component) {
-    return (component.type == JsonComponentType.ActionRow ||
-        component.type == JsonComponentType.File ||
-        component.type == JsonComponentType.MediaGallery ||
-        component.type == JsonComponentType.Section ||
-        component.type == JsonComponentType.Separator ||
-        component.type == JsonComponentType.TextDisplay);
+
+export function isJsonComponentInContainer(
+  component: JsonTopLevelComponent
+): component is JsonComponentInContainer {
+  return (
+    component.type == JsonComponentType.ActionRow ||
+    component.type == JsonComponentType.File ||
+    component.type == JsonComponentType.MediaGallery ||
+    component.type == JsonComponentType.Section ||
+    component.type == JsonComponentType.Separator ||
+    component.type == JsonComponentType.TextDisplay
+  );
 }

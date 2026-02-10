@@ -1,14 +1,13 @@
 export { ReturnType } from "@/types";
 export { ReturnFormat } from "discord-message-transcript-base";
-export { setBase64Concurrency, setCDNConcurrency } from '@/core/assetResolver/limiter.js';
+export { setBase64Concurrency, setCDNConcurrency } from '@/assetResolver';
 import { AttachmentBuilder } from "discord.js";
-import { Json } from "@/renderers/json/json.js";
-import { fetchMessages } from "@/core/fetchMessages.js";
 import { ReturnType } from "@/types";
 import { output } from "@/core/output.js";
 import { ReturnTypeBase, ReturnFormat, outputBase, CustomError, CustomWarn } from "discord-message-transcript-base";
 import { returnTypeMapper } from "@/core/mappers.js";
-import { authorUrlResolver, messagesUrlResolver } from "@/assetResolver";
+import { jsonAssetResolver } from "@/assetResolver";
+import { discordParser } from "./core/discordParser/index.js";
 /**
  * Creates a transcript of a Discord channel's messages.
  * Depending on the `returnType` option, this function can return an `AttachmentBuilder`,
@@ -55,60 +54,18 @@ export async function createTranscript(channel, options = {}) {
             timeZone,
             watermark
         };
-        const urlCache = new Map();
-        const authors = new Map();
-        const mentions = {
-            channels: new Map(),
-            roles: new Map(),
-            users: new Map(),
-        };
-        const fetchMessageParameter = {
-            channel: channel,
-            options: internalOptions,
-            transcriptState: {
-                authors: authors,
-                mentions: mentions,
-            },
-            lastMessageId: undefined
-        };
-        const jsonTranscript = channel.isDMBased() ? new Json(null, channel, internalOptions, options.cdnOptions ?? null, urlCache) : new Json(channel.guild, channel, internalOptions, options.cdnOptions ?? null, urlCache);
-        while (true) {
-            const { messages, end, newLastMessageId } = await fetchMessages(fetchMessageParameter);
-            jsonTranscript.addMessages(messages);
-            fetchMessageParameter.lastMessageId = newLastMessageId;
-            if (end || (jsonTranscript.getMessages().length >= quantity && quantity != 0)) {
-                break;
-            }
-        }
-        if (quantity > 0 && jsonTranscript.getMessages().length > quantity) {
-            jsonTranscript.sliceMessages(quantity);
-        }
-        if (options.cdnOptions) {
-            options.cdnOptions = {
+        const cdnOptions = options.cdnOptions ?
+            {
                 includeAudio: true,
                 includeImage: true,
                 includeVideo: true,
                 includeOthers: true,
                 ...options.cdnOptions
-            };
-        }
-        await Promise.all([
-            (async () => {
-                jsonTranscript.setAuthors(await authorUrlResolver(authors, internalOptions, options.cdnOptions ?? null, urlCache));
-                authors.clear();
-            })(),
-            (() => {
-                jsonTranscript.setMentions({ channels: Array.from(mentions.channels.values()), roles: Array.from(mentions.roles.values()), users: Array.from(mentions.users.values()) });
-                mentions.channels.clear();
-                mentions.roles.clear();
-                mentions.users.clear();
-            })(),
-            (async () => {
-                jsonTranscript.setMessages(await messagesUrlResolver(jsonTranscript.getMessages(), internalOptions, options.cdnOptions ?? null, urlCache));
-            })()
-        ]);
+            } : null;
+        const [jsonTranscript, maps] = await discordParser(channel, internalOptions, cdnOptions);
+        await jsonAssetResolver(jsonTranscript, maps, internalOptions, cdnOptions);
         const outputJson = await jsonTranscript.toJson();
-        urlCache.clear();
+        maps.urlCache.clear();
         const result = await output(outputJson);
         if (!options.returnType || options.returnType == "attachment") {
             if (!(result instanceof Buffer)) {
