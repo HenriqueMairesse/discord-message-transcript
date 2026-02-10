@@ -1,38 +1,15 @@
 import { JsonComponentType } from "discord-message-transcript-base";
-import { cdnResolver } from "./cdnResolver.js";
-import { imageToBase64 } from "./imageToBase64.js";
-import { isJsonComponentInContainer } from "./componentToJson.js";
-import { FALLBACK_PIXEL } from "discord-message-transcript-base";
-import { resolveImageURL } from "./resolveImageUrl.js";
+import { imageUrlResolver } from "./imageUrlResolver.js";
 import { isSafeForHTML } from "@/networkSecurity";
-export async function urlResolver(safeUrlObject, options, cdnOptions, urlCache) {
-    if (safeUrlObject.safe == false)
-        return "";
-    if (safeUrlObject.url == FALLBACK_PIXEL)
-        return safeUrlObject.url;
-    if (urlCache.has(safeUrlObject.url)) {
-        const cache = urlCache.get(safeUrlObject.url);
-        if (cache)
-            return await cache;
-    }
-    let returnUrl;
-    if (cdnOptions)
-        returnUrl = cdnResolver(safeUrlObject, options, cdnOptions);
-    else if (options.saveImages)
-        returnUrl = imageToBase64(safeUrlObject, options.disableWarnings);
-    if (returnUrl) {
-        urlCache.set(safeUrlObject.url, returnUrl);
-        return await returnUrl;
-    }
-    return safeUrlObject.url;
-}
+import { urlResolver } from "./urlResolver.js";
+import { isJsonComponentInContainer } from "@/core/componentToJson.js";
 export async function messagesUrlResolver(messages, options, cdnOptions, urlCache) {
     return await Promise.all(messages.map(async (message) => {
         // Needs to wait for resolve correct when used attachment://
         const attachments = await Promise.all(message.attachments.map(async (attachment) => {
             let safeUrlObject;
             if (attachment.contentType?.startsWith("image/")) {
-                safeUrlObject = await resolveImageURL(attachment.url, options, false, message.attachments);
+                safeUrlObject = await imageUrlResolver(attachment.url, options, false, message.attachments);
             }
             else {
                 safeUrlObject = await isSafeForHTML(attachment.url, options);
@@ -43,10 +20,10 @@ export async function messagesUrlResolver(messages, options, cdnOptions, urlCach
             };
         }));
         const embedsPromise = Promise.all(message.embeds.map(async (embed) => {
-            const authorIconUrl = embed.author?.iconURL ? await resolveImageURL(embed.author.iconURL, options, true, attachments) : null;
-            const footerIconUrl = embed.footer?.iconURL ? await resolveImageURL(embed.footer.iconURL, options, true, attachments) : null;
-            const imageUrl = embed.image?.url ? await resolveImageURL(embed.image.url, options, true, attachments) : null;
-            const thumbnailUrl = embed.thumbnail?.url ? await resolveImageURL(embed.thumbnail.url, options, true, attachments) : null;
+            const authorIconUrl = embed.author?.iconURL ? await imageUrlResolver(embed.author.iconURL, options, true, attachments) : null;
+            const footerIconUrl = embed.footer?.iconURL ? await imageUrlResolver(embed.footer.iconURL, options, true, attachments) : null;
+            const imageUrl = embed.image?.url ? await imageUrlResolver(embed.image.url, options, true, attachments) : null;
+            const thumbnailUrl = embed.thumbnail?.url ? await imageUrlResolver(embed.thumbnail.url, options, true, attachments) : null;
             return {
                 ...embed,
                 author: embed.author ? { ...embed.author, iconURL: authorIconUrl ? await urlResolver(authorIconUrl, options, cdnOptions, urlCache) : null } : null,
@@ -64,7 +41,7 @@ export async function messagesUrlResolver(messages, options, cdnOptions, urlCach
                             accessory: {
                                 ...component.accessory,
                                 media: {
-                                    url: await urlResolver((await resolveImageURL(component.accessory.media.url, options, false, attachments)), options, cdnOptions, urlCache),
+                                    url: await urlResolver((await imageUrlResolver(component.accessory.media.url, options, false, attachments)), options, cdnOptions, urlCache),
                                 }
                             }
                         };
@@ -76,7 +53,7 @@ export async function messagesUrlResolver(messages, options, cdnOptions, urlCach
                         items: await Promise.all(component.items.map(async (item) => {
                             return {
                                 ...item,
-                                media: { url: await urlResolver((await resolveImageURL(item.media.url, options, false, attachments)), options, cdnOptions, urlCache) },
+                                media: { url: await urlResolver((await imageUrlResolver(item.media.url, options, false, attachments)), options, cdnOptions, urlCache) },
                             };
                         }))
                     };
@@ -107,14 +84,6 @@ export async function messagesUrlResolver(messages, options, cdnOptions, urlCach
             attachments: attachments,
             embeds: embeds,
             components: components,
-        };
-    }));
-}
-export async function authorUrlResolver(authors, options, cdnOptions, urlCache) {
-    return await Promise.all(Array.from(authors.values()).map(async (author) => {
-        return {
-            ...author,
-            avatarURL: await urlResolver((await resolveImageURL(author.avatarURL, options, false)), options, cdnOptions, urlCache),
         };
     }));
 }

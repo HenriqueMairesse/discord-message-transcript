@@ -1,8 +1,9 @@
 import { CustomWarn } from 'discord-message-transcript-base';
-import { getBase64Limiter } from './limiter.js';
+import { getBase64Limiter } from '../limiter.js';
 import https from 'https';
 import http from 'http';
 import { createLookup } from '@/networkSecurity';
+import { USER_AGENT } from '../contants.js';
 const MAX_BYTES = 25 * 1024 * 1024; // 25MB
 export async function imageToBase64(safeUrlObject, disableWarnings) {
     const url = safeUrlObject.url;
@@ -12,7 +13,7 @@ export async function imageToBase64(safeUrlObject, disableWarnings) {
             const client = url.startsWith('https') ? https : http;
             const lookup = createLookup(safeUrlObject.safeIps);
             const request = client.get(url, {
-                headers: { "User-Agent": "discord-message-transcript" },
+                headers: { "User-Agent": USER_AGENT },
                 lookup: lookup
             }, (response) => {
                 if (response.statusCode !== 200) {

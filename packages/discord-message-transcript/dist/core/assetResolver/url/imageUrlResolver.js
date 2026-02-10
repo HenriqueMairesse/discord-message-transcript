@@ -1,6 +1,6 @@
 import { FALLBACK_PIXEL } from "discord-message-transcript-base";
 import { isSafeForHTML } from "@/networkSecurity";
-export async function resolveImageURL(url, options, canReturnNull, attachments) {
+export async function imageUrlResolver(url, options, canReturnNull, attachments) {
     if (!url)
         return null;
     // Resolve attachment:// references to actual attachment URL

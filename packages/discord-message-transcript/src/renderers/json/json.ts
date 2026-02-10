@@ -1,8 +1,7 @@
 import { BaseGuildTextChannel, DMChannel, Guild, TextBasedChannel } from "discord.js";
 import { ArrayMentions, JsonAuthor, JsonMessage, TranscriptOptionsBase, JsonData } from "discord-message-transcript-base";
-import { urlResolver } from "@/core/urlResolver.js";
 import { CDNOptions } from "@/types";
-import { resolveImageURL } from "@/core/resolveImageUrl.js";
+import { imageUrlResolver, urlResolver } from "@/assetResolver";
 
 export class Json {
     private guild: Guild | null;
@@ -56,9 +55,9 @@ export class Json {
 
         const channel = await this.channel.fetch();
         const channelImg = channel instanceof DMChannel ? channel.recipient?.displayAvatarURL() ?? "cdn.discordapp.com/embed/avatars/4.png" : channel.isDMBased() ? channel.iconURL() ?? (await channel.fetchOwner()).displayAvatarURL() : null;
-        const safeChannelImg = await resolveImageURL(channelImg, this.options, true)
+        const safeChannelImg = await imageUrlResolver(channelImg, this.options, true)
         const guild = !channel.isDMBased() ? this.guild : null;
-        const guildIcon = guild ? await resolveImageURL(guild.iconURL(), this.options, true) : null;
+        const guildIcon = guild ? await imageUrlResolver(guild.iconURL(), this.options, true) : null;
 
         const guildJson = !guild ? null : {
             name: guild.name,

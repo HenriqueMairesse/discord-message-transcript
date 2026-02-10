@@ -2,9 +2,9 @@ import { FALLBACK_PIXEL, JsonAttachment, TranscriptOptionsBase } from "discord-m
 import { isSafeForHTML } from "@/networkSecurity";
 import { safeUrlReturn } from "@/types";
 
-export async function resolveImageURL(url: string, options: TranscriptOptionsBase, canReturnNull: false, attachments?: JsonAttachment[]): Promise<safeUrlReturn>;
-export async function resolveImageURL(url: string | null, options: TranscriptOptionsBase, canReturnNull: true, attachments?: JsonAttachment[]): Promise<safeUrlReturn | null>;
-export async function resolveImageURL(url: string | null, options: TranscriptOptionsBase, canReturnNull: boolean, attachments?: JsonAttachment[]): Promise<safeUrlReturn | null> {
+export async function imageUrlResolver(url: string, options: TranscriptOptionsBase, canReturnNull: false, attachments?: JsonAttachment[]): Promise<safeUrlReturn>;
+export async function imageUrlResolver(url: string | null, options: TranscriptOptionsBase, canReturnNull: true, attachments?: JsonAttachment[]): Promise<safeUrlReturn | null>;
+export async function imageUrlResolver(url: string | null, options: TranscriptOptionsBase, canReturnNull: boolean, attachments?: JsonAttachment[]): Promise<safeUrlReturn | null> {
   if (!url) return null;
 
   // Resolve attachment:// references to actual attachment URL

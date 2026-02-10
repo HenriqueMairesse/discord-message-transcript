@@ -1,9 +1,10 @@
 import { CustomWarn } from 'discord-message-transcript-base';
-import { getBase64Limiter } from './limiter.js';
+import { getBase64Limiter } from '../limiter.js';
 import https from 'https';
 import http from 'http';
 import { safeUrlReturn } from '@/types';
 import { createLookup } from '@/networkSecurity';
+import { USER_AGENT } from '../contants.js';
 
 const MAX_BYTES = 25 * 1024 * 1024; // 25MB
 
@@ -20,7 +21,7 @@ export async function imageToBase64(safeUrlObject: safeUrlReturn, disableWarning
 
             const request = client.get(url, 
             { 
-                headers: { "User-Agent": "discord-message-transcript" } ,
+                headers: { "User-Agent": USER_AGENT } ,
                 lookup: lookup
             }, 
             (response) => {
