@@ -645,7 +645,7 @@ export interface JsonSectionComponent {
     /**
      * The accessory component on the right side of the section.
      */
-    accessory: JsonButtonComponent | JsonThumbnailComponent;
+    accessory: JsonButtonComponent | JsonThumbnailComponent | null;
     /**
      * The components inside the section.
      */

@@ -418,13 +418,12 @@ export class Html {
                         <div class="sectionLeft">
                             ${this.componentBuilder(message, component.components)}
                         </div>
-                        <div class="sectionRight">
+                        ${component.accessory ? `<div class="sectionRight">
                             ${component.accessory.type == JsonComponentType.Button ? this.buttonBuilder(component.accessory)
-                            : component.accessory.type == JsonComponentType.Thumbnail ? this.spoilerAttachmentBuilder(component.accessory.spoiler, `
-                            <img class="sectionThumbnail" src="${component.accessory.media.url}">
-                            `) : ""
+                            : component.accessory.type == JsonComponentType.Thumbnail ? this.spoilerAttachmentBuilder(component.accessory.spoiler, `<img class="sectionThumbnail" src="${component.accessory.media.url}">`)
+                            : ""
                             }
-                        </div>
+                        </div>` : ""}
                     </div> 
                     `
                 }

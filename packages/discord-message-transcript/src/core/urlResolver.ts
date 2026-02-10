@@ -63,7 +63,7 @@ export async function messagesUrlResolver(messages: JsonMessage[], options: Tran
         async function componentsFunction(components: JsonTopLevelComponent[]): Promise<JsonTopLevelComponent[]> {
             return Promise.all(components.map(async component => {
                 
-                if (component.type == JsonComponentType.Section) {
+                if (component.type == JsonComponentType.Section && component.accessory) {
                     if (component.accessory.type == JsonComponentType.Thumbnail) {
                         return {
                             ...component,
