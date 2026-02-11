@@ -100,21 +100,21 @@ export function markdownToHTML(text: string, mentions: ArrayMentions, everyone: 
         text = text.replace(NORMAL_LINK, (_m, link) => `<a href="${link}" target="_blank" rel="noopener noreferrer">${link}</a>`);
     }
     // Mentions (@)
-    if (mentions.users.length != 0 && text.includes("<@")) {
+    if (mentions.users.length != 0 && text.includes("&lt;@")) {
         const users = new Map(mentions.users.map(user => [user.id, user]));
         text = text.replace(USER_MENTION, (_m, id) => {
             let user = users.get(id); 
             return user ? `<span class="mention" style="color: ${user.color ?? "#dbdee1"}">@${user.name}</span> ` : `<span class="mention"><@${id}></span> `;
         });
     }
-    if (mentions.roles.length != 0 && text.includes("<@&")) {
+    if (mentions.roles.length != 0 && text.includes("&lt;@&amp;")) {
         const roles = new Map(mentions.roles.map(role => [role.id, role]));
         text = text.replace(ROLE_MENTION, (_m, id) => { 
             const role = roles.get(id);
             return role ? `<span class="mention" style="color: ${role.color}">@${role.name}</span> ` : `<span class="mention"><@&${id}></span> `;
         });
     }
-    if (mentions.channels.length != 0 && text.includes("<#")) {
+    if (mentions.channels.length != 0 && text.includes("&lt;#")) {
         const channels = new Map(mentions.channels.map(channel => [channel.id, channel]));
         text = text.replace(CHANNEL_MENTION, (_m, id) => {
             const channel = channels.get(id);
@@ -129,7 +129,7 @@ export function markdownToHTML(text: string, mentions: ArrayMentions, everyone: 
     // Timestamp  
     const { locale, timeZone } = dateFormat.resolvedOptions();
 
-    if (text.includes("<t:")) {
+    if (text.includes("&lt;t:")) {
         text = text.replace(TIMESTAMP, (_m, timestamp, format) => {
             const date = new Date(parseInt(timestamp, 10) * 1000);
             const style = format || 'f';
