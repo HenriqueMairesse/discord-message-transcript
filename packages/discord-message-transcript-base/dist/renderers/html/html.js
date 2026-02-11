@@ -5,7 +5,7 @@ import packageJson from "package.json" with { type: 'json' };
 import { sanitize } from "../../core/sanitizer.js";
 import highlightHash from "../../assets/highlightJsHash.json" with { type: 'json' };
 import transcriptHash from "../../assets/transcriptHash.json" with { type: 'json' };
-import { JsonComponentType, JsonButtonStyle } from "@/types/internal/message/enum.js";
+import { JsonComponentType, JsonButtonStyle } from "../../types/internal/message/enum.js";
 const FILE_SIZE_UNIT = ["KB", "MB", "GB", "TB"];
 const FILE_SIZE_THRESHOLD = 512;
 const BUTTON_COLORS = {
@@ -289,18 +289,18 @@ export class Html {
             }
             else if (attachment.contentType?.startsWith('video/')) {
                 if (attachment.url == "") {
-                    html = `<video class="attachmentVideo" controls src="${attachment.url}"></video>`;
+                    html = `<div class="attachmentVideoUnavailable">${TEXT.File.Unavailable.Video}</div>`;
                 }
                 else {
-                    html = `<div class="attachmentVideoUnavailable">${TEXT.File.Unavailable.Video}</div>`;
+                    html = `<video class="attachmentVideo" controls src="${attachment.url}"></video>`;
                 }
             }
             else if (attachment.contentType?.startsWith('audio/')) {
                 if (attachment.url == "") {
-                    html = `<audio class="attachmentAudio" controls src="${attachment.url}"></audio>`;
+                    html = `<div class="attachmentAudioUnavailable">${TEXT.File.Unavailable.Audio}</div>`;
                 }
                 else {
-                    html = `<div class="attachmentAudioUnavailable">${TEXT.File.Unavailable.Audio}</div>`;
+                    html = `<audio class="attachmentAudio" controls src="${attachment.url}"></audio>`;
                 }
             }
             else {

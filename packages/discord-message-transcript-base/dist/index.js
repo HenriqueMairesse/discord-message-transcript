@@ -1,8 +1,8 @@
 import { CustomError } from "./core/customMessages.js";
 import { output } from "./core/output.js";
-import { ReturnFormat } from "@/types/internal/return.js";
-import { ReturnType } from "@/types/public/return.js";
-export * from '@/types/public/index.js';
+import { ReturnFormat } from "./types/internal/return.js";
+import { ReturnType } from "./types/public/return.js";
+export * from './types/public/index.js';
 /**
  * Converts a JSON transcript string into an HTML transcript.
  * Depending on the `returnType` option, this function can return a `string`, a `Buffer`, a `Stream`, or an `Uploadable` object.

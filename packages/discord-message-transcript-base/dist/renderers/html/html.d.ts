@@ -1,4 +1,4 @@
-import { JsonData } from "@/types/internal/message/messageItens.js";
+import { JsonData } from "../../types/internal/message/messageItens.js";
 export declare class Html {
     data: JsonData;
     dateFormat: Intl.DateTimeFormat;
