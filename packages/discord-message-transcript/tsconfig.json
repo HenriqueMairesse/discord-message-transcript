@@ -15,8 +15,11 @@
       "@/*": ["src/*"],
       "@/core/*": ["src/core/*"], 
       "@/networkSecurity": ["src/core/networkSecurity/index.ts"],
-      "@/types": ["src/types/types.ts"],
-      "@/renderers/*": ["src/renderers/*"]
+      "@/types/*": ["src/types/*"],
+      "@/renderers/*": ["src/renderers/*"],
+      "@/assetResolver": ["src/core/assetResolver/index.ts"],
+      "@/utils/*": ["src/utils/*"],
+      "@/discordParser": ["src/core/discordParser/index.ts"]
     }
   },
   "include": ["src"],

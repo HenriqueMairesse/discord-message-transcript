@@ -15,7 +15,7 @@
     "paths": {
       "@/*": ["src/*"],
       "@/core/*": ["src/core/*"], 
-      "@/types": ["src/types/types.ts"],
+      "@/types/*": ["src/types/*"], 
       "@/renderers/*": ["src/renderers/*"],
       "@/assets/*": ["src/assets/*"]
     }

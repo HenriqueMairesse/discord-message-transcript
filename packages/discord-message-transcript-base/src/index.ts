@@ -1,10 +1,12 @@
 import { CustomError } from "@/core/customMessages.js";
 import { output } from "@/core/output.js";
-import { JsonData, JsonDataParse, ConvertTranscriptOptions, ReturnTypeBase, OutputTypeBase, ReturnFormat } from "@/types";
-export * from '@/types';
-export { CustomError, CustomWarn } from "@/core/customMessages.js";
-export { output as outputBase } from "@/core/output.js";
-export { FALLBACK_PIXEL, isValidHexColor, sanitize } from "@/core/sanitizer.js";
+import { JsonData } from "@/types/internal/message/messageItens.js";
+import { ReturnFormat } from "@/types/internal/return.js";
+import { OutputType } from "@/types/internal/parse.js";
+import { ReturnType } from "@/types/public/return.js";
+import { ConvertTranscriptOptions } from "@/types/public/transcript.js";
+import { JsonDataParse } from "./types/internal/parse.js";
+export * from '@/types/public/index.js';
 
 /**
  * Converts a JSON transcript string into an HTML transcript.
@@ -14,7 +16,7 @@ export { FALLBACK_PIXEL, isValidHexColor, sanitize } from "@/core/sanitizer.js";
  * @param options Configuration options for converting the transcript. See {@link ConvertTranscriptOptions} for details.
  * @returns A promise that resolves to the HTML transcript in the specified format.
  */
-export async function renderHTMLFromJSON<T extends ReturnTypeBase = typeof ReturnTypeBase.String>(jsonString: string, options: ConvertTranscriptOptions<T> = {}): Promise<OutputTypeBase<T>> {
+export async function renderHTMLFromJSON<T extends ReturnType = typeof ReturnType.String>(jsonString: string, options: ConvertTranscriptOptions<T> = {}): Promise<OutputType<T>> {
     try {
         const jsonParse: JsonDataParse = JSON.parse(jsonString);
         const json: JsonData = {
@@ -22,12 +24,12 @@ export async function renderHTMLFromJSON<T extends ReturnTypeBase = typeof Retur
             options: {
                 ...jsonParse.options,
                 returnFormat: ReturnFormat.HTML,
-                returnType: options?.returnType ?? ReturnTypeBase.String,
+                returnType: options?.returnType ?? ReturnType.String,
                 selfContained: options?.selfContained ?? false,
                 watermark: options.watermark ?? jsonParse.options.watermark
             }
         }
-        return await output(json) as OutputTypeBase<T>;
+        return await output(json) as OutputType<T>;
     } catch (error) {
         if (error instanceof Error) {
             throw new CustomError(`Error converting JSON to HTML: ${error.stack}`);

@@ -1,36 +1,34 @@
-import { hexColor } from "@/types";
+import { hexColor } from "@/types/internal/util.js";
 
 export const FALLBACK_PIXEL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+const HEX_REGEX = /^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+const DEFAULT_COLOR = "#000000"
+const SANITIZE_REGEX = /[&<>"']/g;
+const SANITIZE_MAP: Record<string,string> = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;",
+};
 
 export function sanitize(text: string) {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+  return text.replace(SANITIZE_REGEX, ch => SANITIZE_MAP[ch]);
 }
 
 export function isValidHexColor(colorInput: string, canReturnNull: false): hexColor;
 export function isValidHexColor(colorInput: string | null, canReturnNull: true): hexColor | null;
 export function isValidHexColor(colorInput: string | null, canReturnNull: boolean): hexColor | null {
-  if (!colorInput) return null;
-
-  const hexColorRegex = /^#([A-Fa-f0-9]{3,4}|[A-Fa-f0-9]{6}([A-Fa-f0-9]{2})?)$/;
+  if (!colorInput) return canReturnNull ? null : DEFAULT_COLOR;
 
   let color = colorInput.trim();
 
-  if (/^[A-Fa-f0-9]+$/.test(color)) {
-    color = "#" + color;
-  }
+  // Add '#' if don't come with
+  if (!color.startsWith('#')) color = `#${color}`;
 
-  if (hexColorRegex.test(color)) {
-    return color as hexColor;
-  }
+  const isValid = HEX_REGEX.test(color);
 
-  if (canReturnNull) {
-    return null;
-  }
+  if (isValid) return color.toLowerCase() as hexColor;
 
-  return "#000000"; // Falback to a default hexColor if can't be null
+  return canReturnNull ? null : DEFAULT_COLOR; // Falback to a default hexColor if can't be null
 }

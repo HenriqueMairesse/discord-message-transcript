@@ -1,15 +1,15 @@
-export { CreateTranscriptOptions, ConvertTranscriptOptions, TranscriptOptions, ReturnType, CDNOptions, MimeType } from "@/types";
-export { ReturnFormat, LocalDate, TimeZone } from "discord-message-transcript-base";
-export { setBase64Concurrency, setCDNConcurrency } from '@/core/limiter.js'
+export * from "@/types/index.js";
+export { setBase64Concurrency, setCDNConcurrency } from '@/assetResolver'
 
 import { AttachmentBuilder, TextBasedChannel } from "discord.js";
-import { Json } from "@/renderers/json/json.js";
-import { fetchMessages, FetchMessagesContext } from "@/core/fetchMessages.js";
-import { ConvertTranscriptOptions, CreateTranscriptOptions, MapMentions, OutputType, ReturnType } from "@/types";
 import { output } from "@/core/output.js";
-import { JsonAuthor, JsonData, JsonMessageMentionsChannels, JsonMessageMentionsUsers, JsonMessageMentionsRoles, ReturnTypeBase, TranscriptOptionsBase, ReturnFormat, outputBase, CustomError, CustomWarn } from "discord-message-transcript-base";
+import { JsonData, TranscriptOptionsBase, ReturnFormat, outputBase, CustomError, CustomWarn } from "discord-message-transcript-base/internal";
+import { ReturnType as ReturnTypeBase } from "discord-message-transcript-base";
 import { returnTypeMapper } from "@/core/mappers.js";
-import { authorUrlResolver, messagesUrlResolver } from "@/core/urlResolver.js";
+import { jsonAssetResolver } from "@/assetResolver";
+import { discordParser } from "@/discordParser";
+import { OutputType, ReturnType } from "@/types/public/return.js";
+import { ConvertTranscriptOptions, CreateTranscriptOptions } from "@/types/public/createAndConvertTranscript.js";
 
 /**
  * Creates a transcript of a Discord channel's messages.
@@ -86,67 +86,21 @@ export async function createTranscript<T extends ReturnType = typeof ReturnType.
             watermark
         }
 
-        const urlCache = new Map<string, Promise<string>>();
-        const authors = new Map<string, JsonAuthor>();
-        const mentions: MapMentions = {
-            channels: new Map<string, JsonMessageMentionsChannels>(),
-            roles: new Map<string, JsonMessageMentionsRoles>(),
-            users: new Map<string, JsonMessageMentionsUsers>(),
-        }
-
-        const fetchMessageParameter: FetchMessagesContext = {
-            channel: channel,
-            options: internalOptions,
-            transcriptState: {
-                authors: authors,
-                mentions: mentions,
-            },
-            lastMessageId: undefined
-        }
-
-        const jsonTranscript = channel.isDMBased() ? new Json(null, channel, internalOptions, options.cdnOptions ?? null, urlCache) : new Json(channel.guild, channel, internalOptions, options.cdnOptions ?? null, urlCache); 
-
-        while (true) {
-            const { messages, end, newLastMessageId } = await fetchMessages(fetchMessageParameter);
-            jsonTranscript.addMessages(messages);
-            fetchMessageParameter.lastMessageId = newLastMessageId;
-            if (end || (jsonTranscript.getMessages().length >= quantity && quantity != 0)) {
-                break;
-            }
-        }
-
-        if (quantity > 0 && jsonTranscript.getMessages().length > quantity ) {
-           jsonTranscript.sliceMessages(quantity); 
-        }
-
-        if (options.cdnOptions) {
-            options.cdnOptions = {
+        const cdnOptions = options.cdnOptions ? 
+            {
                 includeAudio: true,
                 includeImage: true,
                 includeVideo: true,
                 includeOthers: true,
                 ...options.cdnOptions
-            }
-        }
+            } : null;
 
-        await Promise.all([
-            (async () => {
-                jsonTranscript.setAuthors(await authorUrlResolver(authors, internalOptions, options.cdnOptions ?? null, urlCache));
-                authors.clear(); 
-            })(),
-            (() => {
-                jsonTranscript.setMentions({ channels: Array.from(mentions.channels.values()), roles: Array.from(mentions.roles.values()), users: Array.from(mentions.users.values()) });
-                mentions.channels.clear();
-                mentions.roles.clear(); 
-                mentions.users.clear(); 
-            })(),
-            (async () => {
-                jsonTranscript.setMessages(await messagesUrlResolver(jsonTranscript.getMessages(), internalOptions, options.cdnOptions ?? null, urlCache));
-            })()
-        ])
+        const [jsonTranscript, maps] = await discordParser(channel, internalOptions, cdnOptions);
+
+        await jsonAssetResolver(jsonTranscript, maps, internalOptions, cdnOptions)
 
         const outputJson = await jsonTranscript.toJson();
-        urlCache.clear();
+        maps.urlCache.clear();
 
         const result = await output(outputJson);
         if (!options.returnType || options.returnType == "attachment") {
@@ -182,8 +136,15 @@ export async function renderHTMLFromJSON<T extends ReturnType = typeof ReturnTyp
         json.options.returnFormat = ReturnFormat.HTML;
         json.options.selfContained = options?.selfContained ?? false;
         json.options.watermark = options.watermark ?? json.options.watermark;
+
         const officialReturnType = options?.returnType ?? ReturnType.Attachment;
-        if (officialReturnType == ReturnType.Attachment) json.options.returnType = ReturnTypeBase.Buffer;
+
+        if (options.returnType && options.returnType != ReturnType.Attachment) {
+            json.options.returnType = options.returnType;
+        } else {
+            json.options.returnType = ReturnTypeBase.Buffer;
+        }
+
         const result = await outputBase(json);
         if (officialReturnType == ReturnType.Attachment) {
             if (!(result instanceof Buffer)) {

@@ -1,10 +1,39 @@
-import { ArrayMentions, StyleTimeStampKey } from "@/types";
+
+import { ArrayMentions, StyleTimeStampKey } from "@/types/internal/util.js";
 import { sanitize } from "./sanitizer.js";
 
+// Tokens
 const BLOCK_TOKEN = "\0CB\0";
 const LINE_TOKEN  = "\0CL\0";
 const BLOCK_REGEX = /\0CB\0(\d+)\0CB\0/g;
 const LINE_REGEX  = /\0CL\0(\d+)\0CL\0/g;
+
+// Regex
+const CODE_BLOCK = /```(?:(\S+)\n)?((?:(?!```)[\s\S])+)```/g;
+const CODE_LINE = /`([^`\n]+?)`/g;
+const MULTI_CITATION_START = /^[ \t]*&gt;&gt;&gt;/m;
+const CITATION_SINGLE_BLOCK = /(^[ \t]*&gt; ?.*(?:\n[ \t]*&gt; ?.*)*)/gm;
+const CITATION_PREFIX = /^[ \t]*((?:&gt;)+)/;
+const CITATION_STRIP_PREFIX = /^[ \t]*&gt; ?/;
+const REMOVE_TRIPLE_CITATION = /^[ \t]*&gt;&gt;&gt; ?/;
+const HEADERS = /^(#{1,3}) (.+?)(?=\n|$)/gm;
+const SUBTEXT = /^-# (.*)(?=\n|$)/gm;
+const LIST = /^(\s*)[-*] (.*)(?=\n|$)/gm;
+const MASKED_LINK = /\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/g;
+const NORMAL_LINK = /(?<!href=")(https?:\/\/[^\s]+)/g;
+const USER_MENTION = /&lt;@!?(\d+)&gt;/g;
+const ROLE_MENTION = /&lt;@&amp;(\d+)&gt;/g;
+const CHANNEL_MENTION = /&lt;#(\d+)&gt;/g;
+const TIMESTAMP = /&lt;t:(\d+)(?::([tTdDfFR]))?&gt;/g;
+const BREAK_LINE = /\n/g;
+const UNECESSARY_BREAK_LINE = /(<\/(?:p|h[1-3]|blockquote)>)\s*<br>/g;
+const SPOILER = /\|\|((?:(?!\|\|)[^])+)\|\|/g;
+const BOLD_ITALIC = /\*\*\*((?:(?!\*\*\*)[\s\S])*)\*\*\*/g;
+const BOLD = /\*\*((?:(?!\*\*)[\s\S])*)\*\*/g;
+const UNDERLINE = /__((?:(?!__)[\s\S])*)__/g;
+const ITALIC_ASTERISK = /\*((?:(?!\*)[\s\S])*)\*/g;
+const ITALIC_UNDERLINE = /_((?:(?!_)[\s\S])*)_/g;
+const STRIKETHROUGH = /~~((?:(?!~~)[\s\S])*)~~/g;
 
 export function markdownToHTML(text: string, mentions: ArrayMentions, everyone: boolean, dateFormat: Intl.DateTimeFormat): string {
 
@@ -12,7 +41,7 @@ export function markdownToHTML(text: string, mentions: ArrayMentions, everyone: 
     const codeLine: string[] = [];
     
     // Code Block (```)
-    text = text.replace(/```(?:(\S+)\n)?((?:(?!```)[\s\S])+)```/g, (_m, lang, code) => {
+    text = text.replace(CODE_BLOCK, (_m, lang, code) => {
         const rawLang = lang?.toLowerCase();
         const normalizedLang = rawLang ? (LANGUAGE_ALIAS[rawLang as keyof typeof LANGUAGE_ALIAS] ?? rawLang) : null;
         const language = normalizedLang && SUPPORTED_LANGUAGES.has(rawLang) ? normalizedLang : 'plaintext';
@@ -21,7 +50,7 @@ export function markdownToHTML(text: string, mentions: ArrayMentions, everyone: 
     });
 
     // Code line (`)
-    text = text.replace(/`([^`\n]+?)`/g, (_m, code) => {
+    text = text.replace(CODE_LINE, (_m, code) => {
         codeLine.push(`<code>${sanitize(code)}</code>`);
         return `${LINE_TOKEN}${codeLine.length}${LINE_TOKEN}`;
     });
@@ -29,86 +58,88 @@ export function markdownToHTML(text: string, mentions: ArrayMentions, everyone: 
     text = sanitize(text);
 
     // Citation (> | >>>)
-    const tripleCitationIndex = text.search(/^[ \t]*&gt;&gt;&gt;/m);
+    const tripleCitationIndex = text.search(MULTI_CITATION_START);
 
     if (tripleCitationIndex !== -1) {       
         const lineStartIndex = text.lastIndexOf('\n', tripleCitationIndex) + 1;
         let beforePart = text.substring(0, lineStartIndex);
         let afterPart = text.substring(lineStartIndex);
 
-        beforePart = beforePart.replace(/(^[ \t]*&gt; ?.*(?:\n[ \t]*&gt; ?.*)*)/gm, (match) => {
+        beforePart = beforePart.replace(CITATION_SINGLE_BLOCK, (match) => {
             return singleCitation(match);
         });
 
-        afterPart = afterPart.replace(/^[ \t]*&gt;&gt;&gt; ?/, '');
+        afterPart = afterPart.replace(REMOVE_TRIPLE_CITATION, '');
         const afterHtml = `<blockquote class="quote-multi">${afterPart}</blockquote>`;
 
         text = beforePart + afterHtml;
 
     } else {
-        text = text.replace(/(^[ \t]*&gt; ?.*(?:\n[ \t]*&gt; ?.*)*)/gm, (match) => {
+        text = text.replace(CITATION_SINGLE_BLOCK, (match) => {
             return singleCitation(match);
         });
     }
 
     // Headers (#)
-    text = text.replace(/^### (.*)(?=\n|$)/gm, `<h3>$1</h3>`);
-    text = text.replace(/^## (.*)(?=\n|$)/gm, `<h2>$1</h2>`);
-    text = text.replace(/^# (.*)(?=\n|$)/gm, `<h1>$1</h1>`);
+    if (text.includes("#")) text = text.replace(HEADERS, (_m, hashes, content) => {
+        const level = hashes.length;
+        return `<h${level}>${content}</h${level}>`;
+    });
 
     // Subtext(-#)
-    text = text.replace(/^-# (.*)(?=\n|$)/gm, `<p class="subtext">$1</p>`);
+    if (text.includes("-#")) text = text.replace(SUBTEXT, `<p class="subtext">$1</p>`);
 
     // List (- | *)
-    text = text.replace(/^(\s*)[-*] (.*)(?=\n|$)/gm, (_m, indentation, text) => {
+    text = text.replace(LIST, (_m, indentation, text) => {
         const isSubItem = indentation.length > 0;
         const bullet = isSubItem ? '◦' : '•';
         return `<p class="pList">${indentation}${bullet} ${text}</p>`;
     });
-
+    
     // Spoiler (||)
-    text = text.replace(/\|\|((?:(?!\|\|)[^])+)\|\|/g, `<span class="spoilerMsg">$1</span>`);
+    if (text.includes("||")) text = text.replace(SPOILER, `<span class="spoilerMsg">$1</span>`);
 
     // Bold & Italic (***)
-    text = text.replace(/\*\*\*((?:(?!\*\*\*)[\s\S])*)\*\*\*/g, `<strong><em>$1</em></strong>`);
+    if (text.includes("***")) text = text.replace(BOLD_ITALIC, `<strong><em>$1</em></strong>`);
 
     // Bold (**)
-    text = text.replace(/\*\*((?:(?!\*\*)[\s\S])*)\*\*/g, `<strong>$1</strong>`);
+    if (text.includes("**")) text = text.replace(BOLD, `<strong>$1</strong>`);
 
     // Underline(__)
-    text = text.replace(/__((?:(?!__)[\s\S])*)__/g, `<u>$1</u>`);
+    if (text.includes("__")) text = text.replace(UNDERLINE, `<u>$1</u>`);
 
     // Italic (*)
-    text = text.replace(/\*((?:(?!\*)[\s\S])*)\*/g, `<em>$1</em>`);
+    text = text.replace(ITALIC_ASTERISK, `<em>$1</em>`);
 
     // Italic (_)
-    text = text.replace(/_((?:(?!_)[\s\S])*)_/g, `<em>$1</em>`);
-    
+    text = text.replace(ITALIC_UNDERLINE, `<em>$1</em>`);
+        
     // Strikethrough (~~)
-    text = text.replace(/~~((?:(?!~~)[\s\S])*)~~/g, `<s>$1</s>`);
+    if (text.includes("~~")) text = text.replace(STRIKETHROUGH, `<s>$1</s>`);
 
     // Links ([]() && https)
-    text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s]+)\)/g, (_m, text, link) => `<a href="${link}" target="_blank" rel="noopener noreferrer">${text}</a>`);
-    text = text.replace(/(?<!href=")(https?:\/\/[^\s]+)/g, (_m, link) => `<a href="${link}" target="_blank" rel="noopener noreferrer">${link}</a>`);
-    
+    if (text.includes("http")) {
+        if (text.includes("](")) text = text.replace(MASKED_LINK, (_m, text, link) => `<a href="${link}" target="_blank" rel="noopener noreferrer">${text}</a>`);
+        text = text.replace(NORMAL_LINK, (_m, link) => `<a href="${link}" target="_blank" rel="noopener noreferrer">${link}</a>`);
+    }
     // Mentions (@)
-    if (mentions.users.length != 0) {
+    if (mentions.users.length != 0 && text.includes("&lt;@")) {
         const users = new Map(mentions.users.map(user => [user.id, user]));
-        text = text.replace(/&lt;@!?(\d+)&gt;/g, (_m, id) => {
+        text = text.replace(USER_MENTION, (_m, id) => {
             let user = users.get(id); 
             return user ? `<span class="mention" style="color: ${user.color ?? "#dbdee1"}">@${user.name}</span> ` : `<span class="mention"><@${id}></span> `;
         });
     }
-    if (mentions.roles.length != 0) {
+    if (mentions.roles.length != 0 && text.includes("&lt;@&amp;")) {
         const roles = new Map(mentions.roles.map(role => [role.id, role]));
-        text = text.replace(/&lt;@&amp;(\d+)&gt;/g, (_m, id) => { 
+        text = text.replace(ROLE_MENTION, (_m, id) => { 
             const role = roles.get(id);
             return role ? `<span class="mention" style="color: ${role.color}">@${role.name}</span> ` : `<span class="mention"><@&${id}></span> `;
         });
     }
-    if (mentions.channels.length != 0) {
+    if (mentions.channels.length != 0 && text.includes("&lt;#")) {
         const channels = new Map(mentions.channels.map(channel => [channel.id, channel]));
-        text = text.replace(/&lt;#(\d+)&gt;/g, (_m, id) => {
+        text = text.replace(CHANNEL_MENTION, (_m, id) => {
             const channel = channels.get(id);
             return channel && channel.name ? `<span class="mention">#${channel.name}</span> ` : `<span class="mention"><#${id}></span> `;
         });
@@ -121,53 +152,55 @@ export function markdownToHTML(text: string, mentions: ArrayMentions, everyone: 
     // Timestamp  
     const { locale, timeZone } = dateFormat.resolvedOptions();
 
-    text = text.replace(/&lt;t:(\d+)(?::([tTdDfFR]))?&gt;/g, (_m, timestamp, format) => {
-        const date = new Date(parseInt(timestamp, 10) * 1000);
-        const style = format || 'f';
+    if (text.includes("&lt;t:")) {
+        text = text.replace(TIMESTAMP, (_m, timestamp, format) => {
+            const date = new Date(parseInt(timestamp, 10) * 1000);
+            const style = format || 'f';
 
-        const isoString = date.toISOString();
+            const isoString = date.toISOString();
 
-        const titleFormatter = new Intl.DateTimeFormat(locale, {
-            dateStyle: 'full',
-            timeStyle: 'full',
-            timeZone: timeZone,
-        });
-        const fullDateForTitle = titleFormatter.format(date);
-
-        if (style === 'R') {
-            const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
-            const seconds = Math.floor((date.getTime() - Date.now()) / 1000);
-            const minutes = Math.floor(seconds / 60);
-            const hours = Math.floor(minutes / 60);
-            const days = Math.floor(hours / 24);
-
-            let relativeString;
-            if (Math.abs(days) > 30) relativeString = rtf.format(Math.floor(days / 30.44), 'month');
-            else if (Math.abs(days) > 0) relativeString = rtf.format(days, 'day');
-            else if (Math.abs(hours) > 0) relativeString = rtf.format(hours, 'hour');
-            else if (Math.abs(minutes) > 0) relativeString = rtf.format(minutes, 'minute');
-            else relativeString = rtf.format(seconds, 'second');
-
-            return `<time datetime="${isoString}" title="${fullDateForTitle}">${relativeString}</time>`;
-        } else if (isStyleKey(style)) {
-            const formatter = new Intl.DateTimeFormat(locale, {
-                ...styleOptions[style],
+            const titleFormatter = new Intl.DateTimeFormat(locale, {
+                dateStyle: 'full',
+                timeStyle: 'full',
                 timeZone: timeZone,
             });
+            const fullDateForTitle = titleFormatter.format(date);
 
-            const formattedDate = formatter.format(date);
+            if (style === 'R') {
+                const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+                const seconds = Math.floor((date.getTime() - Date.now()) / 1000);
+                const minutes = Math.floor(seconds / 60);
+                const hours = Math.floor(minutes / 60);
+                const days = Math.floor(hours / 24);
 
-            return `<time datetime="${isoString}" title="${fullDateForTitle}">${formattedDate}</time>`;
-        }
-        return _m;
+                let relativeString;
+                if (Math.abs(days) > 30) relativeString = rtf.format(Math.floor(days / 30.44), 'month');
+                else if (Math.abs(days) > 0) relativeString = rtf.format(days, 'day');
+                else if (Math.abs(hours) > 0) relativeString = rtf.format(hours, 'hour');
+                else if (Math.abs(minutes) > 0) relativeString = rtf.format(minutes, 'minute');
+                else relativeString = rtf.format(seconds, 'second');
 
-    });
+                return `<time datetime="${isoString}" title="${fullDateForTitle}">${relativeString}</time>`;
+            } else if (isStyleKey(style)) {
+                const formatter = new Intl.DateTimeFormat(locale, {
+                    ...styleOptions[style],
+                    timeZone: timeZone,
+                });
+
+                const formattedDate = formatter.format(date);
+
+                return `<time datetime="${isoString}" title="${fullDateForTitle}">${formattedDate}</time>`;
+            }
+            return _m;
+
+        });
+    }
 
     // Break Line
-    text = text.replace(/\n/g, '<br>');
+    text = text.replace(BREAK_LINE, '<br>');
 
     // Clear Unecessary Break Line
-    text = text.replace(/(<\/(?:p|h[1-3]|blockquote)>)\s*<br>/g, '$1');
+    text = text.replace(UNECESSARY_BREAK_LINE, '$1');
 
     // Remove Placeholders
     text = text.replace(BLOCK_REGEX, (_m, number) => {
@@ -187,10 +220,10 @@ function singleCitation(match: string) {
     let currentBlock: string[] = [];
     
     for (const line of lines) {
-        const prefixMatch = line.match(/^[ \t]*((?:&gt;)+)/);
+        const prefixMatch = line.match(CITATION_PREFIX);
         const len = prefixMatch ? prefixMatch[1].length : 0
         if (len === 4) { // Is a single '>'
-            currentBlock.push(line.replace(/^[ \t]*&gt; ?/, ''));
+            currentBlock.push(line.replace(CITATION_STRIP_PREFIX, ''));
         } else { // Is '>>' or something else
             if (currentBlock.length > 0) {
                 result.push(`<blockquote class="quote-multi">${currentBlock.join('\n')}</blockquote>`);
