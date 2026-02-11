@@ -1,13 +1,13 @@
-export { ReturnType } from "@/types";
-export { ReturnFormat } from "discord-message-transcript-base";
-export { setBase64Concurrency, setCDNConcurrency } from '@/assetResolver';
+export * from "./types/index.js";
+export { setBase64Concurrency, setCDNConcurrency } from './core/assetResolver/index.js';
 import { AttachmentBuilder } from "discord.js";
-import { ReturnType } from "@/types";
-import { output } from "@/core/output.js";
-import { ReturnTypeBase, ReturnFormat, outputBase, CustomError, CustomWarn } from "discord-message-transcript-base";
-import { returnTypeMapper } from "@/core/mappers.js";
-import { jsonAssetResolver } from "@/assetResolver";
+import { output } from "./core/output.js";
+import { ReturnFormat, outputBase, CustomError, CustomWarn } from "discord-message-transcript-base/internal";
+import { ReturnType as ReturnTypeBase } from "discord-message-transcript-base";
+import { returnTypeMapper } from "./core/mappers.js";
+import { jsonAssetResolver } from "./core/assetResolver/index.js";
 import { discordParser } from "./core/discordParser/index.js";
+import { ReturnType } from "./types/public/return.js";
 /**
  * Creates a transcript of a Discord channel's messages.
  * Depending on the `returnType` option, this function can return an `AttachmentBuilder`,

@@ -1,7 +1,6 @@
 import { ComponentType } from "discord.js";
 import { mapButtonStyle, mapSelectorType, mapSeparatorSpacing } from "../mappers.js";
-import { JsonComponentType } from "discord-message-transcript-base";
-import { isValidHexColor } from "discord-message-transcript-base";
+import { JsonComponentType, isValidHexColor } from "discord-message-transcript-base/internal";
 export async function componentsToJson(components, options) {
     const filtered = components.filter(c => options.includeV2Components || c.type === ComponentType.ActionRow);
     const processed = await Promise.all(filtered.map(c => convertComponent(c, options)));

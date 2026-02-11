@@ -1,11 +1,13 @@
 import { markdownToHTML } from "@/core/markdown.js";
-import { JsonAttachment, JsonButtonComponent, JsonButtonStyle, JsonComponentType, JsonData, JsonEmbed, JsonMessage, JsonPoll, JsonReaction, JsonSelectMenu, JsonTopLevelComponent } from "../../types/types.js";
 import { ACTIONROW_CSS, ATTACHMENT_CSS, BUTTON_CSS, COMPONENTS_CSS, COMPONENTSV2_CSS, DEFAULT_CSS, EMBED_CSS, MESSAGE_CSS, POLL_CSS, POLL_RESULT_EMBED_CSS, REACTIONS_CSS } from "./css.js";
 import { script } from "./js.js";
 import packageJson from "package.json" with { type: 'json' };
 import { sanitize } from "@/core/sanitizer.js";
 import highlightHash from "@/assets/highlightJsHash.json" with { type: 'json'};
 import transcriptHash from "@/assets/transcriptHash.json" with { type: 'json'};
+import { JsonData, JsonMessage, JsonTopLevelComponent, JsonReaction } from "@/types/internal/message/messageItens.js";
+import { JsonAttachment, JsonButtonComponent, JsonEmbed, JsonPoll, JsonSelectMenu } from "@/types/internal/message/components.js";
+import { JsonComponentType, JsonButtonStyle } from "@/types/internal/message/enum.js";
 
 const FILE_SIZE_UNIT = ["KB", "MB", "GB", "TB"];
 const FILE_SIZE_THRESHOLD = 512;
@@ -306,17 +308,17 @@ export class Html {
                 html = `<img class="attachmentImage" src="${attachment.url}">`;
             } else if (attachment.contentType?.startsWith('video/')) {
                 if (attachment.url == "") {
-                    html = `<video class="attachmentVideo" controls src="${attachment.url}"></video>`;
-                } else {
                     html = `<div class="attachmentVideoUnavailable">${TEXT.File.Unavailable.Video}</div>`;
+                } else {
+                    html = `<video class="attachmentVideo" controls src="${attachment.url}"></video>`;
                 }
             } else if (attachment.contentType?.startsWith('audio/')) {
                 if (attachment.url == "") {
-                    html = `<audio class="attachmentAudio" controls src="${attachment.url}"></audio>`;
-                } else {
                     html = `<div class="attachmentAudioUnavailable">${TEXT.File.Unavailable.Audio}</div>`;
+                } else {
+                    html = `<audio class="attachmentAudio" controls src="${attachment.url}"></audio>`;
                 }
-            } else {
+            } else { 
                 let fileSize = attachment.size / 1024;
                 let count = 0;
                 while (fileSize > FILE_SIZE_THRESHOLD && count < FILE_SIZE_UNIT.length - 1) {

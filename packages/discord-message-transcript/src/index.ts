@@ -1,14 +1,15 @@
-export { CreateTranscriptOptions, ConvertTranscriptOptions, TranscriptOptions, ReturnType, CDNOptions, MimeType } from "@/types";
-export { ReturnFormat, LocalDate, TimeZone } from "discord-message-transcript-base";
+export * from "@/types/index.js";
 export { setBase64Concurrency, setCDNConcurrency } from '@/assetResolver'
 
 import { AttachmentBuilder, TextBasedChannel } from "discord.js";
-import { ConvertTranscriptOptions, CreateTranscriptOptions, OutputType, ReturnType } from "@/types";
 import { output } from "@/core/output.js";
-import { JsonData, ReturnTypeBase, TranscriptOptionsBase, ReturnFormat, outputBase, CustomError, CustomWarn } from "discord-message-transcript-base";
+import { JsonData, TranscriptOptionsBase, ReturnFormat, outputBase, CustomError, CustomWarn } from "discord-message-transcript-base/internal";
+import { ReturnType as ReturnTypeBase } from "discord-message-transcript-base";
 import { returnTypeMapper } from "@/core/mappers.js";
 import { jsonAssetResolver } from "@/assetResolver";
-import { discordParser } from "./core/discordParser/index.js";
+import { discordParser } from "@/discordParser";
+import { OutputType, ReturnType } from "@/types/public/return.js";
+import { ConvertTranscriptOptions, CreateTranscriptOptions } from "@/types/public/createAndConvertTranscript.js";
 
 /**
  * Creates a transcript of a Discord channel's messages.

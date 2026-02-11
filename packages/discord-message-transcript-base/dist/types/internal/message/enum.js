@@ -1,49 +1,11 @@
 /**
- * An enum-like object for the possible return types, excluding 'attachment'.
+ * An enum representing the spacing size of a separator component.
  */
-export const ReturnTypeBase = {
-    /**
-     * Returns a `Buffer`.
-     */
-    Buffer: "buffer",
-    /**
-     * Returns a `Stream.Readable`.
-     */
-    Stream: "stream",
-    /**
-     * Returns a `string`.
-     */
-    String: "string",
-    /**
-     * Returns an `Uploadable` object.
-     */
-    Uploadable: "uploadable"
-};
-/**
- * An enum for all possible return types, used for parsing.
- */
-export var ReturnTypeParse;
-(function (ReturnTypeParse) {
-    ReturnTypeParse["Attachment"] = "attachment";
-    ReturnTypeParse["Buffer"] = "buffer";
-    ReturnTypeParse["Stream"] = "stream";
-    ReturnTypeParse["String"] = "string";
-    ReturnTypeParse["Uploadable"] = "uploadable";
-})(ReturnTypeParse || (ReturnTypeParse = {}));
-;
-/**
- * An enum-like object for the possible transcript formats.
- */
-export const ReturnFormat = {
-    /**
-     * JSON format.
-     */
-    JSON: "JSON",
-    /**
-     * HTML format.
-     */
-    HTML: "HTML"
-};
+export var JsonSeparatorSpacingSize;
+(function (JsonSeparatorSpacingSize) {
+    JsonSeparatorSpacingSize[JsonSeparatorSpacingSize["Small"] = 1] = "Small";
+    JsonSeparatorSpacingSize[JsonSeparatorSpacingSize["Large"] = 2] = "Large";
+})(JsonSeparatorSpacingSize || (JsonSeparatorSpacingSize = {}));
 /**
  * An enum representing the styles of a Discord button.
  */
@@ -80,11 +42,3 @@ export var JsonComponentType;
     JsonComponentType[JsonComponentType["Label"] = 18] = "Label";
     JsonComponentType[JsonComponentType["FileUpload"] = 19] = "FileUpload";
 })(JsonComponentType || (JsonComponentType = {}));
-/**
- * An enum representing the spacing size of a separator component.
- */
-export var JsonSeparatorSpacingSize;
-(function (JsonSeparatorSpacingSize) {
-    JsonSeparatorSpacingSize[JsonSeparatorSpacingSize["Small"] = 1] = "Small";
-    JsonSeparatorSpacingSize[JsonSeparatorSpacingSize["Large"] = 2] = "Large";
-})(JsonSeparatorSpacingSize || (JsonSeparatorSpacingSize = {}));

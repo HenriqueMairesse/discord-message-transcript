@@ -1,8 +1,8 @@
-import { CustomWarn } from 'discord-message-transcript-base';
+import { CustomWarn } from 'discord-message-transcript-base/internal';
 import { getBase64Limiter } from '../limiter.js';
 import https from 'https';
 import http from 'http';
-import { safeUrlReturn } from '@/types';
+import { safeUrlReturn } from '@/types/private/network.js';
 import { createLookup } from '@/networkSecurity';
 import { USER_AGENT } from '../contants.js';
 

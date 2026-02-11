@@ -1,4 +1,4 @@
-import { CustomWarn } from "discord-message-transcript-base";
+import { CustomWarn } from "discord-message-transcript-base/internal";
 
 export function validateCdnUrl(url: string, disableWarnings: boolean): boolean {
   if (url.includes('"') || url.includes('<') || url.includes('>')) {

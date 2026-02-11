@@ -1,4 +1,4 @@
-import { CustomWarn } from "discord-message-transcript-base";
+import { CustomWarn } from "discord-message-transcript-base/internal";
 export class CDNProviderError extends Error {
     provider;
     code;

@@ -1,7 +1,7 @@
-import { CustomWarn, TranscriptOptionsBase } from "discord-message-transcript-base";
+import { CustomWarn, TranscriptOptionsBase } from "discord-message-transcript-base/internal";
 import { TRUSTED_DISCORD_HOSTS } from "./constants.js";
 import { isPrivateIp } from "./ip.js";
-import { LookupResult, safeUrlReturn } from "@/types";
+import { LookupResult, safeUrlReturn } from "@/types/private/network.js";
 import { resolveAllIps } from "./dns.js";
 
 export async function isSafeForHTML(url: string, options: TranscriptOptionsBase): Promise<safeUrlReturn> {

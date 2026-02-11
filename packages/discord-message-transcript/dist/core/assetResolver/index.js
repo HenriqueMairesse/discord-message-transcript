@@ -1,6 +1,8 @@
 import { authorUrlResolver } from "./url/authorUrlResolver.js";
 import { messagesUrlResolver } from "./url/messageUrlResolver.js";
 export * from "./limiter.js";
+export * from "./url/imageUrlResolver.js";
+export * from "./url/urlResolver.js";
 export async function jsonAssetResolver(jsonTranscript, maps, options, cdnOptions) {
     await Promise.all([
         (async () => {

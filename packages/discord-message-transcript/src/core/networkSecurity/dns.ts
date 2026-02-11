@@ -1,6 +1,6 @@
 import { Resolver } from "dns/promises";
 import { DNS_LOOKUP_TIMEOUT, DNS_SERVERS } from "./constants.js";
-import { LookupResult } from "@/types";
+import { LookupResult } from "@/types/private/network.js";
 
 export async function resolveAllIps(host: string): Promise<LookupResult[]> {
   const resolver = new Resolver();

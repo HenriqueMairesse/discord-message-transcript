@@ -1,7 +1,7 @@
 import { EmbedType } from "discord.js";
 import { componentsToJson } from "./componentToJson.js";
-import { JsonMessage, isValidHexColor, sanitize } from "discord-message-transcript-base";
-import { FetchMessagesContext } from "@/types";
+import { JsonMessage, isValidHexColor, sanitize } from "discord-message-transcript-base/internal";
+import { FetchMessagesContext } from "@/types/private/discordParser.js";
 import { getMentions } from "./getMentions.js";
 
 export async function fetchMessages(ctx: FetchMessagesContext): Promise<{ messages: JsonMessage[], end: boolean, newLastMessageId: string | undefined }> {

@@ -1,8 +1,9 @@
 import { Json } from "@/renderers/json/json.js";
-import { CDNOptions, Maps } from "@/types/types.js";
-import { TranscriptOptionsBase } from "discord-message-transcript-base";
+import { TranscriptOptionsBase } from "discord-message-transcript-base/internal";
 import { authorUrlResolver } from "./url/authorUrlResolver.js";
 import { messagesUrlResolver } from "./url/messageUrlResolver.js";
+import { Maps } from "@/types/private/maps.js";
+import { CDNOptions } from "@/types/private/cdn.js";
 
 export * from "./limiter.js";
 export * from "./url/imageUrlResolver.js";

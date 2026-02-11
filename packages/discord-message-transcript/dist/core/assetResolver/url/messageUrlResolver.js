@@ -1,8 +1,8 @@
-import { JsonComponentType } from "discord-message-transcript-base";
+import { JsonComponentType } from "discord-message-transcript-base/internal";
 import { imageUrlResolver } from "./imageUrlResolver.js";
-import { isSafeForHTML } from "@/networkSecurity";
+import { isSafeForHTML } from "../../networkSecurity/index.js";
 import { urlResolver } from "./urlResolver.js";
-import { isJsonComponentInContainer } from "@/core/discordParser/componentToJson.js";
+import { isJsonComponentInContainer } from "../../discordParser/componentToJson.js";
 export async function messagesUrlResolver(messages, options, cdnOptions, urlCache) {
     return await Promise.all(messages.map(async (message) => {
         // Needs to wait for resolve correct when used attachment://

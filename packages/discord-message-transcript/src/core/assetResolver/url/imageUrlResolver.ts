@@ -1,6 +1,6 @@
-import { FALLBACK_PIXEL, JsonAttachment, TranscriptOptionsBase } from "discord-message-transcript-base";
+import { FALLBACK_PIXEL, JsonAttachment, TranscriptOptionsBase } from "discord-message-transcript-base/internal";
 import { isSafeForHTML } from "@/networkSecurity";
-import { safeUrlReturn } from "@/types";
+import { safeUrlReturn } from "@/types/private/network.js";
 
 export async function imageUrlResolver(url: string, options: TranscriptOptionsBase, canReturnNull: false, attachments?: JsonAttachment[]): Promise<safeUrlReturn>;
 export async function imageUrlResolver(url: string | null, options: TranscriptOptionsBase, canReturnNull: true, attachments?: JsonAttachment[]): Promise<safeUrlReturn | null>;

@@ -1,6 +1,6 @@
-import { CustomWarn } from "discord-message-transcript-base";
+import { CustomWarn } from "discord-message-transcript-base/internal";
 import { getCDNLimiter } from "../limiter.js";
-import { createLookup } from "@/networkSecurity";
+import { createLookup } from "../../networkSecurity/index.js";
 import https from 'https';
 import http from 'http';
 import { uploadCareCdnResolver } from "./uploadCareCdnResolver.js";

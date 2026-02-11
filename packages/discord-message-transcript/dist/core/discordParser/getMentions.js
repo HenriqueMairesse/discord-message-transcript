@@ -1,5 +1,5 @@
 import { ChannelType } from "discord.js";
-import { isValidHexColor, sanitize } from "discord-message-transcript-base";
+import { isValidHexColor, sanitize } from "discord-message-transcript-base/internal";
 export async function getMentions(message, mentions) {
     message.mentions.channels.forEach(channel => {
         if (!mentions.channels.has(channel.id)) {

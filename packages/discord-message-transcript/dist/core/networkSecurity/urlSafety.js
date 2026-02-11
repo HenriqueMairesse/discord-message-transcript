@@ -1,4 +1,4 @@
-import { CustomWarn } from "discord-message-transcript-base";
+import { CustomWarn } from "discord-message-transcript-base/internal";
 import { TRUSTED_DISCORD_HOSTS } from "./constants.js";
 import { isPrivateIp } from "./ip.js";
 import { resolveAllIps } from "./dns.js";

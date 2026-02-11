@@ -1,5 +1,5 @@
-import { FALLBACK_PIXEL } from "discord-message-transcript-base";
-import { isSafeForHTML } from "@/networkSecurity";
+import { FALLBACK_PIXEL } from "discord-message-transcript-base/internal";
+import { isSafeForHTML } from "../../networkSecurity/index.js";
 export async function imageUrlResolver(url, options, canReturnNull, attachments) {
     if (!url)
         return null;

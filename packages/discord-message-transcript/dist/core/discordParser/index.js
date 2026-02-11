@@ -1,5 +1,5 @@
 import { fetchMessages } from "./fetchMessages.js";
-import { Json } from "@/renderers/json/json.js";
+import { Json } from "../../renderers/json/json.js";
 export async function discordParser(channel, options, cdnOptions) {
     const urlCache = new Map();
     const authors = new Map();

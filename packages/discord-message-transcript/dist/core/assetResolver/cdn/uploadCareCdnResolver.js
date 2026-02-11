@@ -1,4 +1,4 @@
-import { sleep } from "@/utils/sleep.js";
+import { sleep } from "../../../utils/sleep.js";
 import { CDNProviderError, warnCdnError } from "./cdnCustomError.js";
 import { USER_AGENT } from "../contants.js";
 // https://uploadcare.com/api-refs/upload-api/#tag/Upload/operation/fromURLUpload

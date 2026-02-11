@@ -1,8 +1,8 @@
-import { CustomWarn } from 'discord-message-transcript-base';
+import { CustomWarn } from 'discord-message-transcript-base/internal';
 import { getBase64Limiter } from '../limiter.js';
 import https from 'https';
 import http from 'http';
-import { createLookup } from '@/networkSecurity';
+import { createLookup } from '../../networkSecurity/index.js';
 import { USER_AGENT } from '../contants.js';
 const MAX_BYTES = 25 * 1024 * 1024; // 25MB
 export async function imageToBase64(safeUrlObject, disableWarnings) {

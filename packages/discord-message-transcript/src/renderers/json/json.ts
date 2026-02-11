@@ -1,6 +1,6 @@
 import { BaseGuildTextChannel, DMChannel, Guild, TextBasedChannel } from "discord.js";
-import { ArrayMentions, JsonAuthor, JsonMessage, TranscriptOptionsBase, JsonData } from "discord-message-transcript-base";
-import { CDNOptions } from "@/types";
+import { ArrayMentions, JsonAuthor, JsonMessage, TranscriptOptionsBase, JsonData } from "discord-message-transcript-base/internal";
+import { CDNOptions } from "@/types/private/cdn.js";
 import { imageUrlResolver, urlResolver } from "@/assetResolver";
 
 export class Json {

@@ -1,11 +1,11 @@
-import { markdownToHTML } from "@/core/markdown.js";
-import { JsonButtonStyle, JsonComponentType } from "../../types/types.js";
+import { markdownToHTML } from "../../core/markdown.js";
 import { ACTIONROW_CSS, ATTACHMENT_CSS, BUTTON_CSS, COMPONENTS_CSS, COMPONENTSV2_CSS, DEFAULT_CSS, EMBED_CSS, MESSAGE_CSS, POLL_CSS, POLL_RESULT_EMBED_CSS, REACTIONS_CSS } from "./css.js";
 import { script } from "./js.js";
 import packageJson from "package.json" with { type: 'json' };
-import { sanitize } from "@/core/sanitizer.js";
-import highlightHash from "@/assets/highlightJsHash.json" with { type: 'json' };
-import transcriptHash from "@/assets/transcriptHash.json" with { type: 'json' };
+import { sanitize } from "../../core/sanitizer.js";
+import highlightHash from "../../assets/highlightJsHash.json" with { type: 'json' };
+import transcriptHash from "../../assets/transcriptHash.json" with { type: 'json' };
+import { JsonComponentType, JsonButtonStyle } from "@/types/internal/message/enum.js";
 const FILE_SIZE_UNIT = ["KB", "MB", "GB", "TB"];
 const FILE_SIZE_THRESHOLD = 512;
 const BUTTON_COLORS = {

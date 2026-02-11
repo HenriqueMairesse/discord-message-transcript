@@ -1,5 +1,5 @@
 import { BaseGuildTextChannel, DMChannel } from "discord.js";
-import { imageUrlResolver, urlResolver } from "@/assetResolver";
+import { imageUrlResolver, urlResolver } from "../../core/assetResolver/index.js";
 export class Json {
     guild;
     channel;

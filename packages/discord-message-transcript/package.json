@@ -18,7 +18,7 @@
   "sideEffects": false,
   "scripts": {
     "clean": "pnpm exec rimraf dist",
-    "build": "pnpm run clean && tsc"
+    "build": "pnpm run clean && tsc && tsc-alias"
   },
   "repository": {
     "type": "git",

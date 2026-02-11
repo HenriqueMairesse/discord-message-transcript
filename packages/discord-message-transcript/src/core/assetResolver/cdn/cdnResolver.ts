@@ -1,5 +1,4 @@
-import { CDNOptions, safeUrlReturn, MimeType } from "@/types/types.js";
-import { CustomWarn, TranscriptOptionsBase } from "discord-message-transcript-base";
+import { CustomWarn, TranscriptOptionsBase } from "discord-message-transcript-base/internal";
 import { getCDNLimiter } from "../limiter.js";
 import { createLookup } from "@/networkSecurity";
 import https from 'https';
@@ -8,6 +7,9 @@ import { uploadCareCdnResolver } from "./uploadCareCdnResolver.js";
 import { cloudinaryCdnResolver } from "./cloudinaryCdnResolver.js";
 import { validateCdnUrl } from "./validateCdnUrl.js";
 import { USER_AGENT } from "../contants.js";
+import { safeUrlReturn } from "@/types/private/network.js";
+import { CDNOptions } from "@/types/private/cdn.js";
+import { MimeType } from "@/types/private/others.js";
 
 export async function cdnResolver(safeUrlObject: safeUrlReturn, options: TranscriptOptionsBase, cdnOptions: CDNOptions): Promise<string> {
 

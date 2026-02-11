@@ -1,7 +1,8 @@
-import { CDNOptions, safeUrlReturn } from "@/types/types.js";
-import { FALLBACK_PIXEL, TranscriptOptionsBase } from "discord-message-transcript-base";
+import { FALLBACK_PIXEL, TranscriptOptionsBase } from "discord-message-transcript-base/internal";
 import { cdnResolver } from "../cdn/cdnResolver.js";
 import { imageToBase64 } from "../base64/imageToBase64.js";
+import { safeUrlReturn } from "@/types/private/network.js";
+import { CDNOptions } from "@/types/private/cdn.js";
 
 export async function urlResolver(safeUrlObject: safeUrlReturn, options: TranscriptOptionsBase, cdnOptions: CDNOptions | null, urlCache: Map<string, Promise<string>>): Promise<string> {
     if (safeUrlObject.safe == false) return "";

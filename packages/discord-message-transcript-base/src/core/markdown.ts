@@ -1,4 +1,5 @@
-import { ArrayMentions, StyleTimeStampKey } from "@/types";
+
+import { ArrayMentions, StyleTimeStampKey } from "@/types/internal/util.js";
 import { sanitize } from "./sanitizer.js";
 
 // Tokens

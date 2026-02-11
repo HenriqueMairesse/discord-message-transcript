@@ -1,5 +1,5 @@
 import { Readable } from 'stream';
-import { outputBase, CustomError } from "discord-message-transcript-base";
+import { outputBase, CustomError } from "discord-message-transcript-base/internal";
 export async function output(json) {
     const stringJSON = JSON.stringify(json);
     if (json.options.returnFormat == "JSON") {

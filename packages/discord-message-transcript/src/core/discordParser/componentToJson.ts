@@ -1,7 +1,6 @@
 import { TopLevelComponent, ComponentType, ActionRow, MessageActionRowComponent, ContainerComponent, FileComponent, MediaGalleryComponent, SectionComponent, SeparatorComponent, TextDisplayComponent } from "discord.js";
 import { mapButtonStyle, mapSelectorType, mapSeparatorSpacing } from "../mappers.js"
-import { JsonTopLevelComponent, JsonButtonComponent, JsonSelectMenu, JsonComponentType, JsonThumbnailComponent, JsonTextDisplayComponent, TranscriptOptionsBase, JsonActionRow, JsonContainerComponent, JsonFileComponent, JsonMediaGalleryComponent, JsonSectionComponent, JsonSeparatorComponent, JsonComponentInContainer } from "discord-message-transcript-base";
-import { isValidHexColor } from "discord-message-transcript-base";
+import { JsonTopLevelComponent, JsonButtonComponent, JsonSelectMenu, JsonComponentType, JsonThumbnailComponent, JsonTextDisplayComponent, TranscriptOptionsBase, JsonActionRow, JsonContainerComponent, JsonFileComponent, JsonMediaGalleryComponent, JsonSectionComponent, JsonSeparatorComponent, JsonComponentInContainer, isValidHexColor } from "discord-message-transcript-base/internal";
 
 export async function componentsToJson(components: TopLevelComponent[], options: TranscriptOptionsBase): Promise<JsonTopLevelComponent[]> {
 

@@ -1,6 +1,6 @@
 import { ChannelType, Message } from "discord.js"
-import { MapMentions } from "@/types"
-import { isValidHexColor, sanitize } from "discord-message-transcript-base"
+import { MapMentions } from "@/types/private/maps.js"
+import { isValidHexColor, sanitize } from "discord-message-transcript-base/internal"
 
 export async function getMentions(message: Message, mentions: MapMentions) {
     message.mentions.channels.forEach(channel => {

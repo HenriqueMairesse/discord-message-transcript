@@ -1,6 +1,6 @@
 import { EmbedType } from "discord.js";
 import { componentsToJson } from "./componentToJson.js";
-import { isValidHexColor, sanitize } from "discord-message-transcript-base";
+import { isValidHexColor, sanitize } from "discord-message-transcript-base/internal";
 import { getMentions } from "./getMentions.js";
 export async function fetchMessages(ctx) {
     const { channel, options, transcriptState, lastMessageId } = ctx;

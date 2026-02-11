@@ -1,8 +1,10 @@
-import { CDNOptions, FetchMessagesContext, MapMentions, ReturnDiscordParser } from "@/types/types.js";
-import { JsonAuthor, JsonMessageMentionsChannels, JsonMessageMentionsRoles, JsonMessageMentionsUsers, TranscriptOptionsBase } from "discord-message-transcript-base";
+import { JsonAuthor, JsonMessageMentionsChannels, JsonMessageMentionsRoles, JsonMessageMentionsUsers, TranscriptOptionsBase } from "discord-message-transcript-base/internal";
 import { TextBasedChannel } from "discord.js";
 import { fetchMessages } from "./fetchMessages.js";
 import { Json } from "@/renderers/json/json.js";
+import { MapMentions } from "@/types/private/maps.js";
+import { FetchMessagesContext, ReturnDiscordParser } from "@/types/private/discordParser.js";
+import { CDNOptions } from "@/types/private/cdn.js";
 
 export async function discordParser(channel: TextBasedChannel, options: TranscriptOptionsBase, cdnOptions: CDNOptions | null): Promise<ReturnDiscordParser> {
 

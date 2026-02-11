@@ -1,5 +1,5 @@
 import { Readable } from 'stream';
-import { Html } from "@/renderers/html/html.js";
+import { Html } from "../renderers/html/html.js";
 export async function output(json) {
     const objectHTML = new Html(json);
     const stringHTML = await objectHTML.toHTML();

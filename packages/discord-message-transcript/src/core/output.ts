@@ -1,6 +1,6 @@
 import { AttachmentBuilder } from "discord.js";
 import Stream, { Readable } from 'stream'
-import { outputBase, JsonData, Uploadable, CustomError  } from "discord-message-transcript-base";
+import { outputBase, JsonData, Uploadable, CustomError } from "discord-message-transcript-base/internal";
 
 export async function output(json: JsonData): Promise<string | Stream | AttachmentBuilder | Buffer | Uploadable> {
 

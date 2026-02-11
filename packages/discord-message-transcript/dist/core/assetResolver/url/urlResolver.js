@@ -1,4 +1,4 @@
-import { FALLBACK_PIXEL } from "discord-message-transcript-base";
+import { FALLBACK_PIXEL } from "discord-message-transcript-base/internal";
 import { cdnResolver } from "../cdn/cdnResolver.js";
 import { imageToBase64 } from "../base64/imageToBase64.js";
 export async function urlResolver(safeUrlObject, options, cdnOptions, urlCache) {

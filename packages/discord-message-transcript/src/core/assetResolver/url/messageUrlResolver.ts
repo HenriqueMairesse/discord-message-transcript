@@ -1,9 +1,10 @@
-import { CDNOptions, safeUrlReturn } from "@/types/types.js";
-import { JsonComponentType, JsonMessage, JsonTopLevelComponent, TranscriptOptionsBase } from "discord-message-transcript-base";
+import { JsonComponentType, JsonMessage, JsonTopLevelComponent, TranscriptOptionsBase } from "discord-message-transcript-base/internal";
 import { imageUrlResolver } from "./imageUrlResolver.js";
 import { isSafeForHTML } from "@/networkSecurity";
 import { urlResolver } from "./urlResolver.js";
 import { isJsonComponentInContainer } from "@/core/discordParser/componentToJson.js";
+import { safeUrlReturn } from "@/types/private/network.js";
+import { CDNOptions } from "@/types/private/cdn.js";
 
 export async function messagesUrlResolver(messages: JsonMessage[], options: TranscriptOptionsBase, cdnOptions: CDNOptions | null, urlCache: Map<string, Promise<string>>): Promise<JsonMessage[]> {
     return await Promise.all(messages.map(async message => {
