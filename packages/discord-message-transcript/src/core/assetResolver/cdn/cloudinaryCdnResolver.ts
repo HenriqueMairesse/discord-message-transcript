@@ -72,7 +72,7 @@ export async function cloudinaryCdnResolver(url: string, fileName: string, cloud
                         status: res.status,
                         message: body?.error?.message ?? "Invalid upload parameters.",
                         hint: "Check folder name, file URL accessibility, and signature.",
-                        errorMessage: body?.error?.message ? body.error.message : undefined
+                        errorMessage: body?.error?.message
                     });
 
                 case 401:
@@ -83,7 +83,7 @@ export async function cloudinaryCdnResolver(url: string, fileName: string, cloud
                         status: res.status,
                         message: "Cloudinary rejected credentials.",
                         hint: "Check apiKey/apiSecret and cloudName.",
-                        errorMessage: body?.error?.message ? body.error.message : undefined
+                        errorMessage: body?.error?.message
                     });
 
                 case 420:
@@ -93,7 +93,7 @@ export async function cloudinaryCdnResolver(url: string, fileName: string, cloud
                         status: res.status,
                         message: "Cloudinary rate limit exceeded.",
                         hint: "Reduce concurrency.",
-                        errorMessage: body?.error?.message ? body.error.message : undefined
+                        errorMessage: body?.error?.message
                     });
 
                 case 500:
@@ -103,7 +103,7 @@ export async function cloudinaryCdnResolver(url: string, fileName: string, cloud
                         status: res.status,
                         message: "Cloudinary has a internal error.",
                         hint: "Contact support or check https://status.cloudinary.com.",
-                        errorMessage: body?.error?.message ? body.error.message : undefined
+                        errorMessage: body?.error?.message
                     });
 
                 default:
@@ -112,7 +112,7 @@ export async function cloudinaryCdnResolver(url: string, fileName: string, cloud
                         code: "HTTP_ERROR",
                         status: res.status,
                         message: `Unexpected Cloudinary response.`,
-                        errorMessage: body?.error?.message ? body.error.message : undefined
+                        errorMessage: body?.error?.message
                     });
             }
         }

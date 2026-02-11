@@ -9,7 +9,6 @@ const BLOCK_REGEX = /\0CB\0(\d+)\0CB\0/g;
 const LINE_REGEX  = /\0CL\0(\d+)\0CL\0/g;
 
 // Regex
-const INLINE_REGEX = /(\*\*\*(?:(?!\*\*\*)[\s\S])+\*\*\*|\*\*(?:(?!\*\*)[\s\S])+\*\*|__(?:(?!__)[\s\S])+__|\*(?:[^*\n]+)\*|_(?:[^_\n]+)_|~~(?:(?!~~)[\s\S])+~~|\|\|(?:(?!\|\|)[\s\S])+\|\|)/g;;
 const CODE_BLOCK = /```(?:(\S+)\n)?((?:(?!```)[\s\S])+)```/g;
 const CODE_LINE = /`([^`\n]+?)`/g;
 const MULTI_CITATION_START = /^[ \t]*&gt;&gt;&gt;/m;
@@ -28,6 +27,12 @@ const CHANNEL_MENTION = /&lt;#(\d+)&gt;/g;
 const TIMESTAMP = /&lt;t:(\d+)(?::([tTdDfFR]))?&gt;/g;
 const BREAK_LINE = /\n/g;
 const UNECESSARY_BREAK_LINE = /(<\/(?:p|h[1-3]|blockquote)>)\s*<br>/g;
+const SPOILER = /\|\|((?:(?!\|\|)[^])+)\|\|/g;
+const BOLD_ITALIC = /\*\*\*((?:(?!\*\*\*)[\s\S])*)\*\*\*/g;
+const BOLD = /\*\*((?:(?!\*\*)[\s\S])*)\*\*/g;
+const UNDERLINE = /__((?:(?!__)[\s\S])*)__/g;
+const ITALIC_ASTERISK = /\*((?:(?!\*)[\s\S])*)\*/g;
+const ITALIC_UNDERLINE = /_((?:(?!_)[\s\S])*)_/g;
 
 export function markdownToHTML(text: string, mentions: ArrayMentions, everyone: boolean, dateFormat: Intl.DateTimeFormat): string {
 
@@ -75,13 +80,13 @@ export function markdownToHTML(text: string, mentions: ArrayMentions, everyone: 
     }
 
     // Headers (#)
-    text = text.replace(HEADERS, (_m, hashes, content) => {
+    if (text.includes("#")) text = text.replace(HEADERS, (_m, hashes, content) => {
         const level = hashes.length;
         return `<h${level}>${content}</h${level}>`;
     });
 
     // Subtext(-#)
-    text = text.replace(SUBTEXT, `<p class="subtext">$1</p>`);
+    if (text.includes("-#")) text = text.replace(SUBTEXT, `<p class="subtext">$1</p>`);
 
     // List (- | *)
     text = text.replace(LIST, (_m, indentation, text) => {
@@ -90,13 +95,30 @@ export function markdownToHTML(text: string, mentions: ArrayMentions, everyone: 
         return `<p class="pList">${indentation}${bullet} ${text}</p>`;
     });
     
-    if (text.includes("||") || text.includes("*") || text.includes("_") || text.includes("~~")) {
-        text = parseInline(text);
-    }
+    // Spoiler (||)
+    if (text.includes("||")) text = text.replace(SPOILER, `<span class="spoilerMsg">$1</span>`);
+
+    // Bold & Italic (***)
+    if (text.includes("***")) text = text.replace(BOLD_ITALIC, `<strong><em>$1</em></strong>`);
+
+    // Bold (**)
+    if (text.includes("**")) text = text.replace(BOLD, `<strong>$1</strong>`);
+
+    // Underline(__)
+    if (text.includes("__")) text = text.replace(UNDERLINE, `<u>$1</u>`);
+
+    // Italic (*)
+    text = text.replace(ITALIC_ASTERISK, `<em>$1</em>`);
+
+    // Italic (_)
+    text = text.replace(ITALIC_UNDERLINE, `<em>$1</em>`);
+        
+    // Strikethrough (~~)
+    if (text.includes("~~")) text = text.replace(/~~((?:(?!~~)[\s\S])*)~~/g, `<s>$1</s>`);
 
     // Links ([]() && https)
     if (text.includes("http")) {
-        text = text.replace(MASKED_LINK, (_m, text, link) => `<a href="${link}" target="_blank" rel="noopener noreferrer">${text}</a>`);
+        if (text.includes("](")) text = text.replace(MASKED_LINK, (_m, text, link) => `<a href="${link}" target="_blank" rel="noopener noreferrer">${text}</a>`);
         text = text.replace(NORMAL_LINK, (_m, link) => `<a href="${link}" target="_blank" rel="noopener noreferrer">${link}</a>`);
     }
     // Mentions (@)
@@ -214,56 +236,6 @@ function singleCitation(match: string) {
     }
     return result.join('\n');
 }
-
-function parseInline(text: string): string {
-  return text.replace(INLINE_REGEX, (match) => {
-    
-    // Spoiler
-    if (match.startsWith("||")) {
-      const c = match.slice(2, -2);
-      return `<span class="spoilerMsg">${c}</span>`;
-    }
-    
-    // Bold & Italic (***)
-    if (match.startsWith("***")) {
-      const c = match.slice(3, -3);
-      return `<strong><em>${c}</em></strong>`;
-    }
-
-    // Bold (**)
-    if (match.startsWith("**")) {
-      const c = match.slice(2, -2);
-      return `<strong>${c}</strong>`;
-    }
-
-    // Underline (__)
-    if (match.startsWith("__")) {
-      const c = match.slice(2, -2);
-      return `<u>${c}</u>`;
-    }
-
-    // Italic (*)
-    if (match.startsWith("*")) {
-      const c = match.slice(1, -1);
-      return `<em>${c}</em>`;
-    }
-
-    // Italic (_)
-    if (match.startsWith("_")) {
-      const c = match.slice(1, -1);
-      return `<em>${c}</em>`;
-    }
-
-    // Strikethrough (~~)
-    if (match.startsWith("~~")) {
-      const c = match.slice(2, -2);
-      return `<s>${c}</s>`;
-    }
-
-    return match;
-  });
-}
-
 
 // Check if styleKey is valid
 const styleOptions: Record<StyleTimeStampKey, Intl.DateTimeFormatOptions> = {
