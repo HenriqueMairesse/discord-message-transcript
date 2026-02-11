@@ -33,6 +33,7 @@ const BOLD = /\*\*((?:(?!\*\*)[\s\S])*)\*\*/g;
 const UNDERLINE = /__((?:(?!__)[\s\S])*)__/g;
 const ITALIC_ASTERISK = /\*((?:(?!\*)[\s\S])*)\*/g;
 const ITALIC_UNDERLINE = /_((?:(?!_)[\s\S])*)_/g;
+const STRIKETHROUGH = /~~((?:(?!~~)[\s\S])*)~~/g;
 
 export function markdownToHTML(text: string, mentions: ArrayMentions, everyone: boolean, dateFormat: Intl.DateTimeFormat): string {
 
@@ -114,7 +115,7 @@ export function markdownToHTML(text: string, mentions: ArrayMentions, everyone: 
     text = text.replace(ITALIC_UNDERLINE, `<em>$1</em>`);
         
     // Strikethrough (~~)
-    if (text.includes("~~")) text = text.replace(/~~((?:(?!~~)[\s\S])*)~~/g, `<s>$1</s>`);
+    if (text.includes("~~")) text = text.replace(STRIKETHROUGH, `<s>$1</s>`);
 
     // Links ([]() && https)
     if (text.includes("http")) {
