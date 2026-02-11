@@ -11,7 +11,7 @@ export async function uploadCareCdnResolver(url: string, publicKey: string, cdnD
                 provider: "UPLOADCARE",
                 code: "CONFIG_MISSING",
                 message: "Uploadcare configuration is missing required fields.",
-                hint: "Verify cdnDomain and publickey."
+                hint: "Verify cdnDomain and publicKey."
             });
         }
 
