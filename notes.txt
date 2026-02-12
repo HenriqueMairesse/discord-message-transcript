@@ -7,7 +7,6 @@ Issues:
 Todo: 
     - Global cache on dns lookup
     - Remove all unecessary css in html.ts it will lightly benefit css in cdn and have little more kb on embedded css, but will make easier to maintan
-    - Test Section withou acessory
 
 Some Future Features without date to implement: 
     - Add automatic Tests(Like Vitest/Jest)
