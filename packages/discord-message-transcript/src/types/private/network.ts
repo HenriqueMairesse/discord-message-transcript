@@ -11,3 +11,8 @@ export interface safeUrlReturn {
     safeIps: string[],
     url: string
 }
+
+export interface cacheSafeUrlReturn {
+  safeUrlReturn: Promise<safeUrlReturn>,
+  expired: number,
+}
