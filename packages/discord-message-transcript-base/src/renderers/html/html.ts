@@ -1,5 +1,5 @@
 import { markdownToHTML } from "@/core/markdown.js";
-import { ACTIONROW_CSS, ATTACHMENT_CSS, BUTTON_CSS, COMPONENTS_CSS, COMPONENTSV2_CSS, DEFAULT_CSS, EMBED_CSS, MESSAGE_CSS, POLL_CSS, POLL_RESULT_EMBED_CSS, REACTIONS_CSS } from "./css.js";
+import { ACTIONROW_CSS, ATTACHMENT_CSS, BUTTON_CSS, COMPONENTS_CSS, COMPONENTSV2_CSS, DEFAULT_CSS, EMBED_CSS, FOOTER_CSS, MESSAGE_CSS, POLL_CSS, POLL_RESULT_EMBED_CSS, REACTIONS_CSS, ROOT_VARIABLES_CSS } from "./css.js";
 import { script } from "./js.js";
 import packageJson from "package.json" with { type: 'json' };
 import { sanitize } from "@/core/sanitizer.js";
@@ -65,12 +65,12 @@ export class Html {
         const { guild, channel } = this.data;
         if (guild) {
             if (guild.icon) {
-                return `<img src="${guild.icon}" style="width: 7rem; height: 7rem; border-radius: 50%;">`;
+                return `<img src="${guild.icon}" class="headIcon">`;
             } else {
                 return `<div class="guildInitialsIcon">${initials(guild.name)}</div>`;
             }
         } else {
-            return `<img src="${channel.img}" style="width: 7rem; height: 7rem; border-radius: 50%;">`;
+            return `<img src="${channel.img}" class="headIcon">`;
         }
 
         function initials(name: string) {
@@ -86,24 +86,24 @@ export class Html {
         const { channel, guild } = this.data;
     
         return `
-        <div style="display: flex;  gap: 1.5rem; align-items: center; width 100vw">
+        <div class="headerRoot">
             ${this.getIcon()}
-            <div style="display: flex; flex-direction: column; justify-content: center; gap: 1.25rem;">
+            <div class="headerInfo">
                 ${guild ? `<div id="guild" class="line">
                     <h4>Guild: </h4>
-                    <h4 style="font-weight: normal;">${sanitize(guild.name)}</h4>
+                    <h4 class="headerValue">${sanitize(guild.name)}</h4>
                 </div>` : ""}
                 ${channel.parent ? `<div id="category" class="line">
                     <h4>Category: </h4>
-                    <h4 style="font-weight: normal;">${sanitize(channel.parent.name)}</h4>
+                    <h4 class="headerValue">${sanitize(channel.parent.name)}</h4>
                 </div>` : ""}
                 <div id="channel" class="line">
                     <h4>Channel: </h4>
-                    <h4 style="font-weight: normal;">${sanitize(channel.name)}</h4>
+                    <h4 class="headerValue">${sanitize(channel.name)}</h4>
                 </div>
                 ${channel.topic ? `<div id="topic" class="line">
                     <h4>Topic: </h4>
-                    <h4 style="font-weight: normal;">${sanitize(channel.topic)}</h4>
+                    <h4 class="headerValue">${sanitize(channel.topic)}</h4>
                 </div>` : ""}
             </div>
         </div>
@@ -147,6 +147,7 @@ export class Html {
     async toHTML() {
         const { options } = this.data;
         const cssContent = `
+            ${ROOT_VARIABLES_CSS}
             ${DEFAULT_CSS}
             ${MESSAGE_CSS}
             ${options.includePolls ? POLL_CSS + POLL_RESULT_EMBED_CSS : ""}
@@ -157,6 +158,7 @@ export class Html {
             ${options.includeComponents ? COMPONENTS_CSS : ""}
             ${options.includeV2Components ? COMPONENTSV2_CSS : ""}
             ${options.includeReactions ? REACTIONS_CSS : ""}
+            ${options.watermark ? FOOTER_CSS : ""}
         `;
 
         const jsContent = script(options.includeComponents, options.includePolls);
@@ -177,12 +179,12 @@ export class Html {
     <header>
         ${this.headerBuilder()}
     </header>
-    <main style="display: flex; flex-direction: column; padding: 2.25%; flex: 1;">
+    <main>
        ${await this.messagesBuilder()}
     </main>
     ${options.watermark ? `<footer>
         <br>
-        <div style="padding: 1rem 0; font-weight: 700; text-align: center; font-size: 1.5rem; background-color: #2b2d31;">${TEXT.TranscriptFooter}</div>
+        <div class="footerWatermark">${TEXT.TranscriptFooter}</div>
     </footer> ` : ""}
     <script id="authorData" type="application/json">
         ${JSON.stringify({ authors: this.data.authors })}
@@ -500,7 +502,7 @@ export class Html {
     private svgBuilder() {
         const { options } = this.data;
         return `
-    <svg style="display: none;">
+    <svg class="svgDefs">
         <defs>
             <symbol id="${ICONS.Reply}" viewBox="0 0 16 16" fill="none">
                 <g transform="rotate(90 8 8)">

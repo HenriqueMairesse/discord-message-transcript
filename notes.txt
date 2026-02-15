@@ -5,7 +5,7 @@ In Mind:
 Issues: 
 
 Todo: 
-    - Remove all unecessary css in html.ts it will lightly benefit css in cdn and have little more kb on embedded css, but will make easier to maintan
+    - Add gif in readme of some transcript
 
 Some Future Features without date to implement: 
     - Add automatic Tests(Like Vitest/Jest)
