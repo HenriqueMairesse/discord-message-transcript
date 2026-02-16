@@ -1,15 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { LookupResult } from "../../../src/types/private/network";
+
+const { resolveAllIpsMock } = vi.hoisted(() => ({
+  resolveAllIpsMock: vi.fn(async (_host: string): Promise<LookupResult[]> => []),
+}));
 
 vi.mock("../../../src/core/networkSecurity/dns", () => {
   return {
-    resolveAllIps: vi.fn(() => Promise.resolve([])),
+    resolveAllIps: resolveAllIpsMock,
   };
 });
 
-import { isSafeForHTML, clearUrlSafetyCache } from "../../../src/core/networkSecurity/urlSafety";
-import * as dnsModule from "../../../src/core/networkSecurity/dns";
 import { ReturnFormat } from "discord-message-transcript-base/internal";
 import { ReturnType } from "../../../../discord-message-transcript-base/dist/types/public/return";
+
+const loadIsSafeForHTML = async () => {
+  const mod = await import("../../../src/core/networkSecurity/urlSafety");
+  return mod.isSafeForHTML;
+};
 
 function createTestOptions(overrides: Partial<any> = {}) {
   return {
@@ -23,14 +31,14 @@ function createTestOptions(overrides: Partial<any> = {}) {
     includePolls: true,
     includeReactions: true,
     includeV2Components: true,
-    localDate: 'en-GB',
+    localDate: "en-GB",
     quantity: 0,
     returnFormat: ReturnFormat.HTML,
     returnType: ReturnType.Buffer,
     safeMode: true,
     saveImages: false,
     selfContained: false,
-    timeZone: 'UTC',
+    timeZone: "UTC",
     watermark: true,
     ...overrides,
   };
@@ -38,42 +46,49 @@ function createTestOptions(overrides: Partial<any> = {}) {
 
 describe("urlSafety.ts - isSafeForHTML", () => {
   beforeEach(() => {
-    vi.restoreAllMocks();
-    clearUrlSafetyCache();
+    vi.clearAllMocks();
+    vi.resetModules();
+    resolveAllIpsMock.mockResolvedValue([]);
   });
 
-  it("aceita URLs válidas https do Discord", async () => {
+  it("accepts valid discord https urls", async () => {
+    const isSafeForHTML = await loadIsSafeForHTML();
     const url = "https://cdn.discordapp.com/image.png";
     const result = await isSafeForHTML(url, createTestOptions());
     expect(result.safe).toBe(true);
     expect(result.url).toBe(url);
   });
 
-  it("bloqueia URLs inválidas", async () => {
+  it("blocks invalid urls", async () => {
+    const isSafeForHTML = await loadIsSafeForHTML();
     const url = "notaurl";
     const result = await isSafeForHTML(url, createTestOptions());
     expect(result.safe).toBe(false);
   });
 
-  it("bloqueia protocolos não http/https", async () => {
+  it("blocks non-http protocols", async () => {
+    const isSafeForHTML = await loadIsSafeForHTML();
     const url = "ftp://example.com";
     const result = await isSafeForHTML(url, createTestOptions());
     expect(result.safe).toBe(false);
   });
 
-  it("bloqueia URLs com username ou password", async () => {
+  it("blocks urls with username or password", async () => {
+    const isSafeForHTML = await loadIsSafeForHTML();
     const url = "https://user:pass@example.com";
     const result = await isSafeForHTML(url, createTestOptions());
     expect(result.safe).toBe(false);
   });
 
-  it("bloqueia portas não padrão", async () => {
+  it("blocks non-standard ports", async () => {
+    const isSafeForHTML = await loadIsSafeForHTML();
     const url = "https://example.com:1234/path";
     const result = await isSafeForHTML(url, createTestOptions());
     expect(result.safe).toBe(false);
   });
 
-  it("bloqueia localhost e loopback", async () => {
+  it("blocks localhost and loopback", async () => {
+    const isSafeForHTML = await loadIsSafeForHTML();
     const urls = ["http://localhost", "http://127.0.0.1", "http://0.1.2.3"];
     for (const url of urls) {
       const result = await isSafeForHTML(url, createTestOptions());
@@ -81,15 +96,16 @@ describe("urlSafety.ts - isSafeForHTML", () => {
     }
   });
 
-  it("bloqueia SVGs externos que não são do Discord CDN", async () => {
+  it("blocks non-discord external svgs", async () => {
+    const isSafeForHTML = await loadIsSafeForHTML();
     const url = "https://example.com/image.svg";
     const result = await isSafeForHTML(url, createTestOptions());
     expect(result.safe).toBe(false);
   });
 
-  it("retorna safeIps corretos para hosts públicos", async () => {
-    // Mock DNS público
-    vi.mocked(dnsModule.resolveAllIps).mockResolvedValue([
+  it("returns safe ips for public hosts", async () => {
+    const isSafeForHTML = await loadIsSafeForHTML();
+    resolveAllIpsMock.mockResolvedValue([
       { address: "8.8.8.8", family: 4 },
       { address: "8.8.4.4", family: 4 },
     ]);
@@ -100,11 +116,12 @@ describe("urlSafety.ts - isSafeForHTML", () => {
     expect(result.safe).toBe(true);
     expect(result.safeIps).toContain("8.8.8.8");
     expect(result.safeIps).toContain("8.8.4.4");
-    expect(dnsModule.resolveAllIps).toHaveBeenCalledWith("example.com");
+    expect(resolveAllIpsMock).toHaveBeenCalledWith("example.com");
   });
 
-  it("retorna falso se DNS resolve IP privado", async () => {
-    vi.mocked(dnsModule.resolveAllIps).mockResolvedValue([
+  it("returns false when dns resolves private ip", async () => {
+    const isSafeForHTML = await loadIsSafeForHTML();
+    resolveAllIpsMock.mockResolvedValue([
       { address: "127.0.0.1", family: 4 },
       { address: "10.0.0.1", family: 4 },
     ]);
@@ -113,23 +130,23 @@ describe("urlSafety.ts - isSafeForHTML", () => {
     const result = await isSafeForHTML(url, createTestOptions());
 
     expect(result.safe).toBe(false);
-    expect(dnsModule.resolveAllIps).toHaveBeenCalledWith("example.com");
+    expect(resolveAllIpsMock).toHaveBeenCalledWith("example.com");
   });
 
-  it("retorna falso se DNS falha", async () => {
-    vi.mocked(dnsModule.resolveAllIps).mockRejectedValue(new Error("DNS fail"));
+  it("returns false when dns fails", async () => {
+    const isSafeForHTML = await loadIsSafeForHTML();
+    resolveAllIpsMock.mockRejectedValue(new Error("DNS fail"));
 
     const url = "https://example.com/path";
     const result = await isSafeForHTML(url, createTestOptions());
 
     expect(result.safe).toBe(false);
-    expect(dnsModule.resolveAllIps).toHaveBeenCalledWith("example.com");
+    expect(resolveAllIpsMock).toHaveBeenCalledWith("example.com");
   });
 
-  it("cache funciona e não refaz DNS se dentro do tempo", async () => {
-    const spy = vi.mocked(dnsModule.resolveAllIps).mockResolvedValue([
-      { address: "8.8.4.4", family: 4 },
-    ]);
+  it("uses cache and avoids repeated dns lookups", async () => {
+    const isSafeForHTML = await loadIsSafeForHTML();
+    const spy = resolveAllIpsMock.mockResolvedValue([{ address: "8.8.4.4", family: 4 }]);
 
     const url = "https://example.com/path";
     const opts = createTestOptions();
@@ -142,21 +159,21 @@ describe("urlSafety.ts - isSafeForHTML", () => {
     expect(spy).toHaveBeenCalledTimes(1);
   });
 
-  it("aceita subdomínios de hosts Discord confiáveis", async () => {
+  it("accepts trusted discord subdomains", async () => {
+    const isSafeForHTML = await loadIsSafeForHTML();
     const url = "https://media.discordapp.com/path";
     const result = await isSafeForHTML(url, createTestOptions());
     expect(result.safe).toBe(true);
   });
 
-  it("bloqueia hosts privados mesmo se o hostname não é 'localhost'", async () => {
-    vi.mocked(dnsModule.resolveAllIps).mockResolvedValue([
-      { address: "192.168.1.1", family: 4 },
-    ]);
+  it("blocks private hosts even when hostname is not localhost", async () => {
+    const isSafeForHTML = await loadIsSafeForHTML();
+    resolveAllIpsMock.mockResolvedValue([{ address: "192.168.1.1", family: 4 }]);
 
     const url = "https://my.private.host/path";
     const result = await isSafeForHTML(url, createTestOptions());
 
     expect(result.safe).toBe(false);
-    expect(dnsModule.resolveAllIps).toHaveBeenCalledWith("my.private.host");
+    expect(resolveAllIpsMock).toHaveBeenCalledWith("my.private.host");
   });
 });

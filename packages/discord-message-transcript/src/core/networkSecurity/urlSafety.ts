@@ -101,8 +101,3 @@ function isTrustedDiscordHost(host: string): boolean {
     return host === trusted || host.endsWith("." + trusted);
   });
 }
-
-// TODO: Remove this an make a strong mock on urlSafety.test.ts (this function only exist for test)
-export function clearUrlSafetyCache() {
-  cache.clear();
-}
