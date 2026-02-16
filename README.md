@@ -6,7 +6,7 @@
 
 # discord-message-transcript
 
-![Example](assets/discord-message-transcript_demo.mp4)
+![Example](assets/demo.gif)
 
 🌍 Read this document in:
 - 🇧🇷 [Português](README.pt-BR.md)
