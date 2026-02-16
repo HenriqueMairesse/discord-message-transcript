@@ -4,12 +4,22 @@ In Mind:
 
 Issues: 
 
-Todo: 
-    - Add gif in readme of some transcript
 
-Some Future Features without date to implement: 
-    - Add automatic Tests(Like Vitest/Jest)
+Next Features: 
+    v1.4: 
+        - Add gift in readme of some template transcript
+        - Add automatic Tests(Like Vitest/Jest)
+    v1.5:
+        - Add responsive css
+        - Sticker Support
+    v1.6: 
+        - Template helpers for html
+    v1.7: 
+        - Add support to .txt and/or .md - utility to log messages
+    v2.0: (Maybe?)
+        - Change html build to use jsx components
+
+
+
+Next Features without date to implement: 
     - Create a website with documentation (Maybe use TypeDoc with github pages or my own website)
-    - Add support to .txt and/or .md - utility to log messages
-    - Add responsive css
-    - Sticker Support

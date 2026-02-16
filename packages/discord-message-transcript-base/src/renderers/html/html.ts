@@ -1,7 +1,7 @@
 import { markdownToHTML } from "@/core/markdown.js";
 import { ACTIONROW_CSS, ATTACHMENT_CSS, BUTTON_CSS, COMPONENTS_CSS, COMPONENTSV2_CSS, DEFAULT_CSS, EMBED_CSS, FOOTER_CSS, MESSAGE_CSS, POLL_CSS, POLL_RESULT_EMBED_CSS, REACTIONS_CSS, ROOT_VARIABLES_CSS } from "./css.js";
 import { script } from "./js.js";
-import packageJson from "package.json" with { type: 'json' };
+import { LIB_VERSION } from "@/version.js";
 import { sanitize } from "@/core/sanitizer.js";
 import highlightHash from "@/assets/highlightJsHash.json" with { type: 'json'};
 import transcriptHash from "@/assets/transcriptHash.json" with { type: 'json'};
@@ -172,7 +172,7 @@ export class Html {
     <title>${sanitize(options.fileName)}</title>
     <link rel="stylesheet" integrity="${highlightHash.style}" crossorigin="anonymous" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/atom-one-dark.min.css">
     <script integrity="${highlightHash.script}" crossorigin="anonymous" src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
-    ${options.selfContained ? `<style>${cssContent}</style>` : `<link rel="stylesheet" integrity="${transcriptHash.style}" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/discord-message-transcript-base@${packageJson.version}/dist/assets/style.css">`}
+    ${options.selfContained ? `<style>${cssContent}</style>` : `<link rel="stylesheet" integrity="${transcriptHash.style}" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/discord-message-transcript-base@${LIB_VERSION}/dist/assets/style.css">`}
 </head>
 <body>
     ${this.svgBuilder()}
@@ -189,7 +189,7 @@ export class Html {
     <script id="authorData" type="application/json">
         ${JSON.stringify({ authors: this.data.authors })}
     </script>
-    ${options.selfContained ? `<script>${jsContent}</script>` : `<script integrity="${transcriptHash.script}" crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/discord-message-transcript-base@${packageJson.version}/dist/assets/script.js"></script>`}
+    ${options.selfContained ? `<script>${jsContent}</script>` : `<script integrity="${transcriptHash.script}" crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/discord-message-transcript-base@${LIB_VERSION}/dist/assets/script.js"></script>`}
 </body>
 </html>
         `;
