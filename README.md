@@ -7,7 +7,7 @@
 # discord-message-transcript
 
 <p align="center">
-  <video src="assets/discord-message-transcript_demo.mp4" autoplay loop muted width="720"></video>
+  <video src="/assets/discord-message-transcript_demo.mp4" autoplay loop muted width="720"></video>
 </p>
 
 🌍 Read this document in:
