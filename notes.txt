@@ -6,9 +6,6 @@ Issues:
 
 
 Next Features: 
-    v1.4: 
-        - Add gift in readme of some template transcript
-        - Add automatic Tests(Like Vitest/Jest)
     v1.5:
         - Add responsive css
         - Sticker Support
