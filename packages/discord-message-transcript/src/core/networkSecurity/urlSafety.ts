@@ -6,6 +6,28 @@ import { resolveAllIps } from "./dns.js";
 
 const cache = new Map<string, cacheSafeUrlReturn>();
 const CACHELIMIT = 1000 * 5;
+const MAX_CACHE = 500;
+
+function sweepCache() {
+  const now = Date.now();
+  for (const [key, value] of cache) {
+    if (now - value.createdAt > CACHELIMIT) {
+      cache.delete(key);
+    }
+  }
+}
+
+function maintainCacheSize() {
+  if (cache.size <= MAX_CACHE) return;
+
+  sweepCache();
+
+  while (cache.size > MAX_CACHE) {
+    const firstKey = cache.keys().next().value;
+    if (!firstKey) break;
+    cache.delete(firstKey);
+  }
+}
 
 export async function isSafeForHTML(url: string, options: TranscriptOptionsBase): Promise<safeUrlReturn> {
   const { safeMode, disableWarnings } = options;
@@ -50,22 +72,23 @@ export async function isSafeForHTML(url: string, options: TranscriptOptionsBase)
     return { safe: false, safeIps: [], url: url };
   }
 
-  let checkPromise: Promise<safeUrlReturn>;
-  const cachedUrl = cache.get(u.origin);
-  if (cachedUrl && Date.now() - cachedUrl.expired < CACHELIMIT) {
-      const safeReturn = await cachedUrl.safeUrlReturn;
-      checkPromise = Promise.resolve({ safe: safeReturn.safe, safeIps: safeReturn.safeIps, url: url })
-  } else {
-    checkPromise = checkList(url, u, host, disableWarnings);
-    cache.set(u.origin, { safeUrlReturn: checkPromise, expired: Date.now() });
-  }
-
   const path = u.pathname.toLowerCase();
 
   // External SVGs can execute scripts → allow only from Discord CDN
   if (path.endsWith(".svg")) {
     CustomWarn(`Unsafe URL rejected: External SVG not from Discord CDN\nURL: ${url}`, disableWarnings);
     return { safe: false, safeIps: [], url: url };
+  }
+
+  let checkPromise: Promise<safeUrlReturn>;
+  const cachedUrl = cache.get(u.origin);
+  if (cachedUrl && Date.now() - cachedUrl.createdAt < CACHELIMIT) {
+      const safeReturn = await cachedUrl.safeUrlReturn;
+      checkPromise = Promise.resolve({ safe: safeReturn.safe, safeIps: safeReturn.safeIps, url: url })
+  } else {
+    checkPromise = checkList(url, u, host, disableWarnings);
+    cache.set(u.origin, { safeUrlReturn: checkPromise, createdAt: Date.now() });
+    maintainCacheSize();
   }
 
   return await checkPromise;

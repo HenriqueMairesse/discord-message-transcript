@@ -14,5 +14,5 @@ export interface safeUrlReturn {
 
 export interface cacheSafeUrlReturn {
   safeUrlReturn: Promise<safeUrlReturn>,
-  expired: number,
+  createdAt: number,
 }
