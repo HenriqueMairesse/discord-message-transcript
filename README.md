@@ -6,6 +6,8 @@
 
 # discord-message-transcript
 
+![Example](assets/demo.gif)
+
 🌍 Read this document in:
 - 🇧🇷 [Português](README.pt-BR.md)
 

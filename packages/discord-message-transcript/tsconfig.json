@@ -19,11 +19,8 @@
       "@/renderers/*": ["src/renderers/*"],
       "@/assetResolver": ["src/core/assetResolver/index.ts"],
       "@/utils/*": ["src/utils/*"],
-      "@/discordParser": ["src/core/discordParser/index.ts"]
+      "@/discordParser": ["src/core/discordParser/index.ts"],
     }
   },
   "include": ["src"],
-  "references": [
-    { "path": "../discord-message-transcript-base" }
-  ]
 }

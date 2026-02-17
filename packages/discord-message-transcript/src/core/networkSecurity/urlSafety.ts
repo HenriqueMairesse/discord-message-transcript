@@ -1,8 +1,34 @@
 import { CustomWarn, TranscriptOptionsBase } from "discord-message-transcript-base/internal";
 import { TRUSTED_DISCORD_HOSTS } from "./constants.js";
 import { isPrivateIp } from "./ip.js";
-import { LookupResult, safeUrlReturn } from "@/types/private/network.js";
+import { cacheSafeUrlReturn, LookupResult, safeUrlReturn } from "@/types/private/network.js";
 import { resolveAllIps } from "./dns.js";
+
+const cache = new Map<string, cacheSafeUrlReturn>();
+const CACHELIMIT = 1000 * 5;
+const MAX_CACHE = 500;
+const SIZE_TO_SWEEP = 100;
+
+function sweepCache() {
+  const now = Date.now();
+  for (const [key, value] of cache) {
+    if (now - value.createdAt > CACHELIMIT) {
+      cache.delete(key);
+    }
+  }
+}
+
+function maintainCacheSize() {
+  if (cache.size <= MAX_CACHE) return;
+
+  sweepCache();
+
+  while (cache.size > MAX_CACHE) {
+    const firstKey = cache.keys().next().value;
+    if (!firstKey) break;
+    cache.delete(firstKey);
+  }
+}
 
 export async function isSafeForHTML(url: string, options: TranscriptOptionsBase): Promise<safeUrlReturn> {
   const { safeMode, disableWarnings } = options;
@@ -47,6 +73,30 @@ export async function isSafeForHTML(url: string, options: TranscriptOptionsBase)
     return { safe: false, safeIps: [], url: url };
   }
 
+  const path = u.pathname.toLowerCase();
+
+  // External SVGs can execute scripts → allow only from Discord CDN
+  if (path.endsWith(".svg")) {
+    CustomWarn(`Unsafe URL rejected: External SVG not from Discord CDN\nURL: ${url}`, disableWarnings);
+    return { safe: false, safeIps: [], url: url };
+  }
+
+  let checkPromise: Promise<safeUrlReturn>;
+  const cachedUrl = cache.get(u.origin);
+  if (cachedUrl && Date.now() - cachedUrl.createdAt < CACHELIMIT) {
+      const safeReturn = await cachedUrl.safeUrlReturn;
+      checkPromise = Promise.resolve({ safe: safeReturn.safe, safeIps: safeReturn.safeIps, url: url })
+  } else {
+    checkPromise = checkList(url, u, host, disableWarnings);
+    cache.set(u.origin, { safeUrlReturn: checkPromise, createdAt: Date.now() });
+    if (cache.size >= SIZE_TO_SWEEP) maintainCacheSize();
+  }
+
+  return await checkPromise;
+}
+
+async function checkList(url: string, u: URL, host: string, disableWarnings: boolean): Promise<safeUrlReturn> {
+
   let ips: LookupResult[];
   try {
     ips = await resolveAllIps(host);
@@ -64,14 +114,6 @@ export async function isSafeForHTML(url: string, options: TranscriptOptionsBase)
       return { safe: false, safeIps: [], url: url };
     }
     safeIps.push(ip.address);
-  }
-
-  const path = u.pathname.toLowerCase();
-
-  // External SVGs can execute scripts → allow only from Discord CDN
-  if (path.endsWith(".svg")) {
-    CustomWarn(`Unsafe URL rejected: External SVG not from Discord CDN\nURL: ${url}`, disableWarnings);
-    return { safe: false, safeIps: [], url: url };
   }
 
   return { safe: true, safeIps: safeIps, url: url };
