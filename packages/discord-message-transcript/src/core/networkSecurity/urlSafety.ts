@@ -7,6 +7,7 @@ import { resolveAllIps } from "./dns.js";
 const cache = new Map<string, cacheSafeUrlReturn>();
 const CACHELIMIT = 1000 * 5;
 const MAX_CACHE = 500;
+const SIZE_TO_SWEEP = 100;
 
 function sweepCache() {
   const now = Date.now();
@@ -88,7 +89,7 @@ export async function isSafeForHTML(url: string, options: TranscriptOptionsBase)
   } else {
     checkPromise = checkList(url, u, host, disableWarnings);
     cache.set(u.origin, { safeUrlReturn: checkPromise, createdAt: Date.now() });
-    maintainCacheSize();
+    if (cache.size >= SIZE_TO_SWEEP) maintainCacheSize();
   }
 
   return await checkPromise;
