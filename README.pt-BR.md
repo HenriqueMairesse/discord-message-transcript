@@ -1,25 +1,64 @@
 <div align="center">
-  <a href="https://discord.gg/4ACFdtRQMy"><img alt="Discord Server" src="https://img.shields.io/discord/1338602296665182221?style=plastic&logo=discord&logoColor=white&label=Discord&labelColor=5865F2"></a>
-  <a href="https://www.npmjs.com/package/discord-message-transcript"><img alt="NPM Version" src="https://img.shields.io/npm/v/discord-message-transcript?registry_uri=https%3A%2F%2Fregistry.npmjs.org%2F&style=plastic&color=orange"></a>
-  <a href="https://www.npmjs.com/package/discord-message-transcript"><img alt="NPM Downloads" src="https://img.shields.io/npm/d18m/discord-message-transcript?style=plastic&label=Downloads"></a>
-  <a href="https://deepwiki.com/HenriqueMairesse/discord-message-transcript"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
-</div>
 
 # discord-message-transcript
 
-![Example](assets/demo.gif)
+Uma biblioteca modular para exportar mensagens do Discord em **JSON** ou **HTML**, com fidelidade visual e suporte para arquivamento de longo prazo.
+
+![Demo](assets/demo.gif)
+
+<a href="https://www.npmjs.com/package/discord-message-transcript"><img alt="NPM Version" src="https://img.shields.io/npm/v/discord-message-transcript?registry_uri=https%3A%2F%2Fregistry.npmjs.org%2F&color=orange"></a>
+<a href="https://www.npmjs.com/package/discord-message-transcript"><img alt="NPM Downloads" src="https://img.shields.io/npm/d18m/discord-message-transcript?label=Downloads"></a>
+<a href="https://discord.gg/4ACFdtRQMy"><img alt="Discord Server" src="https://img.shields.io/discord/1338602296665182221?logo=discord&logoColor=white&label=Discord&labelColor=5865F2"></a>
+
+![License](https://img.shields.io/npm/l/discord-message-transcript)
+<a href="https://deepwiki.com/HenriqueMairesse/discord-message-transcript"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
+
+</div>
 
 🌍 Leia este documento em:
 - 🇺🇸 [English](README.md)
 
-Uma biblioteca modular para exportar mensagens do Discord em **JSON** ou **HTML**, com fidelidade visual e suporte para arquivamento de longo prazo.
-
 ---
+
+## 🎯 Por que este projeto existe
+
+O Discord não fornece uma forma nativa de exportar mensagens com fidelidade visual para fins de arquivamento, moderação ou uso legal.
+
+Esta biblioteca foi criada para gerar transcrições estruturadas que podem ser:
+- armazenadas a longo prazo
+- renderizadas posteriormente
+- compartilhadas com segurança
+- arquivadas fora do Discord
+
+## 🧰 Casos de uso comuns
+
+- Sistemas de tickets no Discord  
+- Logs de moderação  
+- Backups de servidores  
+- Armazenamento de evidências  
+- Transcrições de suporte  
+- Sistemas de arquivamento  
+
+## ⚡ Começo rápido
+```bash
+npm install discord-message-transcript
+yarn add discord-message-transcript
+pnpm add discord-message-transcript
+```
+```ts
+import { createTranscript } from "discord-message-transcript";
+
+const attachment = await createTranscript(channel);
+channel.send({ files: [attachment] });
+```
 
 ## 📖 Índice
 > Clique em qualquer seção para ir diretamente para ela.
 
 - [discord-message-transcript](#discord-message-transcript)
+  - [🎯 Por que este projeto existe](#-por-que-este-projeto-existe)
+  - [🧰 Casos de uso comuns](#-casos-de-uso-comuns)
+  - [⚡ Começo rápido](#-começo-rápido)
   - [📖 Índice](#-índice)
   - [📦 Estrutura do Projeto](#-estrutura-do-projeto)
     - [`discord-message-transcript` (pacote principal)](#discord-message-transcript-pacote-principal)
@@ -48,6 +87,7 @@ Uma biblioteca modular para exportar mensagens do Discord em **JSON** ou **HTML*
     - [Suporte e Dúvidas](#suporte-e-dúvidas)
     - [Solicitação de Funcionalidades](#solicitação-de-funcionalidades)
     - [Contribuições](#contribuições)
+  - [👨‍💻 Autor](#-autor)
 
 
 ## 📦 Estrutura do Projeto
@@ -437,3 +477,8 @@ No momento, este projeto **não está aberto para contribuições de código ext
 ---
 
 Obrigado pelo seu interesse neste projeto e por respeitar sua direção de desenvolvimento.
+
+## 👨‍💻 Autor
+
+Mantido por Henrique Mairesse  
+GitHub: https://github.com/HenriqueMairesse
