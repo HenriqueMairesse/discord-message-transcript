@@ -2,6 +2,7 @@
   <a href="https://discord.gg/4ACFdtRQMy"><img alt="Discord Server" src="https://img.shields.io/discord/1338602296665182221?style=plastic&logo=discord&logoColor=white&label=Discord&labelColor=5865F2"></a>
   <a href="https://www.npmjs.com/package/discord-message-transcript"><img alt="NPM Version" src="https://img.shields.io/npm/v/discord-message-transcript?registry_uri=https%3A%2F%2Fregistry.npmjs.org%2F&style=plastic&color=orange"></a>
   <a href="https://www.npmjs.com/package/discord-message-transcript"><img alt="NPM Downloads" src="https://img.shields.io/npm/d18m/discord-message-transcript?style=plastic&label=Downloads"></a>
+  <a href="https://deepwiki.com/HenriqueMairesse/discord-message-transcript"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 </div>
 
 # discord-message-transcript
