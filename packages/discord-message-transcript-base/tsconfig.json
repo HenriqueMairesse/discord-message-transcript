@@ -1,23 +1,22 @@
 {
   "compilerOptions": {
-    "target": "ES2024",
+    "target": "es2025",
     "module": "nodenext",
     "moduleResolution": "nodenext",
+    "types": ["node"],
     "declaration": true,
     "composite": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "strict": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@/core/*": ["src/core/*"], 
-      "@/types/*": ["src/types/*"], 
-      "@/renderers/*": ["src/renderers/*"],
-      "@/assets/*": ["src/assets/*"]
+      "@/*": ["./src/*"],
+      "@/core/*": ["./src/core/*"], 
+      "@/types/*": ["./src/types/*"], 
+      "@/renderers/*": ["./src/renderers/*"],
+      "@/assets/*": ["./src/assets/*"]
     }
   },
   "include": [

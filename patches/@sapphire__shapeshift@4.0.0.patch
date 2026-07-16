@@ -1,0 +1,114 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+deleted file mode 100644
+index 28723f8331bf3a9327a1f162a9669570924a94e9..0000000000000000000000000000000000000000
+diff --git a/dist/esm/index.d.mts b/dist/esm/index.d.mts
+index 2a241e377cf81e6afffa990f689912481c386302..857ac3964d397ba38e86bbb0defc79b9dc5f22cf 100644
+--- a/dist/esm/index.d.mts
++++ b/dist/esm/index.d.mts
+@@ -1,4 +1,4 @@
+-import { InspectOptionsStylized } from 'util';
++import { InspectContext } from 'util';
+ 
+ type ArrayConstraintName = `s.array(T).${'unique' | `length${'LessThan' | 'LessThanOrEqual' | 'GreaterThan' | 'GreaterThanOrEqual' | 'Equal' | 'NotEqual' | 'Range' | 'RangeInclusive' | 'RangeExclusive'}`}()`;
+ declare function arrayLengthLessThan<T>(value: number, options?: ValidatorOptions): IConstraint<T[]>;
+@@ -118,15 +118,15 @@ declare const customInspectSymbol: unique symbol;
+ declare const customInspectSymbolStackLess: unique symbol;
+ declare abstract class BaseError extends Error {
+     toJSON(): BaseErrorJsonified;
+-    protected [customInspectSymbol](depth: number, options: InspectOptionsStylized): string;
+-    protected abstract [customInspectSymbolStackLess](depth: number, options: InspectOptionsStylized): string;
++    protected [customInspectSymbol](depth: number, options: InspectContext): string;
++    protected abstract [customInspectSymbolStackLess](depth: number, options: InspectContext): string;
+ }
+ 
+ declare class ExpectedConstraintError<T = unknown> extends BaseConstraintError<T> {
+     readonly expected: string;
+     constructor(constraint: ConstraintErrorNames, message: string, given: T, expected: string);
+     toJSON(): ExpectedConstraintErrorJsonified<T>;
+-    protected [customInspectSymbolStackLess](depth: number, options: InspectOptionsStylized): string;
++    protected [customInspectSymbolStackLess](depth: number, options: InspectContext): string;
+ }
+ 
+ declare class Result<T, E extends Error = Error> {
+@@ -201,13 +201,13 @@ interface IConstraint<Input, Return extends Input = Input> {
+ declare class CombinedError extends BaseError {
+     readonly errors: readonly BaseError[];
+     constructor(errors: readonly BaseError[], validatorOptions?: ValidatorOptions);
+-    protected [customInspectSymbolStackLess](depth: number, options: InspectOptionsStylized): string;
++    protected [customInspectSymbolStackLess](depth: number, options: InspectContext): string;
+ }
+ 
+ declare class CombinedPropertyError extends BaseError {
+     readonly errors: [PropertyKey, BaseError][];
+     constructor(errors: [PropertyKey, BaseError][], validatorOptions?: ValidatorOptions);
+-    protected [customInspectSymbolStackLess](depth: number, options: InspectOptionsStylized): string;
++    protected [customInspectSymbolStackLess](depth: number, options: InspectContext): string;
+     private static formatProperty;
+ }
+ 
+@@ -217,7 +217,7 @@ declare class UnknownEnumValueError extends BaseError {
+     readonly enumMappings: Map<string | number, string | number>;
+     constructor(value: string | number, keys: string[], enumMappings: Map<string | number, string | number>, validatorOptions?: ValidatorOptions);
+     toJSON(): UnknownEnumValueErrorJsonified;
+-    protected [customInspectSymbolStackLess](depth: number, options: InspectOptionsStylized): string;
++    protected [customInspectSymbolStackLess](depth: number, options: InspectContext): string;
+ }
+ 
+ declare class ValidationError extends BaseError {
+@@ -225,7 +225,7 @@ declare class ValidationError extends BaseError {
+     readonly given: unknown;
+     constructor(validator: string, message: string, given: unknown);
+     toJSON(): ValidationErrorJsonified;
+-    protected [customInspectSymbolStackLess](depth: number, options: InspectOptionsStylized): string;
++    protected [customInspectSymbolStackLess](depth: number, options: InspectContext): string;
+ }
+ 
+ declare class ArrayValidator<T extends unknown[], I = T[number]> extends BaseValidator<T> {
+@@ -285,7 +285,7 @@ declare class ExpectedValidationError<T> extends ValidationError {
+     readonly expected: T;
+     constructor(validator: string, message: string, given: unknown, expected: T);
+     toJSON(): ExpectedValidationErrorJsonified<T>;
+-    protected [customInspectSymbolStackLess](depth: number, options: InspectOptionsStylized): string;
++    protected [customInspectSymbolStackLess](depth: number, options: InspectContext): string;
+ }
+ 
+ declare class InstanceValidator<T> extends BaseValidator<T> {
+@@ -699,14 +699,14 @@ declare class MissingPropertyError extends BaseError {
+     readonly property: PropertyKey;
+     constructor(property: PropertyKey, validatorOptions?: ValidatorOptions);
+     toJSON(): MissingPropertyErrorJsonified;
+-    protected [customInspectSymbolStackLess](depth: number, options: InspectOptionsStylized): string;
++    protected [customInspectSymbolStackLess](depth: number, options: InspectContext): string;
+ }
+ 
+ declare class MultiplePossibilitiesConstraintError<T = unknown> extends BaseConstraintError<T> {
+     readonly expected: readonly string[];
+     constructor(constraint: ConstraintErrorNames, message: string, given: T, expected: readonly string[]);
+     toJSON(): MultiplePossibilitiesConstraintErrorJsonified<T>;
+-    protected [customInspectSymbolStackLess](depth: number, options: InspectOptionsStylized): string;
++    protected [customInspectSymbolStackLess](depth: number, options: InspectContext): string;
+ }
+ 
+ declare class UnknownPropertyError extends BaseError {
+@@ -714,7 +714,7 @@ declare class UnknownPropertyError extends BaseError {
+     readonly value: unknown;
+     constructor(property: PropertyKey, value: unknown, options?: ValidatorOptions);
+     toJSON(): UnknownEnumKeyErrorJsonified;
+-    protected [customInspectSymbolStackLess](depth: number, options: InspectOptionsStylized): string;
++    protected [customInspectSymbolStackLess](depth: number, options: InspectContext): string;
+ }
+ 
+ declare const s: Shapes;
+diff --git a/package.json b/package.json
+index d2465d7c781e22300781eae57f2fe14924d9721c..b89b982fa55d2826b8d0804ac0327454551c5df7 100644
+--- a/package.json
++++ b/package.json
+@@ -49,7 +49,7 @@
+     "@sapphire/ts-config": "^5.0.1",
+     "@types/jsdom": "^21.1.6",
+     "@types/lodash": "^4.17.4",
+-    "@types/node": "^20.12.12",
++    "@types/node": "^20.19.43",
+     "@typescript-eslint/eslint-plugin": "^7.9.0",
+     "@typescript-eslint/parser": "^7.9.0",
+     "@vitest/coverage-v8": "^1.6.0",

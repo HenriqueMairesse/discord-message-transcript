@@ -1,2 +1,5 @@
 packages:
-  - 'packages/*'
+  - packages/*
+
+patchedDependencies:
+  '@sapphire/shapeshift@4.0.0': patches/@sapphire__shapeshift@4.0.0.patch

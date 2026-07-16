@@ -1,5 +1,8 @@
 import { describe, test, expect } from "vitest";
 import { markdownToHTML } from "../../../src/core/markdown";
+import { beforeEach } from "vitest";
+import { afterEach } from "vitest";
+import { vi } from "vitest";
 
 const mentions = {
   users: [],
@@ -16,6 +19,15 @@ function md(input: string) {
 }
 
 describe("markdownToHTML()", () => {
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2025-01-01T00:00:00Z'))
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
 
   // -------------------------
   // CODE BLOCKS
