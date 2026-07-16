@@ -1,5 +1,4 @@
 import { defineConfig } from 'vitest/config';
-import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   test: {
@@ -8,5 +7,8 @@ export default defineConfig({
     include: ['packages/*/tests/**/*.test.ts'],
     clearMocks: true
   },
-  plugins: [tsconfigPaths()],
+  resolve: {
+    tsconfigPaths: true
+  },
+  plugins: [],
 });
