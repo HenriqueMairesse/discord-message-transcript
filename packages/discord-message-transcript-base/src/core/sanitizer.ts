@@ -1,6 +1,6 @@
 import { hexColor } from "@/types/internal/util.js";
 
-export const FALLBACK_PIXEL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+export const FALLBACK_PIXEL = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E";
 const HEX_REGEX = /^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
 const DEFAULT_COLOR = "#000000"
 const SANITIZE_REGEX = /[&<>"']/g;
